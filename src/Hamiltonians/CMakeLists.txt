@@ -1,2 +1,6 @@
+# The grid directory must be the first
+# subdirectory added so as to add the
+# subdirectory as an include directory
+# properly for all of the Hamiltonians.
 add_subdirectory(grid)
 add_subdirectory(Ising2d)

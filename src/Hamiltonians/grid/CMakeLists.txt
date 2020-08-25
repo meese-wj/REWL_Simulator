@@ -1,4 +1,6 @@
-add_library(grid
-            grid_setup.hpp)
+add_library(grid_functions
+            grid_setup.hpp
+            grid_setup.cpp)
 
-target_include_directories(I FORGET WHAT TO DO HERE)
+target_include_directories(grid_functions PUBLIC
+                           "${CMAKE_CURRENT_SOURCE_DIR}")
