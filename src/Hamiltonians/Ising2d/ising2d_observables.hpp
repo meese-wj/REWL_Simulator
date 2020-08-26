@@ -53,6 +53,12 @@ struct Ising2d_Obs
 
     // Update average observable with the given value
     void update_observable_average(const data_t value, const Obs ob, const size_t bin) const;
+
+    // Increment the counter
+    void increment_counts_per_bin(const size_t bin) const
+    {
+        ++obs_array[ bin * convert(NUM_OBS) + counts_per_bin ];
+    }
 };
 
 template<typename data_t>
@@ -66,8 +72,6 @@ void Ising2d_Obs<data_t>::update_observable_average(const data_t value,
     current_avg = ( value + counts * current_avg ) / ( counts + 1 );
 
     set_observable(current_avg, ob, bin);
-    set_observable(counts + 1, counts_per_bin, bin);
 }
-
 
 #endif

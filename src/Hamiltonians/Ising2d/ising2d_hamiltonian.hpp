@@ -54,6 +54,7 @@ struct Ising2d
     void recalculate_state();
     void change_state(const size_t idx, State<data_t> & temp_state) const;
     void set_state(const size_t idx, const State<data_t> & _state);
+    void update_observables(const size_t bin, Ising2d_Obs<data_t> * obs_ptr) const;
 
     // Finally add the constructor and destructor.
     Ising2d()
@@ -133,6 +134,17 @@ void Ising2d<data_t>::set_state(const size_t idx, const State<data_t> & _state)
     current_state.energy = _state.energy;
     current_state.magnetization = _state.magnetization;
     spin_array[idx] = _state.DoF;
+}
+
+// Update the non-energetic observables
+template<typename data_t>
+void Ising2d<data_t>::update_observables(const size_t bin, Ising2d_Obs<data_t> * obs_ptr) const
+{
+    const data_t mag_val = current_state.magnetization;
+    obs_ptr -> update_observable_average(mag_val, mag, bin);
+    obs_ptr -> update_observable_average(mag_val * mag_val, mag2, bin);
+    obs_ptr -> update_observable_average(mag_val * mag_val * mag_val * mag_val, mag4, bin);
+    obs_ptr -> increment_counts_per_bin(bin);
 }
 
 #endif
