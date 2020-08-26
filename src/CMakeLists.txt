@@ -1,4 +1,9 @@
 
+set(INCLUDE_DIRS
+    "${CMAKE_CURRENT_SOURCE_DIR}/Hamiltonians/grid")
+
+include_directories("${INCLUDE_DIRS}")
+
 add_subdirectory(Hamiltonians)
 add_subdirectory(REWL)
 

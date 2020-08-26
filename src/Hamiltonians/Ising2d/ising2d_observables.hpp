@@ -1,4 +1,4 @@
-#if ISING2D
+#ifndef ISING2D_OBSERVABLES
 
 static constexpr float DATA_INITIALIZER = 0.;
 
@@ -26,14 +26,14 @@ struct Ising2d_Obs
 
     Ising2d_Obs(const size_t nbins) : num_bins(nbins)
     {
-        obs_array = new data_t [ num_samples * convert(NUM_OBS) ];
+        obs_array = new data_t [ num_bins * convert(Obs::NUM_OBS) ];
 
         // Initialize the observables to zero.
         // Store as AOS across structures since all
         // observables will be accessed in each bin.
         for ( size_t idx = 0; idx != num_bins; ++idx )
-            for ( size_t ob = 0; ob != convert(NUM_OBS); ++ob )
-                obs_array[ idx * convert(NUM_OBS) + ob ] = static_cast<data_t> (DATA_INITIALIZER);
+            for ( size_t ob = 0; ob != convert(Obs::NUM_OBS); ++ob )
+                obs_array[ idx * convert(Obs::NUM_OBS) + ob ] = static_cast<data_t> (DATA_INITIALIZER);
 
     }
 
@@ -42,13 +42,13 @@ struct Ising2d_Obs
     // Set the data pointed to by the observable array
     void set_observable(const data_t value, const Obs ob, const size_t bin) const
     {
-        obs_array[ bin * convert(NUM_OBS) + convert(ob) ] = value;
+        obs_array[ bin * convert(Obs::NUM_OBS) + convert(ob) ] = value;
     }
     
     // Get the data pointed to by the observable array
     data_t get_observable(const Obs ob, const size_t bin) const
     {
-        return obs_array[ bin * convert(NUM_OBS) + convert(ob) ];
+        return obs_array[ bin * convert(Obs::NUM_OBS) + convert(ob) ];
     }
 
     // Update average observable with the given value
@@ -57,7 +57,7 @@ struct Ising2d_Obs
     // Increment the counter
     void increment_counts_per_bin(const size_t bin) const
     {
-        ++obs_array[ bin * convert(NUM_OBS) + counts_per_bin ];
+        ++obs_array[ bin * convert(Obs::NUM_OBS) + convert(Obs::counts_per_bin) ];
     }
 };
 
@@ -67,7 +67,7 @@ void Ising2d_Obs<data_t>::update_observable_average(const data_t value,
                                                     const size_t bin) const
 {
     data_t current_avg = get_observable(ob, bin);
-    data_t counts = get_observable(counts_per_bin, bin);
+    data_t counts = get_observable(Obs::counts_per_bin, bin);
 
     current_avg = ( value + counts * current_avg ) / ( counts + 1 );
 

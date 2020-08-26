@@ -122,9 +122,9 @@ template<typename data_t>
 void Ising2d<data_t>::update_observables(const size_t bin, Ising2d_Obs<data_t> * obs_ptr) const
 {
     const data_t mag_val = current_state.magnetization;
-    obs_ptr -> update_observable_average(mag_val, mag, bin);
-    obs_ptr -> update_observable_average(mag_val * mag_val, mag2, bin);
-    obs_ptr -> update_observable_average(mag_val * mag_val * mag_val * mag_val, mag4, bin);
+    obs_ptr -> update_observable_average(mag_val, Obs::mag, bin);
+    obs_ptr -> update_observable_average(mag_val * mag_val, Obs::mag2, bin);
+    obs_ptr -> update_observable_average(mag_val * mag_val * mag_val * mag_val, Obs::mag4, bin);
     obs_ptr -> increment_counts_per_bin(bin);
 }
 

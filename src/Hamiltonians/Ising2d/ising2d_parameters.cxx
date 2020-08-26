@@ -5,7 +5,7 @@
 // boundary conditions.
 // TODO: Add nonzero field.
 
-#if ISING2D
+#ifndef ISING2D
 
 #include <cmath>
 
