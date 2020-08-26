@@ -37,11 +37,11 @@ struct glazier
 
     glazier(const data_t gmin, const data_t gmax, 
             const data_t gbs, const size_t nw,
-            const size_t rpw, const data_t wo) : global_min(gmin), global_max(gmax),
+            const size_t rpw, const data_t ow) : global_min(gmin), global_max(gmax),
                                                  global_bin_size(gbs), num_windows(nw), 
                                                  replicas_per_window(rpw), window_overlap(ow)
     {
-        all_windows = new window_data [ num_windows * replicas_per_window ];
+        all_windows = new window_data<data_t> [ num_windows * replicas_per_window ];
     }
     
     ~glazier()
@@ -83,9 +83,9 @@ void glazier<data_t>::construct_windows()
         window_min = global_min + initial_window_size * static_cast<data_t> (wdx);
         window_max = global_min + initial_window_size * static_cast<data_t> (wdx + 1);
 
-        histogram_index indexer (all_windows[ wdx * replicas_per_window + replica ].minimum,
-                                 all_windows[ wdx * replicas_per_window + replica ].maximum,
-                                 all_windows[ wdx * replicas_per_window + replica ].bin_size );
+        histogram_index<data_t> indexer (all_windows[ wdx * replicas_per_window ].minimum,
+                                         all_windows[ wdx * replicas_per_window ].maximum,
+                                         all_windows[ wdx * replicas_per_window ].bin_size );
         
         if ( window_overlap == static_cast<data_t>(single_bin_overlap) )
         {
@@ -94,7 +94,7 @@ void glazier<data_t>::construct_windows()
         else
         {
             // Find the nearest bin to grab onto
-            window_min -= window_overlap * ( global_bin_size * all_windows[ wdx * replicas_per_window + replica ].num_bins );
+            window_min -= window_overlap * ( global_bin_size * all_windows[ wdx * replicas_per_window ].num_bins );
             // Get the index from the previous window and then scale
             // adjust appropriately
             window_min = global_bin_size * static_cast<data_t> (indexer( window_min )); 

@@ -11,25 +11,6 @@
 // cmake include directories.
 #include <grid_setup.hpp>
 
-// Create a namespace to house the 
-// parameters.
-namespace Ising2d_Parameters
-{
-    // Hamiltonian parameters
-    constexpr size_t L = SYSTEM_SIZE_L;
-    constexpr size_t N = L * L;
-    constexpr float J = SYSTEM_EXCHANGE_J;
-    constexpr float h = SYSTEM_FIELD_H;
-    constexpr size_t num_neighbors_i = SYSTEM_NUM_NEAREST_NEIGHBORS_int;
-    constexpr float num_neighbors_f = SYSTEM_NUM_NEAREST_NEIGHBORS_float; 
-
-    // Wang Landau energy parameters
-    constexpr float energy_min = SYSTEM_ENERGY_MIN;
-    constexpr float energy_max = SYSTEM_ENERGY_MAX;
-    constexpr float energy_bin_size = SYSTEM_ENERGY_BIN_WIDTH;
-    constexpr size_t num_bins = SYSTEM_NUM_BINS;
-}
-
 // TODO: Upgrade the energies to allow for 
 // double calculations. 
 template<typename data_t>
