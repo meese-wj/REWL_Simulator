@@ -33,7 +33,7 @@ struct value_pair
 // Define the templated rewl_histogram
 // struct to be used in the REWL simulation.
 template<typename data_t>
-struct rewl_histogram
+struct rewl_histograms
 {
     const data_t min_value;        // Greatest lower bound of the REWL histogram (included).
     const data_t max_value;        // Least upper bound of the REWL histogram (not included).
@@ -82,7 +82,7 @@ struct rewl_histogram
 };
 
 template<typename data_t>
-float rewl_histogram<data_t>::count_flatness()
+float rewl_histograms<data_t>::count_flatness()
 {
     uint64_t minimum = histograms[ 0 ];
     uint64_t maximum = histograms[ 0 ];    
