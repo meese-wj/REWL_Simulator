@@ -6,8 +6,9 @@
  * Exchange Wang Landau algorithm. */
 
 #include <cmath>
-#include <random_number_generator.hpp>
-#include "../rewl_histograms.hpp"
+#include <random_number_generators.hpp>
+#include "histogram_index.hpp"
+#include "rewl_histograms.hpp"
 
 template<typename data_t>
 using rng = random_number_generator<data_t>;
@@ -23,10 +24,10 @@ struct Wang_Landau
     ~Wang_Landau() {}
 
     void wang_landau_update(const size_t idx, const data_t incrementer, Hamiltonian_t * ham,
-                            Observables_t * ham_obs, rng<float> & random, const histogram_index & hist_idx) const;
+                            Observables_t * ham_obs, rng<float> & random, const histogram_index<data_t> & hist_idx) const;
 
     void wang_landau_sweep(const size_t system_size, const data_t incrementer, Hamiltonian_t * ham, 
-                           Observables_t * ham_obs, rng<float> & random, const histogram_index & hist_idx ) const;
+                           Observables_t * ham_obs, rng<float> & random, const histogram_index<data_t> & hist_idx ) const;
 
     bool is_flat(const float tolerance) const;
 };
@@ -36,7 +37,7 @@ struct Wang_Landau
 template<typename data_t, class Hamiltonian_t, class Observables_t, class State_t>
 void Wang_Landau<data_t, Hamiltonian_t, Observables_t, State_t>::wang_landau_update(const size_t idx, const data_t incrementer,
                                                                                     Hamiltonian_t * ham, Observables_t * ham_obs, 
-                                                                                    rng<float> & random, const histogram_index & hist_idx) const
+                                                                                    rng<float> & random, const histogram_index<data_t> & hist_idx) const
 {
     State_t temporary_state;
     change_state(idx, temporary_state);
@@ -69,7 +70,7 @@ void Wang_Landau<data_t, Hamiltonian_t, Observables_t, State_t>::wang_landau_upd
 template<typename data_t, class Hamiltonian_t, class Observables_t, class State_t>
 void Wang_Landau<data_t, Hamiltonian_t, Observables_t, State_t>::wang_landau_sweep(const size_t system_size, const data_t incrementer,
                                                                                    Hamiltonian_t * ham, Observables_t * ham_obs, 
-                                                                                   rng<float> & random, const histogram_index & hist_idx) const
+                                                                                   rng<float> & random, const histogram_index<data_t> & hist_idx) const
 {
     for ( size_t dof_idx = 0; dof_idx != system_size; ++dof_idx )
     {

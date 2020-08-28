@@ -45,7 +45,7 @@ struct rewl_histograms
     // Declare the arrays.
     value_pair<data_t> * histograms = nullptr;
 
-    rewl_histogram(const data_t min, const data_t max, const data_t b_size) : min_value(min), max_value(max), bin_size(b_size)
+    rewl_histograms(const data_t min, const data_t max, const data_t b_size) : min_value(min), max_value(max), bin_size(b_size)
     {
         histograms = new value_pair<data_t> [bin_size];
         for ( size_t idx = 0; idx != num_bins; ++idx )
@@ -55,7 +55,7 @@ struct rewl_histograms
         }
     }
     
-    ~rewl_histogram()
+    ~rewl_histograms()
     {
         if (histograms != nullptr){ delete [] histograms; }
     }

@@ -2,7 +2,8 @@
 set(INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/Hamiltonians/grid"
     "${CMAKE_CURRENT_SOURCE_DIR}/Hamiltonians"
-    "${CMAKE_CURRENT_SOURCE_DIR}/util")
+    "${CMAKE_CURRENT_SOURCE_DIR}/util"
+    "${CMAKE_CURRENT_SOURCE_DIR}/REWL")
 
 include_directories("${INCLUDE_DIRS}")
 

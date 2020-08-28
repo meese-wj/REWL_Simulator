@@ -12,11 +12,11 @@ template<typename data_t>
 struct random_number_generator
 {
     const std::uint32_t my_seed;
-    std::mt19937 generator (my_seed);
-    std::uniform_real_distribution<data_t> u_real(0., 1.);
+    std::mt19937 generator;
+    std::uniform_real_distribution<data_t> u_real;
     // TODO: Should I add a uniform int distribution too? 
     
-    random_number_generator(const std::uint32_t _seed) : my_seed(_seed) {}
+    random_number_generator(const std::uint32_t _seed) : my_seed(_seed), generator(my_seed), u_real(0., 1.) {}
     ~random_number_generator();
    
     data_t operator () () { return u_real(generator); }

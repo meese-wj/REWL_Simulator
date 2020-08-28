@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include <model_hamiltonians.hpp>
+#include "rewl_simulation.hpp"
 
 int main(const int argc, const char * argv[])
 {
