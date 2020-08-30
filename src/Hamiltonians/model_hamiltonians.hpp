@@ -4,8 +4,8 @@
 #if ISING2D
     #include "Ising2d/ising2d_hamiltonian.hpp"
     template<typename data_t>
-    using Observables = Ising2d_Obs<data_t>;
+    using Observables_t = Ising2d_Obs<data_t>;
     
     template<typename data_t>
-    using Hamiltonian = Ising2d<data_t>;
+    using Hamiltonian_t = Ising2d<data_t>;
 #endif
