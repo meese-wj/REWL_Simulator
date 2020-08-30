@@ -3,9 +3,20 @@ project(REWL VERSION 0.1.0)
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-add_compile_options(-Wall -Wextra -Werror -pedantic)
+add_compile_options(-std=c++11 -Wall -Wextra -Werror -pedantic)
 
+# *********************************************************************
+# Add compile-time options below.
+
+option(MPI_ON "Turn on MPI. This engages parallelized a Wang Landau simulation." OFF)
 option(ISING2D "Run a 2d Ising model on a periodic square lattice." ON)
+
+# *********************************************************************
+# Add consequences of the options below.
+
+if (MPI_ON)
+    # TODO: Require MPI
+endif()
 
 if (ISING2D)
     add_definitions(-DISING2D)
