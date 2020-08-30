@@ -3,9 +3,24 @@
  * struct that will initialize the simulation
  * and contain all the relevant types. */
 
-#include <model_hamiltonians.hpp>
-#include <wang_landau.hpp>
+#include <glazier.hpp>
+#include <rewl_walker.hpp>
 
+// Create an alias for the observable
+// data type. 
+using LOGDOS_TYPE = double;
+using OBS_TYPE = float;
 
+struct REWL_simulation
+{
+    int my_world_rank;
+
+    // TODO: Make a glazier and start this stuff up.
+    
+    REWL_Walker<LOGDOS_TYPE, OBS_TYPE> * my_walker = nullptr;
+
+    
+    ~REWL_Walker() { if (my_walker != nullptr) delete my_walker; }
+};
 
 #endif
