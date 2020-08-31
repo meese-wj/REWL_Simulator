@@ -12,21 +12,21 @@
 template<typename data_t>
 using rng = random_number_generator<data_t>;
 
-template<typename data_t, class Hamiltonian_t, 
+template<typename energy_t, typename logdos_t, class Hamiltonian_t, 
          class Observables_t, class State_t, class histogram_index_functor>
 struct Wang_Landau
 {
-    rewl_histograms<data_t> wl_histograms;
+    rewl_histograms<logdos_t> wl_histograms;
     
-    Wang_Landau(const data_t _min, const data_t _max, const data_t _bsize) : wl_histograms(_min, _max, _bsize) 
+    Wang_Landau(const energy_t _min, const energy_t _max, const energy_t _bsize) : wl_histograms(_min, _max, _bsize) 
     {}
 
     ~Wang_Landau() {}
 
-    void wang_landau_update(const size_t idx, const data_t incrementer, Hamiltonian_t * ham,
+    void wang_landau_update(const size_t idx, const logdos_t incrementer, Hamiltonian_t * ham,
                             Observables_t * ham_obs, rng<float> & random, const histogram_index_functor & hist_idx) const;
 
-    void wang_landau_sweep(const size_t system_size, const data_t incrementer, Hamiltonian_t * ham, 
+    void wang_landau_sweep(const size_t system_size, const logdos_t incrementer, Hamiltonian_t * ham, 
                            Observables_t * ham_obs, rng<float> & random, const histogram_index_functor & hist_idx ) const;
 
     bool is_flat(const float tolerance) const;
@@ -34,9 +34,9 @@ struct Wang_Landau
 
 // Run a single update step using the
 // normal Wang Landau method
-template<typename data_t, class Hamiltonian_t, 
+template<typename energy_t, typename logdos_t, class Hamiltonian_t, 
          class Observables_t, class State_t, class histogram_index_functor>
-void Wang_Landau<data_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::wang_landau_update(const size_t idx, const data_t incrementer,
+void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::wang_landau_update(const size_t idx, const logdos_t incrementer,
                                                                                     Hamiltonian_t * ham, Observables_t * ham_obs, 
                                                                                     rng<float> & random, const histogram_index_functor & hist_idx) const
 {
@@ -50,7 +50,7 @@ void Wang_Landau<data_t, Hamiltonian_t, Observables_t, State_t, histogram_index_
                            - wl_histograms.get_logdos( current_bin );
 
     // Check if the move is allowed
-    if ( entropy_change < 0. || random() < exp(-entropy_change) )
+    if ( entropy_change < 0. || random() < static_cast<float>(exp(-entropy_change)) )
     {
         // If allowed, change the state to the temporary one
         // and change the current bin to the new bin. Note that
@@ -68,9 +68,9 @@ void Wang_Landau<data_t, Hamiltonian_t, Observables_t, State_t, histogram_index_
 
 // Run a sweep using the standard
 // Wang Landau method on the system
-template<typename data_t, class Hamiltonian_t, 
+template<typename energy_t, typename logdos_t, class Hamiltonian_t, 
          class Observables_t, class State_t, class histogram_index_functor>
-void Wang_Landau<data_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::wang_landau_sweep(const size_t system_size, const data_t incrementer,
+void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::wang_landau_sweep(const size_t system_size, const logdos_t incrementer,
                                                                                    Hamiltonian_t * ham, Observables_t * ham_obs, 
                                                                                    rng<float> & random, const histogram_index_functor & hist_idx) const
 {
