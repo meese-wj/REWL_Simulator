@@ -5,7 +5,6 @@
  * functions. */
 
 #include <cmath>
-#include <histogram_index.hpp>
 
 /* ****************************************************** */
 static constexpr int single_bin_overlap = -1;
@@ -23,7 +22,7 @@ struct window_data
     size_t num_bins;
 };
 
-template<typename data_t>
+template<typename data_t, class histogram_index_functor>
 struct glazier 
 {
     const data_t global_min;
@@ -57,8 +56,8 @@ struct glazier
     void construct_windows(); 
 };
 
-template<typename data_t>
-void glazier<data_t>::construct_windows()
+template<typename data_t, class histogram_index_functor>
+void glazier<data_t, histogram_index_functor>::construct_windows()
 {
     // Divide global windows into num_windows windows.
     // This measurement will be used to set up the windows initially.
@@ -83,7 +82,7 @@ void glazier<data_t>::construct_windows()
         window_min = global_min + initial_window_size * static_cast<data_t> (wdx);
         window_max = global_min + initial_window_size * static_cast<data_t> (wdx + 1);
 
-        histogram_index<data_t> indexer (all_windows[ wdx * replicas_per_window ].minimum,
+        histogram_index_functor indexer (all_windows[ wdx * replicas_per_window ].minimum,
                                          all_windows[ wdx * replicas_per_window ].maximum,
                                          all_windows[ wdx * replicas_per_window ].bin_size );
         

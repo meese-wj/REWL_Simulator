@@ -4,7 +4,6 @@
  * relevant data types for a single
  * MPI process in REWL. */
 
-#include <glazier.hpp>
 #include <model_hamiltonians.hpp>
 #include "wang_landau.hpp"
 
@@ -12,7 +11,7 @@
 #include <mpi_rewl_helpers.hpp>
 #endif
 
-template<typename logdos_t, typename obs_t>
+template<typename logdos_t, typename obs_t, class histogram_index_functor>
 struct REWL_Walker
 {
     int walker_world_rank = 0;
@@ -20,9 +19,10 @@ struct REWL_Walker
    
     logdos_t incrementer = 1.;
     // TODO: change the histogram indexer type to float.
-    histogram_index<logdos_t> hist_idx;
+    histogram_index_functor hist_idx;
     rng<float> random;
-    Wang_Landau<logdos_t, Hamiltonian_t<obs_t>, Observables_t<obs_t>, State_t<obs_t> > wl_walker;
+    Wang_Landau<logdos_t, Hamiltonian_t<obs_t>, 
+                Observables_t<obs_t>, State_t<obs_t>, histogram_index_functor> wl_walker;
     Hamiltonian_t<obs_t> system;
     Observables_t<obs_t> system_obs;
 
@@ -34,8 +34,8 @@ struct REWL_Walker
 
 };
 
-template<typename logdos_t, typename obs_t>
-REWL_Walker<logdos_t, obs_t>::REWL_Walker(const logdos_t _min, const logdos_t _max, const logdos_t _bsize, const std::uint32_t _seed)
+template<typename logdos_t, typename obs_t, class histogram_index_functor>
+REWL_Walker<logdos_t, obs_t, histogram_index_functor>::REWL_Walker(const logdos_t _min, const logdos_t _max, const logdos_t _bsize, const std::uint32_t _seed)
                                       : hist_idx(_min, _max, _bsize),
                                         random(_seed),   
                                         wl_walker(_min, _max, _bsize),
@@ -47,8 +47,8 @@ REWL_Walker<logdos_t, obs_t>::REWL_Walker(const logdos_t _min, const logdos_t _m
 #endif 
 }
 
-template<typename logdos_t, typename obs_t>
-void REWL_Walker<logdos_t, obs_t>::wang_landau_walk(const size_t num_sweeps) const
+template<typename logdos_t, typename obs_t, class histogram_index_functor>
+void REWL_Walker<logdos_t, obs_t, histogram_index_functor>::wang_landau_walk(const size_t num_sweeps) const
 {
     size_t system_size = System_Parameters::N;
     for ( size_t sweep = 0; sweep != num_sweeps; ++sweep )

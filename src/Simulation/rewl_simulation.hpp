@@ -3,6 +3,8 @@
  * struct that will initialize the simulation
  * and contain all the relevant types. */
 
+#include <histogram_index.hpp>
+#include <glazier.hpp>
 #include <rewl_walker.hpp>
 
 // Create an alias for the observable
@@ -16,7 +18,7 @@ struct REWL_simulation
 
     // TODO: Make a glazier and start this stuff up.
     
-    REWL_Walker<LOGDOS_TYPE, OBS_TYPE> * my_walker = nullptr;
+    REWL_Walker<LOGDOS_TYPE, OBS_TYPE, histogram_index<LOGDOS_TYPE> > * my_walker = nullptr;
 
     
     ~REWL_simulation() { if (my_walker != nullptr) delete my_walker; }

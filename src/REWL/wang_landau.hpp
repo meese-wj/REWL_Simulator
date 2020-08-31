@@ -7,13 +7,13 @@
 
 #include <cmath>
 #include <random_number_generators.hpp>
-#include "histogram_index.hpp"
 #include "rewl_histograms.hpp"
 
 template<typename data_t>
 using rng = random_number_generator<data_t>;
 
-template<typename data_t, class Hamiltonian_t, class Observables_t, class State_t>
+template<typename data_t, class Hamiltonian_t, 
+         class Observables_t, class State_t, class histogram_index_functor>
 struct Wang_Landau
 {
     rewl_histograms<data_t> wl_histograms;
@@ -24,20 +24,21 @@ struct Wang_Landau
     ~Wang_Landau() {}
 
     void wang_landau_update(const size_t idx, const data_t incrementer, Hamiltonian_t * ham,
-                            Observables_t * ham_obs, rng<float> & random, const histogram_index<data_t> & hist_idx) const;
+                            Observables_t * ham_obs, rng<float> & random, const histogram_index_functor & hist_idx) const;
 
     void wang_landau_sweep(const size_t system_size, const data_t incrementer, Hamiltonian_t * ham, 
-                           Observables_t * ham_obs, rng<float> & random, const histogram_index<data_t> & hist_idx ) const;
+                           Observables_t * ham_obs, rng<float> & random, const histogram_index_functor & hist_idx ) const;
 
     bool is_flat(const float tolerance) const;
 };
 
 // Run a single update step using the
 // normal Wang Landau method
-template<typename data_t, class Hamiltonian_t, class Observables_t, class State_t>
-void Wang_Landau<data_t, Hamiltonian_t, Observables_t, State_t>::wang_landau_update(const size_t idx, const data_t incrementer,
+template<typename data_t, class Hamiltonian_t, 
+         class Observables_t, class State_t, class histogram_index_functor>
+void Wang_Landau<data_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::wang_landau_update(const size_t idx, const data_t incrementer,
                                                                                     Hamiltonian_t * ham, Observables_t * ham_obs, 
-                                                                                    rng<float> & random, const histogram_index<data_t> & hist_idx) const
+                                                                                    rng<float> & random, const histogram_index_functor & hist_idx) const
 {
     State_t temporary_state;
     change_state(idx, temporary_state);
@@ -67,10 +68,11 @@ void Wang_Landau<data_t, Hamiltonian_t, Observables_t, State_t>::wang_landau_upd
 
 // Run a sweep using the standard
 // Wang Landau method on the system
-template<typename data_t, class Hamiltonian_t, class Observables_t, class State_t>
-void Wang_Landau<data_t, Hamiltonian_t, Observables_t, State_t>::wang_landau_sweep(const size_t system_size, const data_t incrementer,
+template<typename data_t, class Hamiltonian_t, 
+         class Observables_t, class State_t, class histogram_index_functor>
+void Wang_Landau<data_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::wang_landau_sweep(const size_t system_size, const data_t incrementer,
                                                                                    Hamiltonian_t * ham, Observables_t * ham_obs, 
-                                                                                   rng<float> & random, const histogram_index<data_t> & hist_idx) const
+                                                                                   rng<float> & random, const histogram_index_functor & hist_idx) const
 {
     for ( size_t dof_idx = 0; dof_idx != system_size; ++dof_idx )
     {
