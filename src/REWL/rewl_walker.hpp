@@ -4,6 +4,7 @@
  * relevant data types for a single
  * MPI process in REWL. */
 
+#include <glazier.hpp>
 #include <model_hamiltonians.hpp>
 #include "wang_landau.hpp"
 

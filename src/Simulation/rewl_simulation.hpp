@@ -3,7 +3,6 @@
  * struct that will initialize the simulation
  * and contain all the relevant types. */
 
-#include <glazier.hpp>
 #include <rewl_walker.hpp>
 
 // Create an alias for the observable

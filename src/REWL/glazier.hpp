@@ -5,7 +5,7 @@
  * functions. */
 
 #include <cmath>
-#include "histogram_index.hpp"
+#include <histogram_index.hpp>
 
 /* ****************************************************** */
 static constexpr int single_bin_overlap = -1;
