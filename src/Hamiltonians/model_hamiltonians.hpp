@@ -3,6 +3,11 @@
 
 #if ISING2D
     #include "Ising2d/ising2d_hamiltonian.hpp"
+    namespace System_Parameters = Ising2d_Parameters;
+
+    template<typename data_t>
+    using State_t = State<data_t>;
+
     template<typename data_t>
     using Observables_t = Ising2d_Obs<data_t>;
     

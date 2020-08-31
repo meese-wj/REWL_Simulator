@@ -20,7 +20,7 @@ struct REWL_simulation
     REWL_Walker<LOGDOS_TYPE, OBS_TYPE> * my_walker = nullptr;
 
     
-    ~REWL_Walker() { if (my_walker != nullptr) delete my_walker; }
+    ~REWL_simulation() { if (my_walker != nullptr) delete my_walker; }
 };
 
 #endif
