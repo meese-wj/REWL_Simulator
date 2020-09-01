@@ -1,6 +1,40 @@
 #include "rewl_simulation.hpp"
 
-void REWL_simulation::simulate()
+
+REWL_simulation::REWL_simulation()
+{
+#if MPI_ON
+    MPI_Comm_rank( &my_world_rank, MPI_COMM_WORLD );
+    MPI_Comm_size( &num_walkers, MPI_COMM_WORLD );
+    i_am_the_master = ( my_world_rank == REWL_MASTER_PROC );
+#endif
+    
+    // Construct the glazier
+    window_maker = new glazier<ENERGY_TYPE, histogram_index<ENERGY_TYPE> >
+                        (System_Parameters::energy_min, System_Parameters::energy_max,
+                         System_Parameters::energy_bin_size, 
+                         static_cast<size_t>(REWL_Parameters::num_walkers),
+                         REWL_Parameters::replicas_per_window, 
+                         static_cast<ENERGY_TYPE>(REWL_Parameters::window_overlap));
+    
+    window_maker -> construct_windows();
+
+    // Construct the walker
+    ENERGY_TYPE walker_min = window_maker -> all_windows[my_world_rank].minimum;
+    ENERGY_TYPE walker_max = window_maker -> all_windows[my_world_rank].maximum;
+    ENERGY_TYPE walker_bin_size = window_maker -> all_windows[my_world_rank].bin_size;
+    //size_t walker_num_bins = window_maker -> all_windows[my_world_rank].num_bins;
+
+    // TODO: Set up the timer as the seed.
+    std::uint32_t walker_seed = static_cast<std::uint32_t> (1);
+
+    my_walker = new REWL_Walker<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE, histogram_index<ENERGY_TYPE> >
+                (walker_min, walker_max, walker_bin_size, walker_seed);
+
+}
+
+// Main function for the simulation.
+void REWL_simulation::simulate() const
 {
     bool simulation_incomplete = true;
     
@@ -8,7 +42,7 @@ void REWL_simulation::simulate()
     {
         // First update the walker up until the 
         // sweeps_per_check
-        wang_landau_walk(REWL_Parameters::sweeps_per_check); 
+        my_walker -> wang_landau_walk(REWL_Parameters::sweeps_per_check); 
 
         // Now check to see if the histogram is flat
         if ( my_walker -> wl_walker.is_flat( REWL_Parameters::flatness_criterion ) )
