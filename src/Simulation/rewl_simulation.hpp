@@ -21,6 +21,7 @@ namespace REWL_Parameters
 
     constexpr size_t sweeps_per_check = 1000;
     constexpr LOGDOS_TYPE final_increment = 1e-6;
+    constexpr float flatness_criterion = 0.3;
 }
 
 struct REWL_simulation

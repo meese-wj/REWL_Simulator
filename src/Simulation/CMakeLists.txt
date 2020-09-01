@@ -1,5 +1,6 @@
 add_library(simulation
-            rewl_simulation.hpp)
+            rewl_simulation.hpp
+            rewl_simulation.cpp)
 
 set_target_properties(simulation PROPERTIES LINKER_LANGUAGE CXX)
 

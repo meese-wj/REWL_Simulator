@@ -30,6 +30,7 @@ struct Wang_Landau
                            Observables_t * ham_obs, rng<float> & random, const histogram_index_functor & hist_idx ) const;
 
     bool is_flat(const float tolerance) const;
+    void reset_histogram() const;
 };
 
 // Run a single update step using the
@@ -78,6 +79,22 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
     {
         wang_landau_update(dof_idx, incrementer, ham, ham_obs, random, hist_idx);
     }
+}
+
+
+template<typename energy_t, typename logdos_t, class Hamiltonian_t, 
+         class Observables_t, class State_t, class histogram_index_functor>
+bool Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::is_flat(const float tolerance) const
+{
+    return ( tolerance <= wl_histograms.count_flatness() );
+}
+
+
+template<typename energy_t, typename logdos_t, class Hamiltonian_t, 
+         class Observables_t, class State_t, class histogram_index_functor>
+void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::reset_histogram() const
+{
+    wl_histograms.reset_counts();
 }
 
 #endif
