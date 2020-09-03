@@ -68,7 +68,7 @@ struct rewl_histograms
     void increment_logdos(const size_t bin, const data_t incrementer){ histograms[ bin ] += incrementer; }
 
     // Reset the counts
-    void reset_counts()
+    void reset_counts() const
     {
         for ( size_t idx = 0; idx != num_bins; ++idx )
         {
@@ -77,14 +77,14 @@ struct rewl_histograms
     }
 
     // Return flatness in the counts
-    float count_flatness();
+    float count_flatness() const;
 };
 
 template<typename data_t>
-float rewl_histograms<data_t>::count_flatness()
+float rewl_histograms<data_t>::count_flatness() const
 {
-    uint64_t minimum = histograms[ 0 ];
-    uint64_t maximum = histograms[ 0 ];    
+    uint64_t minimum = get_count(0);
+    uint64_t maximum = minimum;    
 
     for ( size_t idx = 1; idx != num_bins; ++idx )
     {
