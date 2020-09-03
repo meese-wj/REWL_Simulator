@@ -15,7 +15,6 @@
 #include <cfloat>
 
 /* Define some constexpr to be used later on. */
-static constexpr size_t num_pair = 2;
 static constexpr uint64_t count_initializer = 0;
 static constexpr uint64_t logdos_initializer = 1;
 constexpr float ratio_failure = -FLT_MAX;
@@ -47,11 +46,11 @@ struct rewl_histograms
 
     rewl_histograms(const data_t min, const data_t max, const data_t b_size) : min_value(min), max_value(max), bin_size(b_size)
     {
-        histograms = new value_pair<data_t> [bin_size];
+        histograms = new value_pair<data_t> [ num_bins ];
         for ( size_t idx = 0; idx != num_bins; ++idx )
         {
-            histograms[ num_pair * idx ] = count_initializer;         // Initialize the counts to zero
-            histograms[ num_pair * idx + 1 ] = logdos_initializer;    // Initialize the logdos values to 1
+            histograms[ idx ].count = count_initializer;         // Initialize the counts to zero
+            histograms[ idx ].logdos = logdos_initializer;       // Initialize the logdos values to 1
         }
     }
     
@@ -61,19 +60,19 @@ struct rewl_histograms
     }
 
     // Write the getter/setter for the histogram counts
-    uint64_t get_count(const size_t bin) const { return histograms[ num_pair * bin ]; }
-    void increment_count(const size_t bin){ ++histograms[ num_pair * bin ]; }
+    uint64_t get_count(const size_t bin) const { return histograms[ bin ].count; }
+    void increment_count(const size_t bin){ ++( histograms[ bin ].count ); }
    
     // Write the getter/setter for the histogram logdos values
-    data_t get_logdos( const size_t bin ) const { return histograms[ num_pair * bin + 1 ]; }
-    void increment_logdos(const size_t bin, const data_t incrementer){ histograms[ num_pair * bin + 1 ] += incrementer; }
+    data_t get_logdos( const size_t bin ) const { return histograms[ bin ].logdos; }
+    void increment_logdos(const size_t bin, const data_t incrementer){ histograms[ bin ] += incrementer; }
 
     // Reset the counts
     void reset_counts()
     {
         for ( size_t idx = 0; idx != num_bins; ++idx )
         {
-            histograms[ num_pair * idx ] = count_initializer;
+            histograms[ idx ].count = count_initializer;
         }
     }
 
