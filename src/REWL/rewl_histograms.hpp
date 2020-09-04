@@ -39,18 +39,20 @@ struct rewl_histograms
     const data_t bin_size;         // Size of the bins for histograms. (This must be the same
                                    // across all walkers!).
     
-    const size_t num_bins = static_cast<size_t> ((max_value - min_value) / bin_size);
+    //const size_t num_bins = static_cast<size_t> ((max_value - min_value) / bin_size);
+    const size_t num_bins;
 
     // Declare the arrays.
     value_pair<data_t> * histograms = nullptr;
 
-    rewl_histograms(const data_t min, const data_t max, const data_t b_size) : min_value(min), max_value(max), bin_size(b_size)
+    rewl_histograms(const data_t min, const data_t max, const data_t b_size, const size_t nbins) : min_value(min), max_value(max), bin_size(b_size), num_bins(nbins)
     {
+        printf("\nmin, max, bin_size, num_bins = %e, %e, %e, %ld", min_value, max_value, bin_size, num_bins);
         histograms = new value_pair<data_t> [ num_bins ];
         for ( size_t idx = 0; idx != num_bins; ++idx )
         {
-            histograms[ idx ].count = count_initializer;         // Initialize the counts to zero
-            histograms[ idx ].logdos = logdos_initializer;       // Initialize the logdos values to 1
+            histograms[ idx ].count = count_initializer;                               // Initialize the counts to zero
+            histograms[ idx ].logdos = static_cast<data_t> (logdos_initializer);       // Initialize the logdos values to 1
         }
     }
     

@@ -72,13 +72,20 @@ REWL_simulation::REWL_simulation()
     ENERGY_TYPE walker_min = window_maker -> all_windows[my_world_rank].minimum;
     ENERGY_TYPE walker_max = window_maker -> all_windows[my_world_rank].maximum;
     ENERGY_TYPE walker_bin_size = window_maker -> all_windows[my_world_rank].bin_size;
+    size_t walker_num_bins = window_maker -> all_windows[my_world_rank].num_bins;
 
     // TODO: Set up the timer as the seed.
     std::uint32_t walker_seed = static_cast<std::uint32_t> (1);
 
     my_walker = new REWL_Walker<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE, histogram_index<ENERGY_TYPE> >
-                (walker_min, walker_max, walker_bin_size, walker_seed);
-
+                (walker_min, walker_max, walker_bin_size, walker_num_bins, walker_seed);
+    
+    printf("\nEND OF CONSTRUCTOR\n");
+    printf("\nEND OF CONSTRUCTOR\n");
+    printf("\nEND OF CONSTRUCTOR\n");
+    printf("\nEND OF CONSTRUCTOR\n");
+    printf("\nEND OF CONSTRUCTOR\n");
+    printf("\nEND OF CONSTRUCTOR\n");
 }
 
 // Main function for the simulation.
