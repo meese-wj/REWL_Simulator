@@ -10,5 +10,12 @@ int main(const int argc, const char * argv[])
         printf("\nReturning error value.\n\n");
         return 1;
     }
+
+
+    REWL_simulation * simulation = new REWL_simulation();
+    
+
+    delete simulation;
+
     return 0;
 }

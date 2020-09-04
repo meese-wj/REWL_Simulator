@@ -65,7 +65,7 @@ struct rewl_histograms
    
     // Write the getter/setter for the histogram logdos values
     data_t get_logdos( const size_t bin ) const { return histograms[ bin ].logdos; }
-    void increment_logdos(const size_t bin, const data_t incrementer){ histograms[ bin ] += incrementer; }
+    void increment_logdos(const size_t bin, const data_t incrementer){ histograms[ bin ].logdos += incrementer; }
 
     // Reset the counts
     void reset_counts() const

@@ -17,7 +17,7 @@ struct random_number_generator
     // TODO: Should I add a uniform int distribution too? 
     
     random_number_generator(const std::uint32_t _seed) : my_seed(_seed), generator(my_seed), u_real(0., 1.) {}
-    ~random_number_generator();
+    ~random_number_generator() {}
    
     data_t operator () () { return u_real(generator); }
     data_t get_real () { return u_real(generator); }
