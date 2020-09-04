@@ -21,9 +21,9 @@ struct REWL_Walker
     histogram_index_functor hist_idx;
     rng<float> random;
     Wang_Landau<energy_t, logdos_t, Hamiltonian_t<obs_t>, 
-                Observables_t<obs_t>, State_t<obs_t>, histogram_index_functor> wl_walker;
-    Hamiltonian_t<obs_t> system;
-    Observables_t<obs_t> system_obs;
+                Observables_t<obs_t>, State_t<obs_t>, histogram_index_functor> * wl_walker = nullptr;
+    Hamiltonian_t<obs_t> * system = nullptr;
+    Observables_t<obs_t> * system_obs = nullptr;
 
 
     REWL_Walker(const energy_t _min, const energy_t _max, const energy_t _bsize, const size_t _nbins, const std::uint32_t _seed);
@@ -48,17 +48,24 @@ REWL_Walker<energy_t,
                         const std::uint32_t _seed)
                       : 
                         hist_idx(_min, _max, _bsize),
-                        random(_seed),
+                        random(_seed)/*,
                         wl_walker(_min, _max, _bsize, _nbins),
                         system(),
-                        system_obs(_nbins)
+                        system_obs(_nbins)*/
 {
     printf("\nDid the simulation get here?\n");
-    printf("\nDid the simulation get here?\n");
-    printf("\nDid the simulation get here?\n");
-    printf("\nDid the simulation get here?\n");
-    printf("\nDid the simulation get here?\n");
-    printf("\nDid the simulation get here?\n");
+    
+    wl_walker = new Wang_Landau<energy_t, logdos_t, Hamiltonian_t<obs_t>, 
+                                Observables_t<obs_t>, State_t<obs_t>, histogram_index_functor> (_min, _max, _bsize, _nbins);
+    
+    printf("\nNow building the system\n");
+    system = new Hamiltonian_t<obs_t> ();
+
+    printf("\nNow building the observables\n");
+    system_obs = new Observables_t<obs_t> (_nbins);
+
+    printf("\nFinished building the observables.\n");
+
 #if MPI_ON
     MPI_Comm_rank( &walker_world_rank, MPI_COMM_WORLD );
     i_am_the_master = ( walker_world_rank == REWL_MASTER_PROC ? 1 : 0 );
@@ -71,7 +78,7 @@ void REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::wang_landa
     size_t system_size = System_Parameters::N;
     for ( size_t sweep = 0; sweep != num_sweeps; ++sweep )
     {
-        wl_walker.wang_landau_sweep(system_size, incrementer, &system, &system_obs, random, hist_idx);    
+        wl_walker -> wang_landau_sweep(system_size, incrementer, system, system_obs, random, hist_idx);    
     }
 }
 
