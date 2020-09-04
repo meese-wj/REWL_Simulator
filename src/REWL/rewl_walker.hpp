@@ -27,7 +27,12 @@ struct REWL_Walker
 
 
     REWL_Walker(const energy_t _min, const energy_t _max, const energy_t _bsize, const size_t _nbins, const std::uint32_t _seed);
-    ~REWL_Walker() {}
+    ~REWL_Walker()
+    {
+        delete wl_walker;
+        delete system;
+        delete system_obs;
+    }
 
     void wang_landau_walk(const size_t num_sweeps);
 
