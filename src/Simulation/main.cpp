@@ -13,7 +13,10 @@ int main(const int argc, const char * argv[])
 
 
     REWL_simulation * simulation = new REWL_simulation();
-    
+   
+    printf("\nStarting simulation...");
+    simulation -> simulate();
+    printf("\nEnd of simulation. Exiting.\n\n");
 
     delete simulation;
 
