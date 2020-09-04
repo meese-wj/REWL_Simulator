@@ -23,7 +23,7 @@ struct REWL_Walker
     Wang_Landau<energy_t, logdos_t, Hamiltonian_t<obs_t>, 
                 Observables_t<obs_t>, State_t<obs_t>, histogram_index_functor> wl_walker;
     Hamiltonian_t<obs_t> system;
-    Observables_t<obs_t> * system_obs;
+    Observables_t<obs_t> system_obs;
 
 
     REWL_Walker(const energy_t _min, const energy_t _max, const energy_t _bsize, const size_t _nbins, const std::uint32_t _seed);
@@ -48,8 +48,10 @@ REWL_Walker<energy_t,
                         const std::uint32_t _seed)
                       : 
                         hist_idx(_min, _max, _bsize),
-                        random(_seed),   
-                        wl_walker(_min, _max, _bsize, _nbins)
+                        random(_seed),
+                        wl_walker(_min, _max, _bsize, _nbins),
+                        system(),
+                        system_obs(_nbins)
 {
     printf("\nDid the simulation get here?\n");
     printf("\nDid the simulation get here?\n");
@@ -69,7 +71,7 @@ void REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::wang_landa
     size_t system_size = System_Parameters::N;
     for ( size_t sweep = 0; sweep != num_sweeps; ++sweep )
     {
-        wl_walker.wang_landau_sweep(system_size, incrementer, &system, system_obs, random, hist_idx);    
+        wl_walker.wang_landau_sweep(system_size, incrementer, &system, &system_obs, random, hist_idx);    
     }
 }
 

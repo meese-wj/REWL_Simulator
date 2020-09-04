@@ -41,6 +41,7 @@ struct Ising2d
     // Finally add the constructor and destructor.
     Ising2d()
     {
+        printf("\nInside Hamiltonian constructor.");
         // Initialize all spins to 1.
         // TODO: change this to be randomized?
         for ( size_t idx = 0; idx != Ising2d_Parameters::N; ++idx )
