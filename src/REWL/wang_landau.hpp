@@ -23,10 +23,10 @@ struct Wang_Landau
 
     ~Wang_Landau() {}
 
-    void wang_landau_update(const size_t idx, const logdos_t incrementer, const Hamiltonian_t * ham,
+    void wang_landau_update(const size_t idx, const logdos_t incrementer, Hamiltonian_t * const ham,
                             const Observables_t * ham_obs, rng<float> & random, const histogram_index_functor & hist_idx) const;
 
-    void wang_landau_sweep(const size_t system_size, const logdos_t incrementer, const Hamiltonian_t * ham, 
+    void wang_landau_sweep(const size_t system_size, const logdos_t incrementer, Hamiltonian_t * const ham, 
                            const Observables_t * ham_obs, rng<float> & random, const histogram_index_functor & hist_idx ) const;
 
     bool is_flat(const float tolerance) const;
@@ -38,7 +38,7 @@ struct Wang_Landau
 template<typename energy_t, typename logdos_t, class Hamiltonian_t, 
          class Observables_t, class State_t, class histogram_index_functor>
 void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::wang_landau_update(const size_t idx, const logdos_t incrementer,
-                                                                                    const Hamiltonian_t * ham, const Observables_t * ham_obs, 
+                                                                                    Hamiltonian_t * const ham, const Observables_t * ham_obs, 
                                                                                     rng<float> & random, const histogram_index_functor & hist_idx) const
 {
     State_t temporary_state;
@@ -62,8 +62,8 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
    
     // Increment the REWL histograms at the final bin
     // and update the observables.
-    wl_histograms -> increment_count( current_bin );
-    wl_histograms -> increment_logdos( current_bin, incrementer );
+    wl_histograms.increment_count( current_bin );
+    wl_histograms.increment_logdos( current_bin, incrementer );
     ham -> update_observables( current_bin, ham_obs );
 }
 
@@ -72,7 +72,7 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
 template<typename energy_t, typename logdos_t, class Hamiltonian_t, 
          class Observables_t, class State_t, class histogram_index_functor>
 void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::wang_landau_sweep(const size_t system_size, const logdos_t incrementer,
-                                                                                   const Hamiltonian_t * ham, const Observables_t * ham_obs, 
+                                                                                   Hamiltonian_t * const ham, const Observables_t * ham_obs, 
                                                                                    rng<float> & random, const histogram_index_functor & hist_idx) const
 {
     for ( size_t dof_idx = 0; dof_idx != system_size; ++dof_idx )

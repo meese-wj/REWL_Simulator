@@ -20,6 +20,7 @@ struct random_number_generator
     ~random_number_generator();
    
     data_t operator () () { return u_real(generator); }
+    data_t get_real () { return u_real(generator); }
     data_t get_real_modified(const data_t min, const data_t max){ return min + (max - min) * u_real(generator); }
     
 };

@@ -76,7 +76,7 @@ float Ising2d<data_t>::local_field(const size_t idx) const
 template<typename data_t>
 float Ising2d<data_t>::local_energy(const size_t idx, const data_t spin_value) const
 {
-    return -static_cast<float>( spin_value[idx] ) * local_field(idx);
+    return -static_cast<float>( spin_value ) * local_field(idx);
 }
 
 template<typename data_t>

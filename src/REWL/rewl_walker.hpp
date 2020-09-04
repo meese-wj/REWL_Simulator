@@ -29,7 +29,7 @@ struct REWL_Walker
     REWL_Walker(const energy_t _min, const energy_t _max, const energy_t _bsize, const std::uint32_t _seed);
     ~REWL_Walker() {}
 
-    void wang_landau_walk(const size_t num_sweeps) const;
+    void wang_landau_walk(const size_t num_sweeps);
 
 };
 
@@ -47,7 +47,7 @@ REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::REWL_Walker(con
 }
 
 template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
-void REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::wang_landau_walk(const size_t num_sweeps) const
+void REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::wang_landau_walk(const size_t num_sweeps)
 {
     size_t system_size = System_Parameters::N;
     for ( size_t sweep = 0; sweep != num_sweeps; ++sweep )
