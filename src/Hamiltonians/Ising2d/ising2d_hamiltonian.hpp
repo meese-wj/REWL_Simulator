@@ -41,7 +41,6 @@ struct Ising2d
     // Finally add the constructor and destructor.
     Ising2d()
     {
-        printf("\nInside Hamiltonian constructor.");
         spin_array = new data_t [ Ising2d_Parameters::N ];
         neighbor_array = new size_t [ Ising2d_Parameters::N * Ising2d_Parameters::num_neighbors_i ];
         // Initialize all spins to 1.

@@ -42,9 +42,6 @@ struct glazier
                                                  replicas_per_window(rpw), window_overlap(ow)
     {
         all_windows = new window_data<data_t> [ num_windows * replicas_per_window ];
-
-        printf("\nglobal_min, global_max, global_bin_size = %e, %e, %e", global_min, global_max, global_bin_size);
-        printf("\nnum_windows, replicas_per_window, window_overlap = %ld, %ld, %e\n", num_windows, replicas_per_window, window_overlap);
     }
     
     ~glazier()
@@ -72,7 +69,6 @@ void glazier<data_t, histogram_index_functor>::construct_windows()
     size_t window_bins = static_cast<size_t> ( (window_max - window_min) / global_bin_size );
     
     // Set up the lowest energy window
-    printf("\nBefore first window.");
     for ( size_t replica = 0; replica != replicas_per_window; ++replica )
     {
         all_windows[ replica ].minimum = window_min;
@@ -80,7 +76,6 @@ void glazier<data_t, histogram_index_functor>::construct_windows()
         all_windows[ replica ].bin_size = global_bin_size;
         all_windows[ replica ].num_bins = window_bins;
     }
-    printf("\nAfter first window.");
     
     // Set up all other bins
     for ( size_t wdx = 1; wdx != num_windows; ++wdx )
@@ -113,7 +108,6 @@ void glazier<data_t, histogram_index_functor>::construct_windows()
             all_windows[ wdx * replicas_per_window + replica ].num_bins = window_bins;
         }
     }
-    printf("\nAfter window construction entirely\n");
 }
 
 #endif 

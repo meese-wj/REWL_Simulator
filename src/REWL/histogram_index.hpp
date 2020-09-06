@@ -12,9 +12,7 @@ struct histogram_index
     const data_t bin_size;
     
     histogram_index( const data_t min, const data_t max, const data_t b_size ) : min_value(min), max_value(max), bin_size(b_size)
-    {
-        printf("\nhistogram indexer constructed\n");
-    }
+    {}
 
     size_t operator () (const data_t value) const { return static_cast<size_t> ( (value - min_value) / bin_size ); }
 };

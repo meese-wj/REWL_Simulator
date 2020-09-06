@@ -19,12 +19,7 @@ struct Wang_Landau
     rewl_histograms<logdos_t> wl_histograms;
     
     Wang_Landau(const energy_t _min, const energy_t _max, const energy_t _bsize, const size_t _nbins) : wl_histograms(_min, _max, _bsize, _nbins) 
-    {
-        printf("\nwang landau walker constructed.\n");
-        printf("\nwang landau walker constructed.\n");
-        printf("\nwang landau walker constructed.\n");
-        printf("\nwang landau walker constructed.\n");
-    }
+    {}
 
     ~Wang_Landau() {}
 

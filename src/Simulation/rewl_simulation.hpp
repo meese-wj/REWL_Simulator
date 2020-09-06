@@ -79,13 +79,6 @@ REWL_simulation::REWL_simulation()
 
     my_walker = new REWL_Walker<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE, histogram_index<ENERGY_TYPE> >
                 (walker_min, walker_max, walker_bin_size, walker_num_bins, walker_seed);
-    
-    printf("\nEND OF CONSTRUCTOR\n");
-    printf("\nEND OF CONSTRUCTOR\n");
-    printf("\nEND OF CONSTRUCTOR\n");
-    printf("\nEND OF CONSTRUCTOR\n");
-    printf("\nEND OF CONSTRUCTOR\n");
-    printf("\nEND OF CONSTRUCTOR\n");
 }
 
 // Main function for the simulation.

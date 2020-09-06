@@ -47,7 +47,6 @@ struct rewl_histograms
 
     rewl_histograms(const data_t min, const data_t max, const data_t b_size, const size_t nbins) : min_value(min), max_value(max), bin_size(b_size), num_bins(nbins)
     {
-        printf("\nmin, max, bin_size, num_bins = %e, %e, %e, %ld", min_value, max_value, bin_size, num_bins);
         histograms = new value_pair<data_t> [ num_bins ];
         for ( size_t idx = 0; idx != num_bins; ++idx )
         {

@@ -26,15 +26,8 @@ struct Ising2d_Obs
 
     Ising2d_Obs(const size_t nbins) : num_bins(nbins)
     {
-        printf("\nnum_bins, NUM_OBS, product = %ld, %ld, %ld", num_bins, convert(Obs::NUM_OBS), num_bins * convert(Obs::NUM_OBS));
-        printf("\nnum_bins, NUM_OBS, product = %ld, %ld, %ld", num_bins, convert(Obs::NUM_OBS), num_bins * convert(Obs::NUM_OBS));
-        printf("\nnum_bins, NUM_OBS, product = %ld, %ld, %ld", num_bins, convert(Obs::NUM_OBS), num_bins * convert(Obs::NUM_OBS));
-        printf("\nnum_bins, NUM_OBS, product = %ld, %ld, %ld", num_bins, convert(Obs::NUM_OBS), num_bins * convert(Obs::NUM_OBS));
-        printf("\nnum_bins, NUM_OBS, product = %ld, %ld, %ld", num_bins, convert(Obs::NUM_OBS), num_bins * convert(Obs::NUM_OBS));
-        printf("\nnum_bins, NUM_OBS, product = %ld, %ld, %ld", num_bins, convert(Obs::NUM_OBS), num_bins * convert(Obs::NUM_OBS));
         obs_array = new data_t [ num_bins * convert(Obs::NUM_OBS) ];
         
-        printf("\nnum_bins, NUM_OBS, product = %ld, %ld, %ld", num_bins, convert(Obs::NUM_OBS), num_bins * convert(Obs::NUM_OBS));
         // Initialize the observables to zero.
         // Store as AOS across structures since all
         // observables will be accessed in each bin.

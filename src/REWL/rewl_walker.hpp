@@ -53,21 +53,6 @@ REWL_Walker<energy_t,
                         system(),
                         system_obs(_nbins)
 {
-    printf("\nDid the simulation get here?\n");
-    /*
-    
-    wl_walker = new Wang_Landau<energy_t, logdos_t, Hamiltonian_t<obs_t>, 
-                                Observables_t<obs_t>, State_t<obs_t>, histogram_index_functor> (_min, _max, _bsize, _nbins);
-    
-    printf("\nNow building the system\n");
-    system = new Hamiltonian_t<obs_t> ();
-
-    printf("\nNow building the observables\n");
-    system_obs = new Observables_t<obs_t> (_nbins);
-    */
-
-    printf("\nFinished building the observables.\n");
-
 #if MPI_ON
     MPI_Comm_rank( &walker_world_rank, MPI_COMM_WORLD );
     i_am_the_master = ( walker_world_rank == REWL_MASTER_PROC ? 1 : 0 );
