@@ -41,13 +41,13 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
                                                                                     Hamiltonian_t * const ham, Observables_t * const ham_obs, 
                                                                                     rng<float> & random, const histogram_index_functor & hist_idx)
 {
-    printf("\n\nSite %ld of %ld: spin = %e", idx, System_Parameters::N-1, ham -> spin_array[idx]);
+    //printf("\n\nSite %ld of %ld: spin = %e", idx, System_Parameters::N-1, ham -> spin_array[idx]);
     State_t temporary_state;
-    printf("\n\ncurrent state");
-    print(ham -> current_state);
+    //printf("\n\ncurrent state");
+    //print(ham -> current_state);
     ham -> change_state(idx, temporary_state);
-    printf("\n\ntemporary state");
-    print(temporary_state);
+    //printf("\n\ntemporary state");
+    //print(temporary_state);
     
     size_t current_bin = hist_idx(ham -> current_state.energy);
 
@@ -58,8 +58,8 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
         float entropy_change =   wl_histograms.get_logdos( new_bin )
                                - wl_histograms.get_logdos( current_bin );
 
-        printf("\ncurrent energy, new energy = %e, %e", ham -> current_state.energy, temporary_state.energy);
-        printf("\ncurrent bin, new bin, entropy change = %ld, %ld, %e", current_bin, new_bin, entropy_change);
+        //printf("\ncurrent energy, new energy = %e, %e", ham -> current_state.energy, temporary_state.energy);
+        //printf("\ncurrent bin, new bin, entropy change = %ld, %ld, %e", current_bin, new_bin, entropy_change);
 
         // Check if the move is allowed
         if ( entropy_change <= 0. || random() < static_cast<float>(exp(-entropy_change)) )
@@ -67,7 +67,7 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
             // If allowed, change the state to the temporary one
             // and change the current bin to the new bin. Note that
             // the state MUST contain the new degree of freedom in it.
-            printf("\nChanging State...\n");
+            //printf("\nChanging State...\n");
             ham -> set_state(idx, temporary_state);
             current_bin = new_bin;
         }

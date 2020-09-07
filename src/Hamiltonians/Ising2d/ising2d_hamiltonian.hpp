@@ -23,6 +23,15 @@ struct State
 };
 
 template<typename data_t>
+void print(const State<data_t> & stat)
+{
+    printf("\nState:");
+    printf("\n\tenergy        = %e", stat.energy);
+    printf("\n\tmagnetization = %e", stat.magnetization);
+    printf("\n\tDoF           = %e\n", stat.DoF);
+}
+
+template<typename data_t>
 struct Ising2d
 {
     State<data_t> current_state;
@@ -70,7 +79,9 @@ float Ising2d<data_t>::local_field(const size_t idx) const
 {
     float field = Ising2d_Parameters::h;
     for ( size_t nidx = 0; nidx != Ising2d_Parameters::num_neighbors_i; ++nidx )
+    {
         field += Ising2d_Parameters::J * static_cast<float>( spin_array[ neighbor_array[ idx * Ising2d_Parameters::num_neighbors_i + nidx ] ] );
+    }
 
     return field;
 }
@@ -78,7 +89,7 @@ float Ising2d<data_t>::local_field(const size_t idx) const
 template<typename data_t>
 float Ising2d<data_t>::local_energy(const size_t idx, const data_t spin_value) const
 {
-    return -static_cast<float>( spin_value ) * local_field(idx);
+    return -1. * static_cast<float>( spin_value ) * local_field(idx);
 }
 
 template<typename data_t>
