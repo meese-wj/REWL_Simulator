@@ -53,6 +53,21 @@ REWL_Walker<energy_t,
                         system(),
                         system_obs(_nbins)
 {
+    bool in_range = hist_idx.energy_in_range(system.current_state.energy);
+    while ( !in_range )
+    {
+       size_t site = static_cast<size_t>( random() * System_Parameters::N );
+       State_t<obs_t> temporary_state;
+       system.change_state(site, temporary_state);
+       
+       if ( hist_idx.energy_too_low(system.current_state.energy) && temporary_state.energy > system.current_state.energy )
+           system.set_state(site, temporary_state);
+       else if ( hist_idx.energy_too_high(system.current_state.energy) && temporary_state.energy <= system.current_state.energy )
+           system.set_state(site, temporary_state);
+
+       in_range = hist_idx.energy_in_range(system.current_state.energy);
+    }
+
 #if MPI_ON
     MPI_Comm_rank( &walker_world_rank, MPI_COMM_WORLD );
     i_am_the_master = ( walker_world_rank == REWL_MASTER_PROC ? 1 : 0 );
