@@ -102,6 +102,11 @@ void REWL_simulation::simulate() const
         my_walker -> wang_landau_walk(REWL_Parameters::sweeps_per_check); 
         ++sweep_counter;
 
+#if PRINT_HISTOGRAM
+        if ( sweep_counter % 10 == 0 )
+            my_walker -> wl_walker.wl_histograms.print_histogram_counts(iteration_counter);
+#endif
+
         // Now check to see if the histogram is flat
         if ( my_walker -> wl_walker.is_flat( REWL_Parameters::flatness_criterion ) )
         {

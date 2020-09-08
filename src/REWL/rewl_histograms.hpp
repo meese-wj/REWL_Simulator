@@ -14,10 +14,18 @@
 #include <cstdint>
 #include <cfloat>
 
+#if PRINT_HISTOGRAM
+#include <string>
+#include <fstream>
+#endif
+
 /* Define some constexpr to be used later on. */
 static constexpr uint64_t count_initializer = 0;
 static constexpr uint64_t logdos_initializer = 1;
 constexpr float ratio_failure = -FLT_MAX;
+#if PRINT_HISTOGRAM
+const std::string histogram_file = "histogram_";
+#endif
 /* ****************************************** */
 
 // Use these pairs for faster memory access
@@ -39,7 +47,6 @@ struct rewl_histograms
     const data_t bin_size;         // Size of the bins for histograms. (This must be the same
                                    // across all walkers!).
     
-    //const size_t num_bins = static_cast<size_t> ((max_value - min_value) / bin_size);
     const size_t num_bins;
 
     // Declare the arrays.
@@ -79,6 +86,12 @@ struct rewl_histograms
 
     // Return flatness in the counts
     float count_flatness() const;
+
+#if PRINT_HISTOGRAM
+    // Print counts for the histogram. This function overwrites
+    // per each iteration.
+    void print_histogram_counts( const size_t iteration ) const;
+#endif
 };
 
 template<typename data_t>
@@ -102,5 +115,22 @@ float rewl_histograms<data_t>::count_flatness() const
     // silly number to check against.
     return ratio_failure;
 }
+
+#if PRINT_HISTOGRAM
+template<typename data_t>
+void rewl_histograms<data_t>::print_histogram_counts( const size_t iteration ) const
+{
+    std::ofstream printer;
+    std::string file_name = histogram_file + std::to_string(iteration) + ".txt";
+    printer.open(file_name);
+    for( size_t bin = 0; bin != num_bins; ++bin )
+    {
+        printer << min_value + bin_size * bin << "    " << histograms[bin].count;
+        if ( bin != num_bins - 1 )
+            printer << "\n";
+    }
+    printer.close();
+}
+#endif
 
 #endif
