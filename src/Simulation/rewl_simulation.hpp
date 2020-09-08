@@ -100,10 +100,10 @@ void REWL_simulation::simulate() const
         // First update the walker up until the 
         // sweeps_per_check
         my_walker -> wang_landau_walk(REWL_Parameters::sweeps_per_check); 
-        ++sweep_counter;
+        sweep_counter += REWL_Parameters::sweeps_per_check;
 
 #if PRINT_HISTOGRAM
-        if ( sweep_counter % 10 == 0 )
+        if ( sweep_counter % (10 * REWL_Parameters::sweeps_per_check) == 0 )
             my_walker -> wl_walker.wl_histograms.print_histogram_counts(iteration_counter);
 #endif
 
@@ -126,7 +126,7 @@ void REWL_simulation::simulate() const
             timer = std::chrono::high_resolution_clock::now();
             std::chrono::duration<float> time_elapsed = timer - iteration_start;
             printf("\n\nIteration %ld complete after %e seconds.", iteration_counter, time_elapsed.count());
-            printf("\nTotal Sweeps = %ld = %ld Wang Landau Updates.", sweep_counter, sweep_counter * System_Parameters::N);
+            printf("\nTotal Sweeps = %ld = %e Wang Landau Updates.", sweep_counter, static_cast<float>(sweep_counter * System_Parameters::N) );
             iteration_start = std::chrono::high_resolution_clock::now();
 #endif
             ++iteration_counter;
