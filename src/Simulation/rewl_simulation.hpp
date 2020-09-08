@@ -2,6 +2,7 @@
 /* This file contains the templated simulation
  * struct that will initialize the simulation
  * and contain all the relevant types. */
+#include <chrono>
 
 #include <histogram_index.hpp>
 #include <glazier.hpp>
@@ -84,6 +85,14 @@ REWL_simulation::REWL_simulation()
 // Main function for the simulation.
 void REWL_simulation::simulate() const
 {
+#if COLLECT_TIMINGS
+    auto start = std::chrono::high_resolution_clock::now();
+    auto iteration_start = start;
+    auto timer = start;
+#endif
+
+    size_t iteration_counter = 1;
+    size_t sweep_counter = 0;
     bool simulation_incomplete = true;
     
     while (simulation_incomplete)
@@ -91,6 +100,7 @@ void REWL_simulation::simulate() const
         // First update the walker up until the 
         // sweeps_per_check
         my_walker -> wang_landau_walk(REWL_Parameters::sweeps_per_check); 
+        ++sweep_counter;
 
         // Now check to see if the histogram is flat
         if ( my_walker -> wl_walker.is_flat( REWL_Parameters::flatness_criterion ) )
@@ -99,12 +109,31 @@ void REWL_simulation::simulate() const
             // the logdos alone.
             my_walker -> wl_walker.reset_histogram();
 
+            printf("\nincrementer before = %e", my_walker -> incrementer);
             // TODO: Generalize to 1/t algorithm.
             my_walker -> incrementer *= 0.5;
 
-            simulation_incomplete = ( my_walker -> incrementer < REWL_Parameters::final_increment );
+            printf("\nincrementer after = %e", my_walker -> incrementer);
+
+            simulation_incomplete = ( my_walker -> incrementer >= REWL_Parameters::final_increment );
+
+#if COLLECT_TIMINGS
+            timer = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<float> time_elapsed = timer - iteration_start;
+            printf("\n\nIteration %ld complete after %e seconds.", iteration_counter, time_elapsed.count());
+            printf("\nTotal Sweeps = %ld = %ld Wang Landau Updates.", sweep_counter, sweep_counter * System_Parameters::N);
+            iteration_start = std::chrono::high_resolution_clock::now();
+#endif
+            ++iteration_counter;
+            sweep_counter = 0;
         }
     }
+
+#if COLLECT_TIMINGS
+            timer = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<float> simulation_time = timer - start;
+            printf("\n\nTotal Simulation Time: %e seconds.", simulation_time.count());
+#endif
 }
 
 #endif

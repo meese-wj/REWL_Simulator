@@ -10,6 +10,7 @@ add_compile_options(-std=c++11 -Wall -Wextra -Werror -pedantic)
 
 option(MPI_ON "Turn on MPI. This engages parallelized a Wang Landau simulation." OFF)
 option(ISING2D "Run a 2d Ising model on a periodic square lattice." ON)
+option(COLLECT_TIMINGS "Print timings collected by STL Chrono." ON)
 
 # *********************************************************************
 # Add consequences of the options below.
@@ -20,6 +21,10 @@ endif()
 
 if (ISING2D)
     add_definitions(-DISING2D)
+endif()
+
+if (COLLECT_TIMINGS)
+    add_definitions(-DCOLLECT_TIMINGS)
 endif()
 
 add_subdirectory(src)
