@@ -103,7 +103,7 @@ void REWL_simulation::simulate() const
         sweep_counter += REWL_Parameters::sweeps_per_check;
 
 #if PRINT_HISTOGRAM
-        if ( sweep_counter % (10 * REWL_Parameters::sweeps_per_check) == 0 )
+        if ( sweep_counter % (REWL_Parameters::sweeps_per_check) == 0 )
             my_walker -> wl_walker.wl_histograms.print_histogram_counts(iteration_counter);
 #endif
 
@@ -112,6 +112,10 @@ void REWL_simulation::simulate() const
         {
             // Reset only the energy histogram and leave
             // the logdos alone.
+#if PRINT_HISTOGRAM
+            my_walker -> wl_walker.wl_histograms.print_histogram_counts(iteration_counter);
+#endif
+
             my_walker -> wl_walker.reset_histogram();
 
             printf("\nincrementer before = %e", my_walker -> incrementer);
@@ -125,7 +129,7 @@ void REWL_simulation::simulate() const
 #if COLLECT_TIMINGS
             timer = std::chrono::high_resolution_clock::now();
             std::chrono::duration<float> time_elapsed = timer - iteration_start;
-            printf("\n\nIteration %ld complete after %e seconds.", iteration_counter, time_elapsed.count());
+            printf("\n\n\nIteration %ld complete after %e seconds.", iteration_counter, time_elapsed.count());
             printf("\nTotal Sweeps = %ld = %e Wang Landau Updates.", sweep_counter, static_cast<float>(sweep_counter * System_Parameters::N) );
             iteration_start = std::chrono::high_resolution_clock::now();
 #endif

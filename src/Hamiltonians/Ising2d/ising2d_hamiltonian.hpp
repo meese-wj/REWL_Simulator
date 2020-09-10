@@ -72,6 +72,8 @@ struct Ising2d
        if ( spin_array != nullptr ) delete [] spin_array;
        if ( neighbor_array != nullptr ) delete [] neighbor_array;
     } 
+
+    void print_lattice() const;
 };
 
 template<typename data_t>
@@ -140,6 +142,23 @@ void Ising2d<data_t>::update_observables(const size_t bin, Ising2d_Obs<data_t> *
     obs_ptr -> update_observable_average(mag_val * mag_val, Obs::mag2, bin);
     obs_ptr -> update_observable_average(mag_val * mag_val * mag_val * mag_val, Obs::mag4, bin);
     obs_ptr -> increment_counts_per_bin(bin);
+}
+
+template<typename data_t>
+void Ising2d<data_t>::print_lattice() const
+{
+    printf("\n");
+    for ( size_t idx = 0; idx != Ising2d_Parameters::L; ++idx )
+    {
+        printf("\n%ld\t    ", idx * Ising2d_Parameters::L);
+        for ( size_t jdx = 0; jdx != Ising2d_Parameters::L; ++jdx )
+        {
+           if ( spin_array[idx * Ising2d_Parameters::L + jdx] == 1. )
+               printf("+ ");
+           else
+               printf("- ");
+        }
+    }
 }
 
 #endif

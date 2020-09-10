@@ -125,7 +125,7 @@ void rewl_histograms<data_t>::print_histogram_counts( const size_t iteration ) c
     printer.open(file_name);
     for( size_t bin = 0; bin != num_bins; ++bin )
     {
-        printer << min_value + bin_size * bin << "    " << histograms[bin].count;
+        printer << min_value + bin_size * bin << "    " << histograms[bin].count << "    " << histograms[bin].logdos;
         if ( bin != num_bins - 1 )
             printer << "\n";
     }
