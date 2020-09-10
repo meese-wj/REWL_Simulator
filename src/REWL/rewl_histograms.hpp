@@ -22,7 +22,7 @@
 /* Define some constexpr to be used later on. */
 static constexpr uint64_t count_initializer = 0;
 static constexpr uint64_t logdos_initializer = 1;
-constexpr float ratio_failure = -FLT_MAX;
+constexpr float ratio_failure = FLT_MAX;
 #if PRINT_HISTOGRAM
 const std::string histogram_file = "histogram_";
 #endif

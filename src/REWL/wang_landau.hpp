@@ -106,6 +106,7 @@ template<typename energy_t, typename logdos_t, class Hamiltonian_t,
          class Observables_t, class State_t, class histogram_index_functor>
 bool Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::is_flat(const float tolerance) const
 {
+    //printf("\n\nTolerance = %e, histogram flatness = %e", tolerance, wl_histograms.count_flatness());
     return ( wl_histograms.count_flatness() <= tolerance );
 }
 
