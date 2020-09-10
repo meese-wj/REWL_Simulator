@@ -53,6 +53,13 @@ struct Ising2d_Obs
         return obs_array[ bin * convert(Obs::NUM_OBS) + convert(ob) ];
     }
 
+    // Get the data pointed to by the observable array
+    data_t get_observable(const size_t ob, const size_t bin) const
+    {
+        return obs_array[ bin * convert(Obs::NUM_OBS) + ob ];
+    }
+
+
     // Update average observable with the given value
     void update_observable_average(const data_t value, const Obs ob, const size_t bin) const;
 
