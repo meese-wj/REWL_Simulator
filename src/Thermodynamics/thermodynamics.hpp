@@ -31,6 +31,7 @@ struct Thermodynamics
     const energy_t Tmax; 
     const size_t num_T;
     const energy_t dT = (Tmax - Tmin) / static_cast<energy_t>(num_T);
+    energy_t * temperatures = nullptr;
 
     obs_t * canonical_observables = nullptr;
 
@@ -38,12 +39,21 @@ struct Thermodynamics
                   const energy_t _Tmin, const energy_t _Tmax, const size_t _nT) : energy_min(_emin), energy_max(_emax), energy_bin_size(_ebsize),
                                                                                   Tmin(_Tmin), Tmax(_Tmax), num_T(_nT)
     {
+        temperatures = new energy_t [ num_T ];
+        for ( size_t Tidx = 0; Tidx != num_T; ++Tidx )
+            temperatures = Tmin + dT * static_cast<energy_t>(Tidx);
+
         canonical_observables = new obs_t [ num_T * total_observables ];
         for ( size_t idx = 0; idx != num_T * total_observables; ++idx )
             canonical_observables[ idx ] = 0.;
+
     }
 
-    ~Thermodynamics(){ if (canonical_observables != nullptr) delete [] canonical_observables; }
+    ~Thermodynamics()
+    { 
+        if (temperatures != nullptr) delete [] temperatures;
+        if (canonical_observables != nullptr) delete [] canonical_observables;
+    }
 
     obs_t get_exponent( const size_t bin, const energy_t Tvalue, const logdos_t * const logdos_array ) const
     {
@@ -61,11 +71,7 @@ struct Thermodynamics
 
     void calculate_thermodynamics( const size_t system_size,
                                    const logdos_t * const logdos_array,
-                                   const Obs_container_t * const observables ) const;
-
-
-       
-      
+                                   const Obs_container_t * const observables ) const;  
 };
 
 // Calculate the maximum microcanonical exponent as a function
@@ -96,7 +102,7 @@ void Thermodynamics<energy_t, logdos_t, obs_t,
     obs_t max_exponent = 0.;
     for ( size_t Tidx = 0; Tidx != num_T; ++Tidx )
     {
-        energy_t Tvalue = Tmin + dT * static_cast<energy_t>(Tidx);
+        energy_t Tvalue = temperatures[ Tidx ];
 
         // First find the maximum exponent
         max_exponent = find_maximum_exponent( Tvalue, logdos_array );
