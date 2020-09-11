@@ -68,6 +68,17 @@ struct Ising2d_Obs
     {
         ++obs_array[ bin * convert(Obs::NUM_OBS) + convert(Obs::counts_per_bin) ];
     }
+
+    // Export the observables array as a deep copy.
+    void export_observables( data_t *& data_array )
+    {
+        data_array = new data_t [ num_bins * convert(Obs::NUM_OBS) ];
+        for ( size_t bin = 0; bin != num_bins; ++bin )
+        {
+            for ( size_t ob = 0; ob != convert(Obs::NUM_OBS); ++ob )
+                data_array[ bin * convert(Obs::NUM_OBS) + ob ] = get_observable(ob, bin);
+        }
+    }
 };
 
 template<typename data_t>
