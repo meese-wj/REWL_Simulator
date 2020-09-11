@@ -75,6 +75,7 @@ struct Thermodynamics
 
     // Calculate the thermodynamics (both energy and self-averaging observables)
     void calculate_thermodynamics( const size_t system_size,
+                                   const energy_t * const energy_array,
                                    const logdos_t * const logdos_array,
                                    const obs_t * const observables ) const;  
 };
@@ -98,6 +99,7 @@ obs_t Thermodynamics<energy_t, logdos_t, obs_t, Obs_enum_t>::find_maximum_expone
 template<typename energy_t, typename logdos_t, typename obs_t, class Obs_enum_t>
 void Thermodynamics<energy_t, logdos_t, obs_t,
                     Obs_enum_t>::calculate_thermodynamics( const size_t system_size,
+                                                           const energy_t * const energy_array,
                                                            const logdos_t * const logdos_array,
                                                            const obs_t * const observables_array ) const
 {
@@ -122,7 +124,7 @@ void Thermodynamics<energy_t, logdos_t, obs_t,
         
         for ( size_t bin = 0; bin != num_energy_bins; ++bin )
         {
-            obs_t energy_value = static_cast<obs_t>( energy_min + static_cast<energy_t>(bin) * energy_bin_size ); 
+            obs_t energy_value = energy_array[ bin ]; 
             obs_t weight = reduced_exponential( bin, Tvalue, max_exponent, logdos_array );
 
             canonical_observables[ Tidx * total_observables + convert(Energy_Obs::internal_energy) ] += energy_value * weight;
