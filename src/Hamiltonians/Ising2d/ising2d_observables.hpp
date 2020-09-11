@@ -70,7 +70,7 @@ struct Ising2d_Obs
     }
 
     // Export the observables array as a deep copy.
-    void export_observables( data_t *& data_array )
+    void export_observables( data_t *& data_array ) const
     {
         data_array = new data_t [ num_bins * convert(Obs::NUM_OBS) ];
         for ( size_t bin = 0; bin != num_bins; ++bin )

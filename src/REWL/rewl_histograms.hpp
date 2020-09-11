@@ -87,6 +87,14 @@ struct rewl_histograms
     // Return flatness in the counts
     float count_flatness() const;
 
+    // Export out the density of states as a deep copy
+    void export_logdos( data_t *& data_array ) const
+    {
+        data_array = new data_t [ num_bins ];
+        for ( size_t bin = 0; bin != num_bins; ++bin )
+            data_array[ bin ] = histograms[ bin ].logdos;
+    }
+
 #if PRINT_HISTOGRAM
     // Print counts for the histogram. This function overwrites
     // per each iteration.
