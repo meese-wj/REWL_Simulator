@@ -15,6 +15,8 @@ struct histogram_index
     {}
 
     size_t operator () (const data_t value) const { return static_cast<size_t> ( (value - min_value) / bin_size ); }
+
+    data_t get_bin_min( const size_t bin ) const { return min_value + bin_size * static_cast<data_t>(bin); }
     
     bool energy_too_low( const data_t value ) const { return ( static_cast<int>(value + 0.5) < static_cast<int>(min_value + 0.5) ); }
     bool energy_too_high( const data_t value ) const { return ( static_cast<int>(value + 0.5) >= static_cast<int>(max_value + 0.5) ); }

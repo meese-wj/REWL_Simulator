@@ -36,7 +36,7 @@ struct REWL_Walker
         size_t nbins = wl_walker.wl_histograms.num_bins;
         data_arr = new energy_t [ nbins ];
         for ( size_t bin = 0; bin != nbins; ++bin )
-            data_arr[ bin ] = hist_idx( bin );
+            data_arr[ bin ] = hist_idx.get_bin_min( bin );
     }
 
 };
