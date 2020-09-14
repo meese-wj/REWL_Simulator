@@ -31,6 +31,14 @@ struct REWL_Walker
 
     void wang_landau_walk(const size_t num_sweeps);
 
+    void export_energy_bins( energy_t *& data_arr )
+    {
+        size_t nbins = wl_walker.wl_histograms.num_bins;
+        data_arr = new energy_t [ nbins ];
+        for ( size_t bin = 0; bin != nbins; ++bin )
+            data_arr[ bin ] = hist_idx( bin );
+    }
+
 };
 
 template<typename energy_t,

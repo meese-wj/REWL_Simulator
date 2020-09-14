@@ -133,6 +133,7 @@ void REWL_simulation::simulate() const
             printf("\nTotal Sweeps = %ld = %e Wang Landau Updates.", sweep_counter, static_cast<float>(sweep_counter * System_Parameters::N) );
             printf("\nSweep rate  = %e sweeps per second", static_cast<float>(sweep_counter)/time_elapsed.count());
             printf("\nUpdate rate = %e updates per second", static_cast<float>(sweep_counter * System_Parameters::N)/time_elapsed.count());
+            fflush(stdout);
             iteration_start = std::chrono::high_resolution_clock::now();
 #endif
             ++iteration_counter;

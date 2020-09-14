@@ -40,7 +40,7 @@ struct Thermodynamics
     {
         temperatures = new energy_t [ num_T ];
         for ( size_t Tidx = 0; Tidx != num_T; ++Tidx )
-            temperatures = Tmin + dT * static_cast<energy_t>(Tidx);
+            temperatures[ Tidx ] = Tmin + dT * static_cast<energy_t>(Tidx);
 
         canonical_observables = new obs_t [ num_T * total_observables ];
         for ( size_t idx = 0; idx != num_T * total_observables; ++idx )
@@ -77,7 +77,7 @@ struct Thermodynamics
     void calculate_thermodynamics( const size_t system_size,
                                    const energy_t * const energy_array,
                                    const logdos_t * const logdos_array,
-                                   const obs_t * const observables ) const;  
+                                   const obs_t * const observables_array ) const;  
 };
 
 // Calculate the maximum microcanonical exponent as a function
