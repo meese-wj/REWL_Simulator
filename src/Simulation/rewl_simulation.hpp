@@ -12,7 +12,7 @@
 // data type. 
 using ENERGY_TYPE = float;
 using LOGDOS_TYPE = double;
-using OBS_TYPE = float;
+using OBS_TYPE = double;
 
 namespace REWL_Parameters
 {
@@ -21,7 +21,7 @@ namespace REWL_Parameters
     float window_overlap = static_cast<float>( single_bin_overlap ); 
 
     constexpr size_t sweeps_per_check = 1000;
-    constexpr LOGDOS_TYPE final_increment = 1e-6;
+    constexpr LOGDOS_TYPE final_increment = 1e-7;
     constexpr float flatness_criterion = 0.3;
 }
 
