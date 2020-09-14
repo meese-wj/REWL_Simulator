@@ -1,6 +1,8 @@
 #include <stdio.h>
 
 #include "rewl_simulation.hpp"
+
+#include <array_shift.hpp>
 #include <thermodynamics.hpp>
 #include <self_averaged_observables_writer.hpp>
 
@@ -32,6 +34,9 @@ int main(const int argc, const char * argv[])
     simulation -> my_walker -> export_energy_bins( final_energy_array );
     simulation -> my_walker -> wl_walker.wl_histograms.export_logdos( final_logdos_array );
     simulation -> my_walker -> system_obs.export_observables( final_observable_array );
+
+    // Adjust the logdos by the ground state degeneracy
+    array_shift_by_value( System_Parameters::ground_state_degeneracy - final_logdos_array[0], simulation -> my_walker -> wl_walker.wl_histograms.num_bins, final_logdos_array );
 
     thermo_t * thermo = new thermo_t ( System_Parameters::energy_min, System_Parameters::energy_max, System_Parameters::energy_bin_size, 0.1, 4.7, 1000 );
     

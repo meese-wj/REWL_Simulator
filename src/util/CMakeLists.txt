@@ -1,4 +1,5 @@
 add_library(utilities
+            array_shift.hpp
             random_number_generators.hpp
             mpi_rewl_helpers.hpp)
 

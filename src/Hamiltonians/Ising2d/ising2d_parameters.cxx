@@ -22,6 +22,10 @@ constexpr float SYSTEM_FIELD_H = 0.;
 constexpr size_t SYSTEM_NUM_NEAREST_NEIGHBORS_int = 4;
 constexpr float SYSTEM_NUM_NEAREST_NEIGHBORS_float = 4;
 
+// Ising Hamiltonian Ground State Degeneracy
+// For h == 0, the ground state is doubly-degenerate.
+constexpr double GROUND_STATE_DEGENERACY = 2.;
+
 // Wang Landau Energy Minimum
 constexpr float SYSTEM_ENERGY_MIN = -0.5 * SYSTEM_EXCHANGE_J * SYSTEM_NUM_NEAREST_NEIGHBORS_float * SYSTEM_SIZE_L * SYSTEM_SIZE_L;
 
@@ -45,6 +49,7 @@ namespace Ising2d_Parameters
     constexpr float h = SYSTEM_FIELD_H;
     constexpr size_t num_neighbors_i = SYSTEM_NUM_NEAREST_NEIGHBORS_int;
     constexpr float num_neighbors_f = SYSTEM_NUM_NEAREST_NEIGHBORS_float; 
+    constexpr double ground_state_degeneracy = GROUND_STATE_DEGENERACY;
 
     // Wang Landau energy parameters
     constexpr float energy_min = SYSTEM_ENERGY_MIN;
