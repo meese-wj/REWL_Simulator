@@ -7,7 +7,8 @@
 #include <string>
 #include <fstream>
 
-static const std::string DELIMITER = "  ";
+// This string must be defined somewhere!
+// const std::string DELIMITER = "  ";
 
 template<typename energy_t, typename obs_t>
 void write_observables_to_file(                             const size_t num_temps, const size_t num_obs,
@@ -27,7 +28,11 @@ void write_observables_to_file(                             const size_t num_tem
         output_file << temperature_array[ Tidx ] << DELIMITER;
         
         for ( size_t ob = 0; ob != num_obs; ++ob )
-            output_file << observables_array[ Tidx * num_obs + ob ] << DELIMITER;
+        {
+            output_file << observables_array[ Tidx * num_obs + ob ];
+
+            if ( ob != num_obs - 1 ) output_file << DELIMITER; 
+        }
 
         if ( Tidx != num_temps - 1 )
             output_file << "\n";

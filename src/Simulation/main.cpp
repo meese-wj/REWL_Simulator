@@ -1,8 +1,12 @@
 #include <stdio.h>
+#include <string>
+
+const std::string DELIMITER = "  ";
 
 #include "rewl_simulation.hpp"
 
 #include <array_shift.hpp>
+#include <write_microcanonical_observables.hpp>
 #include <thermodynamics.hpp>
 #include <self_averaged_observables_writer.hpp>
 
@@ -30,13 +34,19 @@ int main(const int argc, const char * argv[])
     LOGDOS_TYPE * final_logdos_array = nullptr;
     OBS_TYPE * final_observable_array = nullptr;
 
+    const size_t final_num_bins = simulation -> my_walker -> wl_walker.wl_histograms.num_bins;
+
     // Copy out the final logdos and the observables
     simulation -> my_walker -> export_energy_bins( final_energy_array );
     simulation -> my_walker -> wl_walker.wl_histograms.export_logdos( final_logdos_array );
     simulation -> my_walker -> system_obs.export_observables( final_observable_array );
 
     // Adjust the logdos by the ground state degeneracy
-    array_shift_by_value( System_Parameters::ground_state_degeneracy - final_logdos_array[0], simulation -> my_walker -> wl_walker.wl_histograms.num_bins, final_logdos_array );
+    array_shift_by_value( System_Parameters::ground_state_degeneracy - final_logdos_array[0], final_num_bins, final_logdos_array );
+
+    // Print out the microcanonical observables before thermally averaging
+    write_microcanonical_observables<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE>( final_num_bins, convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),
+                                                                          ".", "", final_energy_array, final_logdos_array, final_observable_array ); 
 
     thermo_t * thermo = new thermo_t ( System_Parameters::energy_min, System_Parameters::energy_max, System_Parameters::energy_bin_size, 0.1, 4.7, 1000 );
     
