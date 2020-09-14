@@ -53,6 +53,20 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
     
     size_t current_bin = hist_idx(ham -> current_state.energy);
 
+    /*
+    if ( current_bin <= 1 )
+    {
+        printf("\n\nSite %ld of %ld: spin = %e", idx, System_Parameters::N-1, ham -> spin_array[idx]);
+        printf("\n\nDoF %ld = %c before", idx, ham -> spin_array[idx] == 1. ? '+' : '-');
+        ham -> print_lattice();
+        printf("\n\ncurrent state");
+        print(ham -> current_state);
+        printf("\n\ntemporary state");
+        print(temporary_state);
+        printf("\n*************************************************************************\n");
+    }
+    */
+
     if ( hist_idx.energy_in_range( temporary_state.energy ) )
     {
         const size_t new_bin = hist_idx(temporary_state.energy);
@@ -80,12 +94,19 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
     wl_histograms.increment_count( current_bin );
     wl_histograms.increment_logdos( current_bin, incrementer );
     ham -> update_observables( current_bin, ham_obs );
+   
+    /*
+    if ( current_bin <= 2 )
+    {
+        printf("\n\nDoF %ld = %c after", idx, ham -> spin_array[idx] == 1. ? '+' : '-');
+        ham -> print_lattice();
 
-    //printf("\n\nDoF %ld = %c after", idx, ham -> spin_array[idx] == 1. ? '+' : '-');
-    //ham -> print_lattice();
-
-    //printf("\n\n");
+        printf("\n\n");
+        
+    }
+    */
 }
+
 
 // Run a sweep using the standard
 // Wang Landau method on the system
