@@ -49,7 +49,7 @@ int main(const int argc, const char * argv[])
                                                                           convert<System_Obs_enum_t>(System_Obs_enum_t::counts_per_bin),
                                                                           ".", "", final_energy_array, final_logdos_array, final_observable_array ); 
 
-    thermo_t * thermo = new thermo_t ( System_Parameters::energy_min, System_Parameters::energy_max, System_Parameters::energy_bin_size, 0.1, 4.7, 1000 );
+    thermo_t * thermo = new thermo_t ( final_num_bins, 0.1, 4.7, 1000 );
     
     printf("\nNow calculating canonical thermodynamics.\n");
 #if COLLECT_TIMINGS

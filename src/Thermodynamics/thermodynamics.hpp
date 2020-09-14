@@ -21,10 +21,7 @@ struct Thermodynamics
 {
     const size_t total_observables = convert(Energy_Obs::NUM_OBS) + convert(Obs_enum_t::NUM_OBS);
 
-    const energy_t energy_min;
-    const energy_t energy_max;
-    const energy_t energy_bin_size;
-    const size_t num_energy_bins = static_cast<size_t>( (energy_max - energy_min) / energy_bin_size );
+    const size_t num_energy_bins;
 
     const energy_t Tmin;
     const energy_t Tmax; 
@@ -34,8 +31,8 @@ struct Thermodynamics
 
     obs_t * canonical_observables = nullptr;
 
-    Thermodynamics(const energy_t _emin, const energy_t _emax, const energy_t _ebsize,
-                   const energy_t _Tmin, const energy_t _Tmax, const size_t _nT) : energy_min(_emin), energy_max(_emax), energy_bin_size(_ebsize),
+    Thermodynamics(const size_t _numEbins,
+                   const energy_t _Tmin, const energy_t _Tmax, const size_t _nT) : num_energy_bins(_numEbins),
                                                                                    Tmin(_Tmin), Tmax(_Tmax), num_T(_nT)
     {
         temperatures = new energy_t [ num_T ];
@@ -54,24 +51,27 @@ struct Thermodynamics
     }
     
     // Calculate the exponent in the partition function
-    obs_t get_exponent( const size_t bin, const energy_t Tvalue, const logdos_t * const logdos_array ) const
+    obs_t get_exponent( const size_t bin, const energy_t Tvalue, const energy_t * const energy_array, const logdos_t * const logdos_array ) const
     {
-        return static_cast<obs_t> ( logdos_array[ bin ] - static_cast<logdos_t>( (energy_min + static_cast<energy_t>(bin) * energy_bin_size) / Tvalue ) );
+        return static_cast<obs_t> ( logdos_array[ bin ] - static_cast<logdos_t>( energy_array[ bin ] / Tvalue ) );
     }
     
     // Calculate the exponent in the partition function shifted by its maximum
-    obs_t get_reduced_exponent( const size_t bin, const energy_t Tvalue, const obs_t maximum, const logdos_t * const logdos_array ) const
+    obs_t get_reduced_exponent( const size_t bin, const energy_t Tvalue, const obs_t maximum, 
+                                const energy_t * const energy_array, const logdos_t * const logdos_array ) const
     {
-        return ( static_cast<obs_t> ( logdos_array[ bin ] - static_cast<logdos_t>( (energy_min + static_cast<energy_t>(bin) * energy_bin_size) / Tvalue ) ) - maximum );
+        return ( static_cast<obs_t> ( get_exponent(bin, Tvalue, energy_array, logdos_array) - maximum ) );
     }
 
-    obs_t reduced_exponential( const size_t bin, const energy_t Tvalue, const obs_t maximum, const logdos_t * const logdos_array ) const
+    obs_t reduced_exponential( const size_t bin, const energy_t Tvalue, const obs_t maximum, 
+                               const energy_t * const energy_array, const logdos_t * const logdos_array ) const
     {
-        return exp( get_reduced_exponent( bin, Tvalue, maximum, logdos_array ) );
+        return exp( get_reduced_exponent( bin, Tvalue, maximum, energy_array, logdos_array ) );
     }
     
     // Calculate the maximum exponent for a given temperature
-    obs_t find_maximum_exponent( const energy_t Tvalue, const logdos_t * const logdos_array ) const;
+    obs_t find_maximum_exponent( const energy_t Tvalue, 
+                                 const energy_t * const energy_array, const logdos_t * const logdos_array ) const;
 
     // Calculate the thermodynamics (both energy and self-averaging observables)
     void calculate_thermodynamics( const size_t system_size,
@@ -83,13 +83,15 @@ struct Thermodynamics
 // Calculate the maximum microcanonical exponent as a function
 // of input temperature.
 template<typename energy_t, typename logdos_t, typename obs_t, class Obs_enum_t>
-obs_t Thermodynamics<energy_t, logdos_t, obs_t, Obs_enum_t>::find_maximum_exponent( const energy_t Tvalue, const logdos_t * const logdos_array ) const
+obs_t Thermodynamics<energy_t, logdos_t, obs_t, Obs_enum_t>::find_maximum_exponent( const energy_t Tvalue, 
+                                                                                    const energy_t * const energy_array,
+                                                                                    const logdos_t * const logdos_array ) const
 {
-    obs_t max = get_exponent(0, Tvalue, logdos_array);
+    obs_t max = get_exponent(0, Tvalue, energy_array, logdos_array);
     obs_t value = max;
     for ( size_t bin = 1; bin != num_energy_bins; ++bin )
     {
-        value = get_exponent(bin, Tvalue, logdos_array);
+        value = get_exponent(bin, Tvalue, energy_array, logdos_array);
         max = ( max < value ? value : max );
     }
     return max;
@@ -110,13 +112,13 @@ void Thermodynamics<energy_t, logdos_t, obs_t,
         energy_t Tvalue = temperatures[ Tidx ];
 
         // First find the maximum exponent
-        max_exponent = find_maximum_exponent( Tvalue, logdos_array );
+        max_exponent = find_maximum_exponent( Tvalue, energy_array, logdos_array );
         
         // Second compute the partition function with the maximum exponent scaled out
         partition = 0.;
         for ( size_t bin = 0; bin != num_energy_bins; ++bin )
         {
-            partition += reduced_exponential( bin, Tvalue, max_exponent, logdos_array);
+            partition += reduced_exponential( bin, Tvalue, max_exponent, energy_array, logdos_array);
         }
 
         // Third compute the energy observables
@@ -125,7 +127,7 @@ void Thermodynamics<energy_t, logdos_t, obs_t,
         for ( size_t bin = 0; bin != num_energy_bins; ++bin )
         {
             obs_t energy_value = energy_array[ bin ]; 
-            obs_t weight = reduced_exponential( bin, Tvalue, max_exponent, logdos_array );
+            obs_t weight = reduced_exponential( bin, Tvalue, max_exponent, energy_array, logdos_array );
 
             canonical_observables[ Tidx * total_observables + convert(Energy_Obs::internal_energy) ] += energy_value * weight;
             canonical_observables[ Tidx * total_observables + convert(Energy_Obs::internal_energy2) ] += energy_value * energy_value * weight;
