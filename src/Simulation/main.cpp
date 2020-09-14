@@ -2,6 +2,7 @@
 
 #include "rewl_simulation.hpp"
 #include <thermodynamics.hpp>
+#include <self_averaged_observables_writer.hpp>
 
 using thermo_t = Thermodynamics<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE, System_Obs_enum_t>;
 
@@ -43,6 +44,11 @@ int main(const int argc, const char * argv[])
 #endif
     thermo -> calculate_thermodynamics( System_Parameters::N, final_energy_array, final_logdos_array, final_observable_array ); 
 
+    printf("\nWriting thermodynamics to file.");
+
+    write_observables_to_file<ENERGY_TYPE, OBS_TYPE>( 1000, convert<Energy_Obs>(Energy_Obs::NUM_OBS) + convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),
+                                                      ".", "", thermo -> temperatures, thermo -> canonical_observables ); 
+    
 #if COLLECT_TIMINGS
     timer_end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> time_elapsed = timer_end - timer_start;
