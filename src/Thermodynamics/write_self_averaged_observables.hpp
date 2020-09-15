@@ -1,4 +1,4 @@
-#ifndef SELF_AVERAGED_OBSERVABLES_WRITER
+#ifndef WRITE_SELF_AVERAGED_OBSERVABLES
 /* This file will write the self-averaged observables
  * and the energy observables to a specified file.
  * The more complicated cumulants must be written 
