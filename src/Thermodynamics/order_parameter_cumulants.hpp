@@ -7,25 +7,33 @@
  * self-averaging, for example the suscep-
  * tibility. */
 
-// Calculate the EXTENSIVE susceptibility
+#include <cmath>
+
+// Calculate the EXTENSIVE susceptibility from
+// an intensive m and m2. If m and m2 are extensive
+// then set size = 1
 template<typename obs_t>
-inline obs_t calculate_susceptibility( const obs_t m2, const obs_t m, const energy_t Tvalue )
+inline obs_t calculate_susceptibility( const obs_t m2, const obs_t m, const energy_t Tvalue, const size_t size )
 {
-    return (m2 - m * m) / static_cast<obs_t>(Tvalue);
+    return (size * m2 - size * size * m * m) / static_cast<obs_t>(Tvalue);
 }
 
-// Calculate the Binder parameter (kurtosis)
+// Calculate the Binder parameter (kurtosis) 
+// from an intensive m2 and m4. If they are 
+// extensive, set size = 1.
 template<template obs_t>
-inline obs_t calculate_Binder_parameter( const obs_t m4, const obs_t m2 )
+inline obs_t calculate_Binder_parameter( const obs_t m4, const obs_t m2, const size_t size )
 {
-    return m4 / ( m2 * m2 );
+    return m4 / ( size * m2 * m2 );
 }
 
 // Calculate the Binder cumulant of a scalar order parameter
+// from an intensive m2 and m4. If they are extensive, set
+// size = 1.
 template<template obs_t>
-inline obs_t calculate_Binder_parameter( const obs_t m4, const obs_t m2 )
+inline obs_t calculate_Binder_parameter( const obs_t m4, const obs_t m2, const size_t size )
 {
-    return 1. - calculate_Binder_parameter(m4, m2) / 3.;
+    return 1. - calculate_Binder_parameter(m4, m2, size) / 3.;
 }
 
 
