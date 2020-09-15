@@ -50,22 +50,17 @@ struct Thermodynamics
         if (canonical_observables != nullptr) delete [] canonical_observables;
     }
 
+    // Create a getter function to copy out the thermally-averaged observables
     obs_t get_energy_obs( const size_t Tidx, const Energy_Obs ob ) const { return canonical_observables[ Tidx * total_observables + convert(ob) ]; }
-    obs_t get_system_obs( const size_t Tidx, const Obs_enum_t ob ) const { return canonical_observables[ Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + convert(ob) ]; }
+    obs_t get_system_obs( const size_t Tidx, const size_t ob ) const { return canonical_observables[ Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ]; }
 
+    // Create an alias function to the thermally-averaged energy observables
     obs_t * energy_obs( const size_t Tidx, const Energy_Obs ob ) const
     { 
         return &canonical_observables[ Tidx * total_observables + convert(ob) ]; 
     }
-    obs_t * energy_obs( const size_t Tidx, const size_t ob ) const 
-    { 
-        return &canonical_observables[ Tidx * total_observables + ob ]; 
-    }
-    
-    obs_t * system_obs( const size_t Tidx, const Obs_enum_t ob ) const
-    { 
-        return &canonical_observables[ Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + convert(ob) ]; 
-    }
+  
+    // Create an alias function to the thermally-averaged system observables
     obs_t * system_obs( const size_t Tidx, const size_t ob ) const
     { 
         return &canonical_observables[ Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ]; 
@@ -167,48 +162,34 @@ void Thermodynamics<energy_t, logdos_t, obs_t,
             *energy_obs( current_Tidx, Energy_Obs::internal_energy ) += energy_value * weight;
             *energy_obs( current_Tidx, Energy_Obs::internal_energy2 ) += energy_value * energy_value * weight;
             *energy_obs( current_Tidx, Energy_Obs::entropy ) += logdos_array[ current_bin ] * weight;
-            /*
-            canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::internal_energy) ] += energy_value * weight;
-            canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::internal_energy2) ] += energy_value * energy_value * weight;
-            canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::entropy) ] += logdos_array[ current_bin ] * weight;
-            */
             
             // Compute the extra observables
             for ( size_t ob = 0; ob != convert(Obs_enum_t::NUM_OBS); ++ob  )
             {
                 if ( ob != convert(Obs_enum_t::counts_per_bin) )
                     *system_obs( current_Tidx, ob ) += ( observables_array[ current_bin * convert(Obs_enum_t::NUM_OBS) + ob ] ) * weight;
-                    //canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ] += ( observables_array[ current_bin * convert(Obs_enum_t::NUM_OBS) + ob ] ) * weight;
                 else
                     *system_obs( current_Tidx, ob ) += observables_array[ current_bin * convert(Obs_enum_t::NUM_OBS) + ob ];
-                    //canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ] += ( observables_array[ current_bin * convert(Obs_enum_t::NUM_OBS) + ob ] );
             }
         }
+        
         // Normalize the result
         partition *= static_cast<obs_t> (system_size);
         *energy_obs( current_Tidx, Energy_Obs::internal_energy ) /= partition;
         *energy_obs( current_Tidx, Energy_Obs::internal_energy2 ) /= partition;
         *energy_obs( current_Tidx, Energy_Obs::entropy ) /= partition;
-        /*
-        canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::internal_energy) ] /= partition;
-        canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::internal_energy2) ] /= partition;
-        canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::entropy) ] /= partition;
-        */
 
         // Compute the specific heat
-        obs_t En = canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::internal_energy) ];
-        obs_t En2 = canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::internal_energy2) ];
+        obs_t En = get_energy_obs( current_Tidx, Energy_Obs::internal_energy );
+        obs_t En2 = get_energy_obs( current_Tidx, Energy_Obs::internal_energy2 );
         *energy_obs( current_Tidx, Energy_Obs::specific_heat ) = (En2 - En * En) / static_cast<obs_t>( system_size * Tvalue * Tvalue );
-        //canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::specific_heat) ] = (En2 - En * En) / ( static_cast<obs_t>( system_size * Tvalue * Tvalue ) ); 
 
         for ( size_t ob = 0; ob != convert(Energy_Obs::NUM_OBS); ++ob )
         {
             if ( ob != convert(Obs_enum_t::counts_per_bin) )
                 *system_obs( current_Tidx, ob ) /= partition;
-                //canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ] /= partition;
             else
                 *system_obs( current_Tidx, ob ) /= num_energy_bins;
-                //canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ] /= num_energy_bins;
         }
         
     }
