@@ -191,7 +191,7 @@ void Thermodynamics<energy_t, logdos_t, obs_t,
         obs_t En2 = static_cast<obs_t>(system_size) * get_energy_obs( current_Tidx, Energy_Obs::enum_names::internal_energy2 );
         *energy_obs( current_Tidx, Energy_Obs::enum_names::specific_heat ) = (En2 - En * En) / static_cast<obs_t>( system_size * Tvalue * Tvalue );
 
-        for ( size_t ob = 0; ob != convert(Energy_Obs::enum_names::NUM_OBS); ++ob )
+        for ( size_t ob = 0; ob != convert(Obs_enum_t::NUM_OBS); ++ob )
         {
             if ( ob != convert(Obs_enum_t::counts_per_bin) )
                 *system_obs( current_Tidx, ob ) /= ( system_size * partition );
