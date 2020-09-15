@@ -8,7 +8,7 @@ const std::string DELIMITER = "  ";
 #include <array_shift.hpp>
 #include <write_microcanonical_observables.hpp>
 #include <thermodynamics.hpp>
-#include <self_averaged_observables_writer.hpp>
+#include <write_self_averaged_observables.hpp>
 
 using thermo_t = Thermodynamics<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE, System_Obs_enum_t>;
 

@@ -101,8 +101,6 @@ struct Thermodynamics
         for ( size_t bin = 1; bin <= num_energy_bins; ++bin )
         {
             const size_t current_bin = num_energy_bins - bin;
-            if ( Tvalue > 4.6 )
-                printf("energy[%ld] = %e, reduced exp = %e\n", current_bin, energy_array[current_bin], reduced_exponential(current_bin, Tvalue, maximum, energy_array, logdos_array));
             part += reduced_exponential( current_bin, Tvalue, maximum, energy_array, logdos_array );
         }
         return part;
@@ -155,12 +153,10 @@ void Thermodynamics<energy_t, logdos_t, obs_t,
  
         // Second compute the partition function with the maximum exponent scaled out
         const obs_t partition = reduced_partition_function( Tvalue, max_exponent, energy_array, logdos_array );
-        printf("temperatures[%ld] = %e, max exponent, partition, free energy = %e, %e, %e\n", current_Tidx, Tvalue, max_exponent, partition, -Tvalue * ( max_exponent + log(partition) ) / system_size );
         
         // Third compute the energy observables
         *energy_obs( current_Tidx, Energy_Obs::enum_names::free_energy ) = -Tvalue * ( max_exponent + log(partition) ) / static_cast<obs_t>(system_size);
-        printf("free energy after = %e\n", *energy_obs( current_Tidx, Energy_Obs::enum_names::free_energy ));
-        
+
         for ( size_t bin = 1; bin <= num_energy_bins; ++bin )
         {
             const size_t current_bin = num_energy_bins - bin;
