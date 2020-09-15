@@ -49,7 +49,28 @@ struct Thermodynamics
         if (temperatures != nullptr) delete [] temperatures;
         if (canonical_observables != nullptr) delete [] canonical_observables;
     }
+
+    obs_t get_energy_obs( const size_t Tidx, const Energy_Obs ob ) const { return canonical_observables[ Tidx * total_observables + convert(ob) ]; }
+    obs_t get_system_obs( const size_t Tidx, const Obs_enum_t ob ) const { return canonical_observables[ Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + convert(ob) ]; }
+
+    obs_t * energy_obs( const size_t Tidx, const Energy_Obs ob ) const
+    { 
+        return &canonical_observables[ Tidx * total_observables + convert(ob) ]; 
+    }
+    obs_t * energy_obs( const size_t Tidx, const size_t ob ) const 
+    { 
+        return &canonical_observables[ Tidx * total_observables + ob ]; 
+    }
     
+    obs_t * system_obs( const size_t Tidx, const Obs_enum_t ob ) const
+    { 
+        return &canonical_observables[ Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + convert(ob) ]; 
+    }
+    obs_t * system_obs( const size_t Tidx, const size_t ob ) const
+    { 
+        return &canonical_observables[ Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ]; 
+    }
+ 
     // Calculate the exponent in the partition function
     obs_t get_exponent( const size_t bin, const energy_t Tvalue, const energy_t * const energy_array, const logdos_t * const logdos_array ) const
     {
@@ -67,6 +88,22 @@ struct Thermodynamics
                                const energy_t * const energy_array, const logdos_t * const logdos_array ) const
     {
         return exp( get_reduced_exponent( bin, Tvalue, maximum, energy_array, logdos_array ) );
+    }
+   
+    // Calculate the partition function reduced by the 
+    // exponential of the maximum exponent.
+    obs_t reduced_partition_function( const energy_t Tvalue, const obs_t maximum, 
+                                      const energy_t * const energy_array, const logdos_t * const logdos_array ) const
+    {
+        obs_t part = 0.;
+        for ( size_t bin = 1; bin <= num_energy_bins; ++bin )
+        {
+            const size_t current_bin = num_energy_bins - bin;
+            if ( Tvalue < 0.11 )
+                printf("energy[%ld] = %e, reduced exp = %e\n", current_bin, energy_array[current_bin], reduced_exponential(current_bin, Tvalue, maximum, energy_array, logdos_array));
+            part += reduced_exponential( current_bin, Tvalue, maximum, energy_array, logdos_array );
+        }
+        return part;
     }
     
     // Calculate the maximum exponent for a given temperature
@@ -87,11 +124,12 @@ obs_t Thermodynamics<energy_t, logdos_t, obs_t, Obs_enum_t>::find_maximum_expone
                                                                                     const energy_t * const energy_array,
                                                                                     const logdos_t * const logdos_array ) const
 {
-    obs_t max = get_exponent(0, Tvalue, energy_array, logdos_array);
+    obs_t max = get_exponent(num_energy_bins - 1, Tvalue, energy_array, logdos_array);
     obs_t value = max;
-    for ( size_t bin = 1; bin != num_energy_bins; ++bin )
+    for ( size_t bin = 2; bin <= num_energy_bins; ++bin )
     {
-        value = get_exponent(bin, Tvalue, energy_array, logdos_array);
+        const size_t current_bin = num_energy_bins - bin;
+        value = get_exponent(current_bin, Tvalue, energy_array, logdos_array);
         max = ( max < value ? value : max );
     }
     return max;
@@ -105,62 +143,73 @@ void Thermodynamics<energy_t, logdos_t, obs_t,
                                                            const logdos_t * const logdos_array,
                                                            const obs_t * const observables_array ) const
 {
-    obs_t partition = 0.;
-    obs_t max_exponent = 0.;
-    for ( size_t Tidx = 0; Tidx != num_T; ++Tidx )
+    for ( size_t Tidx = 1; Tidx <= num_T; ++Tidx )
     {
-        energy_t Tvalue = temperatures[ Tidx ];
-
+        const size_t current_Tidx = num_T - Tidx;
+        energy_t Tvalue = temperatures[ current_Tidx ];
+        
         // First find the maximum exponent
-        max_exponent = find_maximum_exponent( Tvalue, energy_array, logdos_array );
-        
+        const obs_t max_exponent = find_maximum_exponent( Tvalue, energy_array, logdos_array );
+ 
         // Second compute the partition function with the maximum exponent scaled out
-        partition = 0.;
-        for ( size_t bin = 0; bin != num_energy_bins; ++bin )
-        {
-            partition += reduced_exponential( bin, Tvalue, max_exponent, energy_array, logdos_array);
-        }
-
-        // Third compute the energy observables
-        canonical_observables[ Tidx * total_observables + convert(Energy_Obs::free_energy) ] = -Tvalue * log( partition ) / static_cast<obs_t> (system_size);
+        obs_t partition = reduced_partition_function( Tvalue, max_exponent, energy_array, logdos_array );
+        printf("temperatures[%ld] = %e, max exponent, partition = %e, %e\n", current_Tidx, Tvalue, max_exponent, partition);
         
-        for ( size_t bin = 0; bin != num_energy_bins; ++bin )
+        // Third compute the energy observables
+        *energy_obs( current_Tidx, Energy_Obs::free_energy ) = -Tvalue * ( max_exponent + log(partition) ) / static_cast<obs_t>(system_size);
+        
+        for ( size_t bin = 1; bin <= num_energy_bins; ++bin )
         {
-            obs_t energy_value = energy_array[ bin ]; 
-            obs_t weight = reduced_exponential( bin, Tvalue, max_exponent, energy_array, logdos_array );
-
-            canonical_observables[ Tidx * total_observables + convert(Energy_Obs::internal_energy) ] += energy_value * weight;
-            canonical_observables[ Tidx * total_observables + convert(Energy_Obs::internal_energy2) ] += energy_value * energy_value * weight;
-            canonical_observables[ Tidx * total_observables + convert(Energy_Obs::entropy) ] += logdos_array[bin] * weight;
+            const size_t current_bin = num_energy_bins - bin;
+            obs_t energy_value = energy_array[ current_bin ]; 
+            obs_t weight = reduced_exponential( current_bin, Tvalue, max_exponent, energy_array, logdos_array );
+            
+            *energy_obs( current_Tidx, Energy_Obs::internal_energy ) += energy_value * weight;
+            *energy_obs( current_Tidx, Energy_Obs::internal_energy2 ) += energy_value * energy_value * weight;
+            *energy_obs( current_Tidx, Energy_Obs::entropy ) += logdos_array[ current_bin ] * weight;
+            /*
+            canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::internal_energy) ] += energy_value * weight;
+            canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::internal_energy2) ] += energy_value * energy_value * weight;
+            canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::entropy) ] += logdos_array[ current_bin ] * weight;
+            */
             
             // Compute the extra observables
             for ( size_t ob = 0; ob != convert(Obs_enum_t::NUM_OBS); ++ob  )
             {
                 if ( ob != convert(Obs_enum_t::counts_per_bin) )
-                    canonical_observables[ Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ] += ( observables_array[ bin * convert(Obs_enum_t::NUM_OBS) + ob ] ) * weight;
+                    *system_obs( current_Tidx, ob ) += ( observables_array[ current_bin * convert(Obs_enum_t::NUM_OBS) + ob ] ) * weight;
+                    //canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ] += ( observables_array[ current_bin * convert(Obs_enum_t::NUM_OBS) + ob ] ) * weight;
                 else
-                    canonical_observables[ Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ] += ( observables_array[ bin * convert(Obs_enum_t::NUM_OBS) + ob ] );
+                    *system_obs( current_Tidx, ob ) += observables_array[ current_bin * convert(Obs_enum_t::NUM_OBS) + ob ];
+                    //canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ] += ( observables_array[ current_bin * convert(Obs_enum_t::NUM_OBS) + ob ] );
             }
         }
         // Normalize the result
         partition *= static_cast<obs_t> (system_size);
-        canonical_observables[ Tidx * total_observables + convert(Energy_Obs::internal_energy) ] /= partition;
-        canonical_observables[ Tidx * total_observables + convert(Energy_Obs::internal_energy2) ] /= partition;
-        canonical_observables[ Tidx * total_observables + convert(Energy_Obs::entropy) ] /= partition;
+        *energy_obs( current_Tidx, Energy_Obs::internal_energy ) /= partition;
+        *energy_obs( current_Tidx, Energy_Obs::internal_energy2 ) /= partition;
+        *energy_obs( current_Tidx, Energy_Obs::entropy ) /= partition;
+        /*
+        canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::internal_energy) ] /= partition;
+        canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::internal_energy2) ] /= partition;
+        canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::entropy) ] /= partition;
+        */
 
         // Compute the specific heat
-        canonical_observables[ Tidx * total_observables + convert(Energy_Obs::specific_heat) ] = ( canonical_observables[ Tidx * total_observables + convert(Energy_Obs::internal_energy2) ] 
-                                                                                                 - canonical_observables[ Tidx * total_observables + convert(Energy_Obs::internal_energy) ] 
-                                                                                                 * canonical_observables[ Tidx * total_observables + convert(Energy_Obs::internal_energy) ] ) 
-                                                                                                 / ( static_cast<obs_t>( system_size * Tvalue * Tvalue ) ); 
+        obs_t En = canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::internal_energy) ];
+        obs_t En2 = canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::internal_energy2) ];
+        *energy_obs( current_Tidx, Energy_Obs::specific_heat ) = (En2 - En * En) / static_cast<obs_t>( system_size * Tvalue * Tvalue );
+        //canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::specific_heat) ] = (En2 - En * En) / ( static_cast<obs_t>( system_size * Tvalue * Tvalue ) ); 
 
         for ( size_t ob = 0; ob != convert(Energy_Obs::NUM_OBS); ++ob )
         {
-            canonical_observables[ Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ] /= partition;
+            *system_obs( current_Tidx, ob ) /= partition;
             if ( ob != convert(Obs_enum_t::counts_per_bin) )
-                canonical_observables[ Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ] /= partition;
+                *system_obs( current_Tidx, ob ) /= partition;
+                //canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ] /= partition;
             else
-                canonical_observables[ Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ] /= num_energy_bins;
+                *system_obs( current_Tidx, ob ) /= num_energy_bins;
+                //canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ] /= num_energy_bins;
         }
         
     }
