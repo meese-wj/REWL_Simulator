@@ -62,8 +62,9 @@ int main(const int argc, const char * argv[])
 
     printf("\nWriting thermodynamics to file.");
 
-    write_observables_to_file<ENERGY_TYPE, OBS_TYPE>( 1000, convert<Energy_Obs>(Energy_Obs::NUM_OBS) + convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),
-                                                      ".", "", thermo -> temperatures, thermo -> canonical_observables ); 
+    constexpr size_t total_observables =   convert<Energy_Obs::enum_names>(Energy_Obs::enum_names::NUM_OBS) 
+                                         + convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS);
+    write_observables_to_file<ENERGY_TYPE, OBS_TYPE>( 1000, total_observables, ".", "", thermo -> temperatures, thermo -> canonical_observables ); 
     
 #if COLLECT_TIMINGS
     timer_end = std::chrono::high_resolution_clock::now();
