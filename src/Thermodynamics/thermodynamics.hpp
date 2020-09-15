@@ -94,7 +94,7 @@ struct Thermodynamics
         for ( size_t bin = 1; bin <= num_energy_bins; ++bin )
         {
             const size_t current_bin = num_energy_bins - bin;
-            if ( Tvalue < 0.11 )
+            if ( Tvalue > 4.6 )
                 printf("energy[%ld] = %e, reduced exp = %e\n", current_bin, energy_array[current_bin], reduced_exponential(current_bin, Tvalue, maximum, energy_array, logdos_array));
             part += reduced_exponential( current_bin, Tvalue, maximum, energy_array, logdos_array );
         }
@@ -147,8 +147,8 @@ void Thermodynamics<energy_t, logdos_t, obs_t,
         const obs_t max_exponent = find_maximum_exponent( Tvalue, energy_array, logdos_array );
  
         // Second compute the partition function with the maximum exponent scaled out
-        obs_t partition = reduced_partition_function( Tvalue, max_exponent, energy_array, logdos_array );
-        printf("temperatures[%ld] = %e, max exponent, partition = %e, %e\n", current_Tidx, Tvalue, max_exponent, partition);
+        const obs_t partition = reduced_partition_function( Tvalue, max_exponent, energy_array, logdos_array );
+        printf("temperatures[%ld] = %e, max exponent, partition, free energy = %e, %e, %e\n", current_Tidx, Tvalue, max_exponent, partition, -Tvalue * ( max_exponent + log(partition) ));
         
         // Third compute the energy observables
         *energy_obs( current_Tidx, Energy_Obs::free_energy ) = -Tvalue * ( max_exponent + log(partition) ) / static_cast<obs_t>(system_size);
@@ -174,20 +174,19 @@ void Thermodynamics<energy_t, logdos_t, obs_t,
         }
         
         // Normalize the result
-        partition *= static_cast<obs_t> (system_size);
-        *energy_obs( current_Tidx, Energy_Obs::internal_energy ) /= partition;
-        *energy_obs( current_Tidx, Energy_Obs::internal_energy2 ) /= partition;
-        *energy_obs( current_Tidx, Energy_Obs::entropy ) /= partition;
+        *energy_obs( current_Tidx, Energy_Obs::internal_energy ) /= ( system_size * partition );
+        *energy_obs( current_Tidx, Energy_Obs::internal_energy2 ) /= ( system_size * partition );
+        *energy_obs( current_Tidx, Energy_Obs::entropy ) /= ( system_size * partition );
 
         // Compute the specific heat
-        obs_t En = get_energy_obs( current_Tidx, Energy_Obs::internal_energy );
-        obs_t En2 = get_energy_obs( current_Tidx, Energy_Obs::internal_energy2 );
+        obs_t En = static_cast<obs_t>(system_size) * get_energy_obs( current_Tidx, Energy_Obs::internal_energy );
+        obs_t En2 = static_cast<obs_t>(system_size) * get_energy_obs( current_Tidx, Energy_Obs::internal_energy2 );
         *energy_obs( current_Tidx, Energy_Obs::specific_heat ) = (En2 - En * En) / static_cast<obs_t>( system_size * Tvalue * Tvalue );
 
         for ( size_t ob = 0; ob != convert(Energy_Obs::NUM_OBS); ++ob )
         {
             if ( ob != convert(Obs_enum_t::counts_per_bin) )
-                *system_obs( current_Tidx, ob ) /= partition;
+                *system_obs( current_Tidx, ob ) /= ( system_size * partition );
             else
                 *system_obs( current_Tidx, ob ) /= num_energy_bins;
         }
