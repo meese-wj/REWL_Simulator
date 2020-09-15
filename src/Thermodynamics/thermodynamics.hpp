@@ -203,7 +203,6 @@ void Thermodynamics<energy_t, logdos_t, obs_t,
 
         for ( size_t ob = 0; ob != convert(Energy_Obs::NUM_OBS); ++ob )
         {
-            *system_obs( current_Tidx, ob ) /= partition;
             if ( ob != convert(Obs_enum_t::counts_per_bin) )
                 *system_obs( current_Tidx, ob ) /= partition;
                 //canonical_observables[ current_Tidx * total_observables + convert(Energy_Obs::NUM_OBS) + ob ] /= partition;
