@@ -9,7 +9,7 @@ set(INCLUDE_DIRS
 
 include_directories("${INCLUDE_DIRS}")
 
-add_subdirectory(file_manager)
+add_subdirectory(file_management)
 add_subdirectory(util)
 add_subdirectory(Thermodynamics)
 add_subdirectory(Hamiltonians)
