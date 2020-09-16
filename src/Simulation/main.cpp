@@ -5,6 +5,7 @@ const std::string DELIMITER = "  ";
 
 #include "rewl_simulation.hpp"
 
+#include <file_manager.hpp>
 #include <array_shift.hpp>
 #include <write_microcanonical_observables.hpp>
 #include <thermodynamics.hpp>
@@ -20,9 +21,17 @@ int main(const int argc, const char * argv[])
         printf("\nReturning error value.\n\n");
         return 1;
     }
-
-
+ 
     REWL_simulation * simulation = new REWL_simulation();
+
+    /* ****************************************************************************** */
+    /* Set up the file system for this simulation.                                    */
+    /* ****************************************************************************** */
+
+    System_Strings sys_strings = System_Strings();
+    std::filesystem::path data_path = create_output_path( sys_strings.model_name, sys_strings.size_string ); 
+    
+    /* ****************************************************************************** */
    
     printf("\nStarting simulation...");
     simulation -> simulate();

@@ -6,9 +6,9 @@ namespace FS = std::filesystem;
 std::string get_todays_date()
 {
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-    std::time_t time_now = std::chrono::system_clock::to_time_t(now - std::chrono::hours(24));
+    std::time_t time_now = std::chrono::system_clock::to_time_t( now );
     std::stringstream ss_date;
-    ss_date << std::put_time( std::localtime( &time_now ), "%D" );
+    ss_date << std::put_time( std::localtime( &time_now ), "%B_%d_%Y" );    // Full Month _ Day _ Year
     std::string date = ss_date.str();
     return date;
 }
@@ -23,12 +23,13 @@ void create_directory( const std::string & path_to_dir )
         std::cout << "\nInactive filesystem:\n\tDirectory " << filepath << " already exists.\n\n";
         return;
     }
-
+    
+    std::cout << "\nCreating directory...\n\tDirectory " << filepath << "\n";
     FS::create_directory( filepath );
 }
 
 // Build the output file path and return it
-FS::path create_output_path( const std::string & model_name, const unsigned system_size )
+FS::path create_output_path( const std::string & model_name, const std::string & size_string )
 {
     FS::path output_path = FS::current_path();
     
@@ -58,8 +59,8 @@ FS::path create_output_path( const std::string & model_name, const unsigned syst
     create_directory( sub_path.string() );
 
     // Path = build parent / data_path / model_name / today's date 
-    // Subpath = build parent / data_path / model_name / today's date / histogram_subfolder / DoF_subfolder
-    sub_path /= DoF_subfolder + std::to_string( system_size );
+    // Subpath = build parent / data_path / model_name / today's date / histogram_subfolder / size_string_subfolder
+    sub_path /= size_string;
     create_directory( sub_path.string() );
  
     return output_path;

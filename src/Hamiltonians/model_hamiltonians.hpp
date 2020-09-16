@@ -5,6 +5,8 @@
     #include "Ising2d/ising2d_hamiltonian.hpp"
     namespace System_Parameters = Ising2d_Parameters;
 
+    using System_Strings = Ising2d_Parameter_String;
+
     template<typename data_t>
     using State_t = State<data_t>;
     
