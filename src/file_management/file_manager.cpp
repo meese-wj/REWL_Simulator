@@ -28,7 +28,7 @@ void create_directory( const std::string & path_to_dir )
 }
 
 // Build the output file path and return it
-FS::path create_output_path( const std::string & simulation_type, const unsigned system_size )
+FS::path create_output_path( const std::string & model_name, const unsigned system_size )
 {
     FS::path output_path = FS::current_path();
     
@@ -41,24 +41,24 @@ FS::path create_output_path( const std::string & simulation_type, const unsigned
     create_directory( output_path.string() );
 
     // Add which simulation type it is
-    // Path = build parent / data_path / simulation_type
-    output_path /= simulation_type;
+    // Path = build parent / data_path / model_name
+    output_path /= model_name;
     create_directory( output_path.string() );
 
     // Create a new directory with today's date
-    // Path = build parent / data_path / simulation_type / today's date 
+    // Path = build parent / data_path / model_name / today's date 
     output_path /= get_todays_date(); 
     create_directory( output_path.string() );
 
     // Finally create a folder for the histograms
     // for a given system size.
-    // Path = build parent / data_path / simulation_type / today's date 
-    // Subpath = build parent / data_path / simulation_type / today's date / histogram_subfolder
+    // Path = build parent / data_path / model_name / today's date 
+    // Subpath = build parent / data_path / model_name / today's date / histogram_subfolder
     FS::path sub_path = output_path / histogram_subfolder;
     create_directory( sub_path.string() );
 
-    // Path = build parent / data_path / simulation_type / today's date 
-    // Subpath = build parent / data_path / simulation_type / today's date / histogram_subfolder / DoF_subfolder
+    // Path = build parent / data_path / model_name / today's date 
+    // Subpath = build parent / data_path / model_name / today's date / histogram_subfolder / DoF_subfolder
     sub_path /= DoF_subfolder + std::to_string( system_size );
     create_directory( sub_path.string() );
  

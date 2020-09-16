@@ -4,7 +4,7 @@ Ising2d_Parameter_String::Ising2d_Parameter_String()
 {
     file_name_base = "REWL_L-" + L + "_J-" + J + "_h-" + h + ".dat";
 
-    file_header = "# REWL 2d Ising Model on a Periodic Square Lattice";
+    file_header = "# REWL " + model_name + "on a Periodic Square Lattice";
     file_header += "\n# Hamiltonian Parameters";
     file_header += "\n#    L = " + L;
     file_header += "\n#    N = " + N;
