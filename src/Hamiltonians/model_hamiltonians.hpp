@@ -9,8 +9,9 @@
 
     template<typename data_t>
     using State_t = State<data_t>;
-    
-    using System_Obs_enum_t = Obs;
+   
+    namespace System_Obs = Obs;
+    using System_Obs_enum_t = System_Obs::enum_names;
 
     template<typename data_t>
     using Observables_t = Ising2d_Obs<data_t>;
