@@ -64,7 +64,8 @@ int main(const int argc, const char * argv[])
     // Print out the microcanonical observables before thermally averaging
     write_microcanonical_observables<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE>( System_Parameters::N, final_num_bins, convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),
                                                                           convert<System_Obs_enum_t>(System_Obs_enum_t::counts_per_bin),
-                                                                          sys_strings.file_name_base, data_file_header, data_path, final_energy_array, final_logdos_array, final_observable_array ); 
+                                                                          sys_strings.file_name_base, data_file_header, System_Obs::string_names,
+                                                                          data_path, final_energy_array, final_logdos_array, final_observable_array ); 
 
     const ENERGY_TYPE Tmin = 0.01;
     const ENERGY_TYPE Tmax = 4.71;

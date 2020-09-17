@@ -5,6 +5,7 @@
  * intensive, meaning they are normalized by
  * system size (once). */
 
+#include <vector>
 #include <file_manager.hpp>
 #include <fstream>
 
@@ -17,6 +18,7 @@ void write_microcanonical_observables( const size_t system_size,
                                        const size_t counts_per_bin,
                                        const std::string & file_string,
                                        const std::string & file_header,
+                                       const std::vector<std::string> & obs_names,
                                        const std::filesystem::path & file_path,
                                        const energy_t * const energy_array,
                                        const logdos_t * const logdos_array,
@@ -27,6 +29,15 @@ void write_microcanonical_observables( const size_t system_size,
     output_file.open( file_path / file_name );
 
     output_file << file_header;
+    size_t counter = 1;
+    output_file << "# 1: Energy" << DELIMITER;
+    for ( size_t obs_idx = 0, num_obs = obs_names.size(); obs_idx != num_obs; ++obs_idx )
+    {
+        if ( obs_names[ obs_idx ].compare("NUM OBS") != 0 )
+            output_file << ++counter << ": " << obs_names[ obs_idx ] << DELIMITER;
+    }
+    output_file << "\n";
+
     for ( size_t bin = 0; bin != num_bins; ++bin )
     {
         output_file << energy_array[ bin ] / system_size << DELIMITER << logdos_array[ bin ] / system_size << DELIMITER;

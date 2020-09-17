@@ -23,6 +23,15 @@ void write_observables_to_file( const size_t num_temps, const size_t num_obs,
 
     output_file.open(file_path / filename);
     output_file << file_header;
+    
+    size_t counter = 1;
+    output_file << "# 1: Temperature" << DELIMITER;
+    for ( size_t obs_idx = 0, num_obs = obs_names.size(); obs_idx != num_obs; ++obs_idx )
+    {
+        if ( obs_names[ obs_idx ].compare("NUM OBS") != 0 )
+            output_file << ++counter << ": " << obs_names[ obs_idx ] << DELIMITER;
+    }
+    output_file << "\n";
 
     for ( size_t Tidx = 0; Tidx != num_temps; ++Tidx )
     {
