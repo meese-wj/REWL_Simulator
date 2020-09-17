@@ -38,7 +38,11 @@ int main(const int argc, const char * argv[])
     /* ****************************************************************************** */
    
     printf("\nStarting simulation...");
+#if PRINT_HISTOGRAM
+    simulation -> simulate( data_path / "Histograms" / sys_strings.size_string );
+#else
     simulation -> simulate();
+#endif
     printf("\nEnd of simulation. Exiting.\n\n");
 
     printf("\nExporting energy array, logDoS array, and observables array.\n");

@@ -32,7 +32,11 @@ struct REWL_simulation
         if (my_walker != nullptr) delete my_walker;
     }
 
-    void simulate() const;
+    void simulate(
+#if PRINT_HISTOGRAM
+                  const std::filesystem::path & histogram_path
+#endif
+            ) const;
 };
 
 // Simulation constructor
@@ -68,7 +72,11 @@ REWL_simulation::REWL_simulation()
 }
 
 // Main function for the simulation.
-void REWL_simulation::simulate() const
+void REWL_simulation::simulate(
+#if PRINT_HISTOGRAM
+                                const std::filesystem::path & histogram_path
+#endif
+                               ) const
 {
 #if COLLECT_TIMINGS
     auto start = std::chrono::high_resolution_clock::now();
@@ -89,7 +97,7 @@ void REWL_simulation::simulate() const
 
 #if PRINT_HISTOGRAM
         if ( sweep_counter % (REWL_Parameters::sweeps_per_check) == 0 )
-            my_walker -> wl_walker.wl_histograms.print_histogram_counts(iteration_counter);
+            my_walker -> wl_walker.wl_histograms.print_histogram_counts(iteration_counter, histogram_path);
 #endif
 
         // Now check to see if the histogram is flat
@@ -98,7 +106,7 @@ void REWL_simulation::simulate() const
             // Reset only the energy histogram and leave
             // the logdos alone.
 #if PRINT_HISTOGRAM
-            my_walker -> wl_walker.wl_histograms.print_histogram_counts(iteration_counter);
+            my_walker -> wl_walker.wl_histograms.print_histogram_counts(iteration_counter, histogram_path);
 #endif
 
             my_walker -> wl_walker.reset_histogram();

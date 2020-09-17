@@ -16,6 +16,7 @@
 
 #if PRINT_HISTOGRAM
 #include <string>
+#include <filesystem>
 #include <fstream>
 #endif
 
@@ -98,7 +99,7 @@ struct rewl_histograms
 #if PRINT_HISTOGRAM
     // Print counts for the histogram. This function overwrites
     // per each iteration.
-    void print_histogram_counts( const size_t iteration ) const;
+    void print_histogram_counts( const size_t iteration, const std::filesystem::path & histogram_path ) const;
 #endif
 };
 
@@ -126,10 +127,10 @@ float rewl_histograms<data_t>::count_flatness() const
 
 #if PRINT_HISTOGRAM
 template<typename data_t>
-void rewl_histograms<data_t>::print_histogram_counts( const size_t iteration ) const
+void rewl_histograms<data_t>::print_histogram_counts( const size_t iteration, const std::filesystem::path & histogram_path ) const
 {
     std::ofstream printer;
-    std::string file_name = histogram_file + std::to_string(iteration) + ".txt";
+    std::filesystem::path file_name = histogram_path / ( histogram_file + std::to_string(iteration) + ".txt" );
     printer.open(file_name);
     for( size_t bin = 0; bin != num_bins; ++bin )
     {
