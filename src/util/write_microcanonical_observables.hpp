@@ -5,7 +5,7 @@
  * intensive, meaning they are normalized by
  * system size (once). */
 
-#include <string>
+#include <file_manager.hpp>
 #include <fstream>
 
 // This string must be defined somewhere!
@@ -15,15 +15,16 @@ template<typename energy_t, typename logdos_t, typename obs_t>
 void write_microcanonical_observables( const size_t system_size, 
                                        const size_t num_bins, const size_t num_obs,
                                        const size_t counts_per_bin,
-                                       const std::string & file_path,
+                                       const std::string & file_string,
                                        const std::string & file_header,
+                                       const std::filesystem::path & file_path,
                                        const energy_t * const energy_array,
                                        const logdos_t * const logdos_array,
                                        const obs_t * const system_observables )
 {
-    const std::string file_name = "microcanonical_observables.txt"; 
+    const std::string file_name = "microcanonical_observables-" + file_string + ".txt"; 
     std::ofstream output_file;
-    output_file.open( file_path + "/" + file_name );
+    output_file.open( file_path / file_name );
 
     output_file << file_header;
     for ( size_t bin = 0; bin != num_bins; ++bin )

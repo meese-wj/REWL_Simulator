@@ -8,14 +8,6 @@
 #include <iostream>
 #include <filesystem>   // Requires C++17
 
-/* ********************************************************************************************************** */
-/* Define some constant strings                                                                               */
-const std::string data_path = "Simulation_Data";          // Location in build parent to house all data
-const std::string histogram_subfolder = "Histograms";     // Location within dated parent subfolder 
-const std::string DoF_subfolder = "DoF-";                 // Location for size-dependent files
-/*                                                                                                            */
-/* ********************************************************************************************************** */
-
 // Get the date string from chrono
 std::string get_todays_date();
 

@@ -2,6 +2,12 @@
 
 namespace FS = std::filesystem;
 
+/* ************************************************************************************************************ */
+/* Define some constant strings                                                                                 */
+const std::string OUTPUT_DATA_PATH = "Simulation_Data";          // Location in build parent to house all data
+const std::string HISTOGRAM_SUBFOLDER = "Histograms";            // Location within dated parent subfolder 
+/* ************************************************************************************************************ */
+
 // Get the date string from chrono
 std::string get_todays_date()
 {
@@ -34,32 +40,32 @@ FS::path create_output_path( const std::string & model_name, const std::string &
     FS::path output_path = FS::current_path();
     
     // Put data in outsid of the build directory
-    // Path = build parent / data_path
-    output_path = output_path.parent_path() / data_path;
+    // Path = build parent / OUTPUT_DATA_PATH
+    output_path = output_path.parent_path() / OUTPUT_DATA_PATH;
 
     // Determine if the path exists and create it
     // if it does not
     create_directory( output_path.string() );
 
     // Add which simulation type it is
-    // Path = build parent / data_path / model_name
+    // Path = build parent / OUTPUT_DATA_PATH / model_name
     output_path /= model_name;
     create_directory( output_path.string() );
 
     // Create a new directory with today's date
-    // Path = build parent / data_path / model_name / today's date 
+    // Path = build parent / OUTPUT_DATA_PATH / model_name / today's date 
     output_path /= get_todays_date(); 
     create_directory( output_path.string() );
 
     // Finally create a folder for the histograms
     // for a given system size.
-    // Path = build parent / data_path / model_name / today's date 
-    // Subpath = build parent / data_path / model_name / today's date / histogram_subfolder
-    FS::path sub_path = output_path / histogram_subfolder;
+    // Path = build parent / OUTPUT_DATA_PATH / model_name / today's date 
+    // Subpath = build parent / OUTPUT_DATA_PATH / model_name / today's date / HISTOGRAM_SUBFOLDER
+    FS::path sub_path = output_path / HISTOGRAM_SUBFOLDER;
     create_directory( sub_path.string() );
 
-    // Path = build parent / data_path / model_name / today's date 
-    // Subpath = build parent / data_path / model_name / today's date / histogram_subfolder / size_string_subfolder
+    // Path = build parent / OUTPUT_DATA_PATH / model_name / today's date 
+    // Subpath = build parent / OUTPUT_DATA_PATH / model_name / today's date / HISTOGRAM_SUBFOLDER / size_string_subfolder
     sub_path /= size_string;
     create_directory( sub_path.string() );
  

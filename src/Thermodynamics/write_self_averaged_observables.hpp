@@ -4,23 +4,24 @@
  * The more complicated cumulants must be written 
  * elsewhere since they are model-dependent. */
 
-#include <string>
+#include <file_manager.hpp>
 #include <fstream>
 
 // This string must be defined somewhere!
 // const std::string DELIMITER = "  ";
 
 template<typename energy_t, typename obs_t>
-void write_observables_to_file(                             const size_t num_temps, const size_t num_obs,
-                                const std::string & file_path,
+void write_observables_to_file( const size_t num_temps, const size_t num_obs,
+                                const std::string & file_string,
                                 const std::string & file_header,
+                                const std::filesystem::path & file_path,
                                 const energy_t * const temperature_array,
                                 const obs_t * const observables_array )
 {
-    std::string filename = "self_averaged_observables.txt";
+    std::string filename = "self_averaged_observables-" + file_string + ".txt";
     std::ofstream output_file; 
 
-    output_file.open(file_path + "/" + filename);
+    output_file.open(file_path / filename);
     output_file << file_header;
 
     for ( size_t Tidx = 0; Tidx != num_temps; ++Tidx )

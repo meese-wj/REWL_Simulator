@@ -6,6 +6,7 @@ const std::string DELIMITER = "  ";
 #include "rewl_simulation.hpp"
 
 #include <file_manager.hpp>
+#include <file_header.hpp>
 #include <array_shift.hpp>
 #include <write_microcanonical_observables.hpp>
 #include <thermodynamics.hpp>
@@ -29,7 +30,10 @@ int main(const int argc, const char * argv[])
     /* ****************************************************************************** */
 
     System_Strings sys_strings = System_Strings();
+    REWL_Parameter_String rewl_strings = REWL_Parameter_String();
     std::filesystem::path data_path = create_output_path( sys_strings.model_name, sys_strings.size_string ); 
+
+    std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
     
     /* ****************************************************************************** */
    
@@ -56,9 +60,12 @@ int main(const int argc, const char * argv[])
     // Print out the microcanonical observables before thermally averaging
     write_microcanonical_observables<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE>( System_Parameters::N, final_num_bins, convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),
                                                                           convert<System_Obs_enum_t>(System_Obs_enum_t::counts_per_bin),
-                                                                          ".", "", final_energy_array, final_logdos_array, final_observable_array ); 
+                                                                          sys_strings.file_name_base, data_file_header, data_path, final_energy_array, final_logdos_array, final_observable_array ); 
 
-    thermo_t * thermo = new thermo_t ( final_num_bins, 0.1, 4.7, 1000 );
+    const ENERGY_TYPE Tmin = 0.01;
+    const ENERGY_TYPE Tmax = 4.71;
+    const size_t num_T = 1000;
+    thermo_t * thermo = new thermo_t ( final_num_bins, Tmin, Tmax, num_T );
     
     printf("\nNow calculating canonical thermodynamics.\n");
 #if COLLECT_TIMINGS
@@ -73,7 +80,8 @@ int main(const int argc, const char * argv[])
 
     constexpr size_t total_observables =   convert<Energy_Obs::enum_names>(Energy_Obs::enum_names::NUM_OBS) 
                                          + convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS);
-    write_observables_to_file<ENERGY_TYPE, OBS_TYPE>( 1000, total_observables, ".", "", thermo -> temperatures, thermo -> canonical_observables ); 
+    write_observables_to_file<ENERGY_TYPE, OBS_TYPE>( num_T, total_observables, sys_strings.file_name_base, data_file_header,
+                                                      data_path, thermo -> temperatures, thermo -> canonical_observables ); 
     
 #if COLLECT_TIMINGS
     timer_end = std::chrono::high_resolution_clock::now();
