@@ -4,6 +4,7 @@
  * The more complicated cumulants must be written 
  * elsewhere since they are model-dependent. */
 
+#include <vector>
 #include <file_manager.hpp>
 #include <fstream>
 
@@ -14,6 +15,7 @@ template<typename energy_t, typename obs_t>
 void write_observables_to_file( const size_t num_temps, const size_t num_obs,
                                 const std::string & file_string,
                                 const std::string & file_header,
+                                const std::vector<std::string> obs_names,
                                 const std::filesystem::path & file_path,
                                 const energy_t * const temperature_array,
                                 const obs_t * const observables_array )
@@ -25,13 +27,14 @@ void write_observables_to_file( const size_t num_temps, const size_t num_obs,
     output_file << file_header;
     
     size_t counter = 1;
-    output_file << "# 1: Temperature" << DELIMITER;
+    output_file << "# Intensive Observable Names by Column";
+    output_file << "\n#    1: Temperature";
     for ( size_t obs_idx = 0, num_obs = obs_names.size(); obs_idx != num_obs; ++obs_idx )
     {
         if ( obs_names[ obs_idx ].compare("NUM OBS") != 0 )
-            output_file << ++counter << ": " << obs_names[ obs_idx ] << DELIMITER;
+            output_file << "\n#    " << ++counter << ": " << obs_names[ obs_idx ];
     }
-    output_file << "\n";
+    output_file << "\n#\n";
 
     for ( size_t Tidx = 0; Tidx != num_temps; ++Tidx )
     {

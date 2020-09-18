@@ -85,8 +85,11 @@ int main(const int argc, const char * argv[])
 
     constexpr size_t total_observables =   convert<Energy_Obs::enum_names>(Energy_Obs::enum_names::NUM_OBS) 
                                          + convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS);
+    
+    const std::vector<std::string> thermal_obs_names = concatenate_vector_string( Energy_Obs::string_names, System_Obs::string_names );
+
     write_observables_to_file<ENERGY_TYPE, OBS_TYPE>( num_T, total_observables, sys_strings.file_name_base, data_file_header,
-                                                      data_path, thermo -> temperatures, thermo -> canonical_observables ); 
+                                                      thermal_obs_names, data_path, thermo -> temperatures, thermo -> canonical_observables ); 
     
 #if COLLECT_TIMINGS
     timer_end = std::chrono::high_resolution_clock::now();

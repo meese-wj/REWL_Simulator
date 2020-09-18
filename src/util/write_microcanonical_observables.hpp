@@ -29,14 +29,15 @@ void write_microcanonical_observables( const size_t system_size,
     output_file.open( file_path / file_name );
 
     output_file << file_header;
-    size_t counter = 1;
-    output_file << "# 1: Energy" << DELIMITER;
+    size_t counter = 2;
+    output_file << "# Intensive Observable Names by Column";
+    output_file << "\n#    1: Energy\n#    2: logDoS";
     for ( size_t obs_idx = 0, num_obs = obs_names.size(); obs_idx != num_obs; ++obs_idx )
     {
         if ( obs_names[ obs_idx ].compare("NUM OBS") != 0 )
-            output_file << ++counter << ": " << obs_names[ obs_idx ] << DELIMITER;
+            output_file << "\n#    " << ++counter << ": " << obs_names[ obs_idx ];
     }
-    output_file << "\n";
+    output_file << "\n#\n";
 
     for ( size_t bin = 0; bin != num_bins; ++bin )
     {
