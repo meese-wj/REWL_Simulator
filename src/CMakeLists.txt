@@ -1,11 +1,13 @@
 
-set(INCLUDE_DIRS
+set(INCLUDE_DIRS "${INCLUDE_DIRS}"
     "${CMAKE_CURRENT_SOURCE_DIR}/file_management"
     "${CMAKE_CURRENT_SOURCE_DIR}/Hamiltonians/grid"
     "${CMAKE_CURRENT_SOURCE_DIR}/Hamiltonians"
     "${CMAKE_CURRENT_SOURCE_DIR}/util"
     "${CMAKE_CURRENT_SOURCE_DIR}/Thermodynamics"
     "${CMAKE_CURRENT_SOURCE_DIR}/REWL")
+
+message(STATUS "Include directories: ${INCLUDE_DIRS}")
 
 include_directories("${INCLUDE_DIRS}")
 

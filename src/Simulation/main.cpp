@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string>
+#include <mpi.h>
 
 const std::string DELIMITER = "  ";
 
@@ -13,9 +14,18 @@ const std::string DELIMITER = "  ";
 #include <write_self_averaged_observables.hpp>
 
 using thermo_t = Thermodynamics<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE, System_Obs_enum_t>;
+constexpr ENERGY_TYPE Tmin = 0.01;
+constexpr ENERGY_TYPE Tmax = 4.71;
+constexpr size_t num_T = 1000;
 
-int main(const int argc, const char * argv[])
+int main(int argc, char * const argv[])
 {
+    MPI_Init(argc, argv);
+    int world_rank;
+    int world_size;
+    MPI_Comm_rank( MPI_COMM_WORLD, &world_rank );
+    MPI_Comm_size( MPI_COMM_WORLD, &world_size );
+
     if (argc > 1)
     {
         printf("\nThis simulation %s takes no command line arguments.", argv[0]);
@@ -67,9 +77,6 @@ int main(const int argc, const char * argv[])
                                                                           sys_strings.file_name_base, data_file_header, System_Obs::string_names,
                                                                           data_path, final_energy_array, final_logdos_array, final_observable_array ); 
 
-    const ENERGY_TYPE Tmin = 0.01;
-    const ENERGY_TYPE Tmax = 4.71;
-    const size_t num_T = 1000;
     thermo_t * thermo = new thermo_t ( final_num_bins, Tmin, Tmax, num_T );
     
     printf("\nNow calculating canonical thermodynamics.\n");
