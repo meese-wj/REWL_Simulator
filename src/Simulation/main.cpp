@@ -18,9 +18,9 @@ constexpr ENERGY_TYPE Tmin = 0.01;
 constexpr ENERGY_TYPE Tmax = 4.71;
 constexpr size_t num_T = 1000;
 
-int main(int argc, char * const argv[])
+int main(int argc, char * argv[])
 {
-    MPI_Init(argc, argv);
+    MPI_Init(&argc, &argv);
     int world_rank;
     int world_size;
     MPI_Comm_rank( MPI_COMM_WORLD, &world_rank );
@@ -114,6 +114,7 @@ int main(int argc, char * const argv[])
     delete [] final_energy_array;
     delete [] final_logdos_array;
     delete [] final_observable_array;
-
+    
+    MPI_Finalize();
     return 0;
 }

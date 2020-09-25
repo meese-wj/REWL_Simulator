@@ -25,3 +25,10 @@ target_link_libraries(REWL_Simulator PUBLIC
                       hamiltonians
                       rewl_functions
                       simulation)
+
+if (MPI_ON AND MPI_CXX_FOUND)
+    target_include_directories(REWL_Simulator PRIVATE ${MPI_CXX_INCLUDE_PATH})
+    target_compile_options(REWL_Simulator PRIVATE ${MPI_CXX_COMPILE_FLAGS})
+    target_link_libraries(REWL_Simulator PUBLIC ${MPI_CXX_LIBRARIES} ${MPI_CXX_LINK_FLAGS})
+endif()
+

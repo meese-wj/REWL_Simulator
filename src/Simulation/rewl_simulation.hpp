@@ -43,8 +43,8 @@ struct REWL_simulation
 REWL_simulation::REWL_simulation()
 {
 #if MPI_ON
-    MPI_Comm_rank( &my_world_rank, MPI_COMM_WORLD );
-    MPI_Comm_size( &num_walkers, MPI_COMM_WORLD );
+    MPI_Comm_rank( MPI_COMM_WORLD, &my_world_rank );
+    MPI_Comm_size( MPI_COMM_WORLD, &REWL_Parameters::num_walkers );
     i_am_the_master = ( my_world_rank == REWL_MASTER_PROC );
 #endif
     

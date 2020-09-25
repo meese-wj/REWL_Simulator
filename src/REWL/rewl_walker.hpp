@@ -77,7 +77,7 @@ REWL_Walker<energy_t,
     }
 
 #if MPI_ON
-    MPI_Comm_rank( &walker_world_rank, MPI_COMM_WORLD );
+    MPI_Comm_rank( MPI_COMM_WORLD, &walker_world_rank );
     i_am_the_master = ( walker_world_rank == REWL_MASTER_PROC ? 1 : 0 );
 #endif 
 }
