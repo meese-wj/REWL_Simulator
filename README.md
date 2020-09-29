@@ -15,4 +15,11 @@ First, clone this repo directly. Suppose the relative path to the clone is then 
 mkdir build
 cd build
 cmake ..
+make -j 
+```
+`cmake` will fail if an MPI implementation is not found. If it is, `cmake` will determine the correct MPI compiler and then the corresponding runtime flags. These will be outputted at the configure step of `cmake` and will be stored in the `build/CMakeCache.txt` file if the configure step is successful. 
+
+When `make -j` is called for parallel compilation, the simulation runtime executable will be stored in the build directory as `bin/REWL_Simulator`. The runtime command to execute the code will come down to
+```bash
+MPIEXEC MPIEXEC_NUMPROC_FLAG MPIEXEC_MAX_NUMPROCS MPIEXEC_PREFLAGS ./bin/REWL_Simulator MPIEXEC_POSTFLAGS <simulator-flags>
 ```
