@@ -6,4 +6,13 @@ This code base is a _Replica-Exchange Wang Landau_ (REWL) simulator written to g
 actual algorithm itself.
 
 ## Code Basics
-This code base is written in `C++` and uses `cmake` to build across different platforms. This section will be updated as more of the code is developed.
+The goal for this code base is for it to be written in `C++` and built with `cmake` across different platforms. Currently it has only been tested on Linux systems. This section will be updated as more of the code is developed.
+
+### Code Installation
+First, clone this repo directly. Suppose the relative path to the clone is then `repo_path`. Then `cd` into that directory as `cd repo_path`. Next create a build directory within the cloned source. _It is not recommended to build in-source!_ From the Unix terminal, execute the following
+```bash 
+# After 'cd repo_path'
+mkdir build
+cd build
+cmake ..
+```
