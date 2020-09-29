@@ -15,4 +15,25 @@ First, clone this repo directly. Suppose the relative path to the clone is then 
 mkdir build
 cd build
 cmake ..
+make -j 
 ```
+`cmake` will fail if an MPI implementation is not found. If it is, `cmake` will determine the correct MPI compiler and then the corresponding runtime flags. These will be outputted at the configure step of `cmake` and will be stored in the `build/CMakeCache.txt` file if the configure step is successful. 
+
+When `make -j` is called for parallel compilation, the simulation runtime executable will be stored in the build directory as `bin/REWL_Simulator`. The runtime command to execute the code will come down to
+```bash
+MPIEXEC MPIEXEC_NUMPROC_FLAG MPIEXEC_MAX_NUMPROCS MPIEXEC_PREFLAGS ./bin/REWL_Simulator MPIEXEC_POSTFLAGS <simulator-flags>
+```
+Currently, there are no runtime flags to be passed as `<simulator-flags>` to the simulation.
+
+Some `cmake` options to be aware of are as follows
+* `MPI_ON`
+    * This engages parallelization and replica exchange. 
+    * This option is deprecated and will soon be mandatory.
+* `ISING2D`
+    * This flag sets the Ising model on a 2d square periodic grid.
+    * It is the default Hamiltonian used.
+* `COLLECT_TIMINGS`
+    * This flag compiles the timing functionality through the `C++` Standard Library (`std::chrono`).
+* `PRINT_HISTOGRAM`
+    * When set, the histograms are intermittently written to a file.
+    * Currently this is _not_ thread safe and will be corrected as the parallelization is implemented.
