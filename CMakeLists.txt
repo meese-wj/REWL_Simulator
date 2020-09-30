@@ -11,7 +11,7 @@ add_compile_options(-std=c++17 -Wall -Werror -pedantic)
 option(MPI_ON "Turn on MPI. This engages parallelized a Wang Landau simulation." ON)
 option(ISING2D "Run a 2d Ising model on a periodic square lattice." ON)
 option(COLLECT_TIMINGS "Print timings collected by STL Chrono." ON)
-option(PRINT_HISTOGRAM "Print the energy histogram to a file periodically." ON)
+option(PRINT_HISTOGRAM "Print the energy histogram to a file periodically." OFF)
 
 # *********************************************************************
 # Add consequences of the options below.
