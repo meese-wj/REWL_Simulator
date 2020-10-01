@@ -71,6 +71,9 @@ int main(int argc, char * argv[])
     // TODO: Send arrays to master for concatenation
     // TODO: Concatenate microcanonical observables
 
+    printf("\nBefore thermodynamics with process %d\n", world_rank);
+    MPI_Barrier(MPI_COMM_WORLD);
+    
     if ( world_rank == REWL_MASTER_PROC )
     {
 
@@ -120,6 +123,10 @@ int main(int argc, char * argv[])
         
         delete thermo;
     }
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    printf("\nCleaning up the heap with process %d\n", world_rank);
+    MPI_Barrier(MPI_COMM_WORLD);
 
     /* ************************************************************************************* */
     /* Now it is time to clean up the heap.                                                  */
@@ -132,6 +139,8 @@ int main(int argc, char * argv[])
     delete [] final_observable_array;
 
     MPI_Barrier(MPI_COMM_WORLD);    
+    printf("\nCompletely done with the simulation on process %d\n", world_rank);
+    fflush(stdout);
     MPI_Finalize();
     return 0;
 }

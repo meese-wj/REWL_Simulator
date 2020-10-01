@@ -69,8 +69,8 @@ struct Ising2d
 
     ~Ising2d()
     {
-       if ( spin_array != nullptr ) delete [] spin_array;
-       if ( neighbor_array != nullptr ) delete [] neighbor_array;
+        delete [] spin_array;
+        delete [] neighbor_array;
     } 
 
     void print_lattice() const;
