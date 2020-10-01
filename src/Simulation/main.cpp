@@ -38,23 +38,6 @@ int main(int argc, char * argv[])
  
     REWL_simulation * simulation = new REWL_simulation();
 
-    /* ****************************************************************************** */
-    /* Set up the file system for this simulation.                                    */
-    /* ****************************************************************************** */
-    
-    System_Strings sys_strings = System_Strings();
-    REWL_Parameter_String rewl_strings = REWL_Parameter_String();
-    std::filesystem::path data_path;
-    std::string data_file_header;
-
-    if ( world_rank == REWL_MASTER_PROC )
-    {
-        data_path = create_output_path( sys_strings.model_name, sys_strings.size_string ); 
-        data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
-    }
-    
-    /* ****************************************************************************** */
-    
     if ( world_rank == REWL_MASTER_PROC )
         printf("\nStarting simulation...");
     MPI_Barrier(MPI_COMM_WORLD);
@@ -90,6 +73,18 @@ int main(int argc, char * argv[])
 
     if ( world_rank == REWL_MASTER_PROC )
     {
+
+        /* ****************************************************************************** */
+        /* Set up the file system for this simulation.                                    */
+        /* ****************************************************************************** */
+        
+        System_Strings sys_strings = System_Strings();
+        REWL_Parameter_String rewl_strings = REWL_Parameter_String();
+        std::filesystem::path data_path = create_output_path( sys_strings.model_name, sys_strings.size_string ); 
+        std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
+ 
+        /* ****************************************************************************** */
+        
         // Print out the microcanonical observables before thermally averaging
         write_microcanonical_observables<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE>( System_Parameters::N, final_num_bins, convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),
                                                                               convert<System_Obs_enum_t>(System_Obs_enum_t::counts_per_bin),
