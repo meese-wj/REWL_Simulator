@@ -46,7 +46,7 @@ struct glazier
     
     ~glazier()
     {
-        if (all_windows != nullptr){ delete [] all_windows; }
+        delete [] all_windows; 
     }
     
     // TODO: This by default will only increase the

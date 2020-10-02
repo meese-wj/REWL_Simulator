@@ -68,12 +68,9 @@ struct Ising2d
 
     ~Ising2d()
     {
-        printf("\nDeleting Ising2d Arrays");
         delete [] spin_array;
         delete [] neighbor_array;
-        printf("\nIsing2d Arrays Deleted.\n");
-        fflush(stdout);
-    } 
+    }
 
     void print_lattice() const;
 };

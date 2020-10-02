@@ -53,8 +53,8 @@ struct Thermodynamics
 
     ~Thermodynamics()
     { 
-        if (temperatures != nullptr) delete [] temperatures;
-        if (canonical_observables != nullptr) delete [] canonical_observables;
+        delete [] temperatures;
+        delete [] canonical_observables;
     }
 
     // Create a getter function to copy out the thermally-averaged observables

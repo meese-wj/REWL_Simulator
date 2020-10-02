@@ -65,7 +65,7 @@ struct rewl_histograms
     
     ~rewl_histograms()
     {
-        if (histograms != nullptr){ delete [] histograms; }
+        delete [] histograms;
     }
 
     // Write the getter/setter for the histogram counts
