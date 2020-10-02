@@ -1,4 +1,5 @@
 #ifndef MPI_REWL_DEFINITIONS
+#define MPI_REWL_DEFINITIONS
 /* Use this file to store global
  * MPI definitions */
 

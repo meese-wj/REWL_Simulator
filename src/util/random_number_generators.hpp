@@ -1,4 +1,5 @@
 #ifndef RANDOM_NUMBER_GENERATORS
+#define RANDOM_NUMBER_GENERATORS
 /* This file is really just a wrapper around the Standard Library 
  * random number generators. This is to separate the random 
  * number generator from the Wang Landau functionality -- this 

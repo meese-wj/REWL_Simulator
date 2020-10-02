@@ -1,4 +1,5 @@
 #ifndef HISTOGRAM_INDEX
+#define HISTOGRAM_INDEX
 
 #include <cmath>
 

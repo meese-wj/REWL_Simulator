@@ -1,4 +1,5 @@
 #ifndef REWL_SIMULATION
+#define REWL_SIMULATION
 /* This file contains the templated simulation
  * struct that will initialize the simulation
  * and contain all the relevant types. */

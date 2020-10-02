@@ -1,4 +1,5 @@
 #ifndef ISING2D_OBSERVABLES
+#define ISING2D_OBSERVABLES
 #include <string>
 #include <vector>
 

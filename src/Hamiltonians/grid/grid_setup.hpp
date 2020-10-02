@@ -1,4 +1,5 @@
 #ifndef GRID_SETUP
+#define GRID_SETUP
 
 #include <cmath>
 void define_2d_square_periodic_neighbors(const size_t Lx,

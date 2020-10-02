@@ -1,4 +1,5 @@
 #ifndef REWL_PARAMETERS
+#define REWL_PARAMETERS
 /* Header file for the REWL parameters. */
 
 // Create an alias for the observable

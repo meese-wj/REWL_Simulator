@@ -1,4 +1,5 @@
 #ifndef THERMODYNAMICS
+#define THERMODYNAMICS
 /* Create an object to calculate the 
  * canonical thermodynamics from a density
  * of states using trapezoidal rule. */

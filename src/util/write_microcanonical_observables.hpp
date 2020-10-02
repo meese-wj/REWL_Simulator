@@ -1,4 +1,5 @@
 #ifndef WRITE_MICROCANONICAL_OBSERVABLES
+#define WRITE_MICROCANONICAL_OBSERVABLES
 /* This file will write out observables as a
  * function of the energy. These are not 
  * thermally averaged. These observables are

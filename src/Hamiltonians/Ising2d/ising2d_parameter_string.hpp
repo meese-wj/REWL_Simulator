@@ -1,4 +1,5 @@
 #ifndef ISING2D_PARAMETER_STRING
+#define ISING2D_PARAMETER_STRING
 
 #include "ising2d_parameters.cxx"
 #include <string>

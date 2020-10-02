@@ -1,4 +1,5 @@
 #ifndef GLAZIER
+#define GLAZIER
 
 /* This header contains templated glazier 
  * functionality -- that is, window making

@@ -1,4 +1,5 @@
 #ifndef ORDER_PARAMETER_CUMULANTS
+#define ORDER_PARAMETER_CUMULANTS
 /* This file will have templated functions 
  * for higher-order combinations of the self-
  * averaged observables. The self-averaged 

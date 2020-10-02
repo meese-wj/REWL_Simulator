@@ -1,4 +1,5 @@
 #ifndef REWL_WALKER
+#define REWL_WALKER
 /* Create a struct which is really
  * just a wrapper around all of the 
  * relevant data types for a single

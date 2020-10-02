@@ -1,4 +1,5 @@
 #ifndef WANG_LANDAU
+#define WANG_LANDAU
 /* Use this file to define the Wang Landau
  * operations for a single random walker.
  * These functions will be used by every

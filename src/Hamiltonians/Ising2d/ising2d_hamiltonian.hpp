@@ -1,4 +1,5 @@
 #ifndef ISING2D_HAMILTONIAN
+#define ISING2D_HAMILTONIAN
 
 // Include the parameters through the 
 // string header to avoid redefinitions of

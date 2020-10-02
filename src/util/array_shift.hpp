@@ -1,4 +1,5 @@
 #ifndef ARRAY_SHIFT
+#define ARRAY_SHIFT
 /* This function shifts an array by
  * a common scalar value. */
 #include <cmath>

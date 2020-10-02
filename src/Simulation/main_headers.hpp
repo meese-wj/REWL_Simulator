@@ -1,4 +1,5 @@
 #ifndef MAIN_HEADERS
+#define MAIN_HEADERS
 /* Include this header in main. */
 
 #include <stdio.h>

@@ -1,4 +1,5 @@
 #ifndef FILE_HEADER
+#define FILE_HEADER
 /* Construct the file header string. */
 #include <string>
 #include <vector>

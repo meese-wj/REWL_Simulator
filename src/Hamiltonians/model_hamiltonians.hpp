@@ -1,3 +1,5 @@
+#ifndef MODEL_HAMILTONIANS
+#define MODEL_HAMILTONIANS
 // Use this file to read in various
 // Hamiltonians at compile time.
 
@@ -18,4 +20,5 @@
     
     template<typename data_t>
     using Hamiltonian_t = Ising2d<data_t>;
+#endif
 #endif

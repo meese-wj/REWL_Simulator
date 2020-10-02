@@ -1,4 +1,5 @@
 #ifndef FILE_MANAGER
+#define FILE_MANAGER
 /* Set up a file to take care of the file management
  * through C++. The idea is to streamline data output
  * and minimize data-overwrite. */

@@ -1,4 +1,5 @@
 #ifndef MPI_HELPERS
+#define MPI_HELPERS
 
 #include <cmath>
 #include <vector>

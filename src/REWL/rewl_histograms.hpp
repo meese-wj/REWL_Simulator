@@ -1,4 +1,5 @@
 #ifndef REWL_HISTOGRAMS
+#define REWL_HISTOGRAMS
 
 /*  This header sets up an SOA for the relevant
     REWL histograms for a single walker.  

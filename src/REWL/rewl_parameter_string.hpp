@@ -1,4 +1,5 @@
 #ifndef REWL_PARAMETER_STRING
+#define REWL_PARAMETER_STRING
 /* Create the parameter string for
  * the REWL parameters. */
 #include <string>
