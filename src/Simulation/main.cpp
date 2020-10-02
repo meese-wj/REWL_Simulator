@@ -6,11 +6,14 @@ constexpr ENERGY_TYPE Tmax = 4.71;
 constexpr size_t num_T = 1000;
 
 #if MPI_ON
+template <typename data_t>
+using table = std::vector<std::vector<data_t> >;
+
 int main(int argc, char * argv[])
 {
     MPI_Init(&argc, &argv);
-    int world_rank;
-    int world_size;
+    int world_rank = 0;
+    int world_size = 0;
     MPI_Comm_rank( MPI_COMM_WORLD, &world_rank );
     MPI_Comm_size( MPI_COMM_WORLD, &world_size );
 
@@ -23,6 +26,7 @@ int main(int argc, char * argv[])
         }
         return 1;
     }
+    MPI_Barrier(MPI_COMM_WORLD);
  
     REWL_simulation * simulation = new REWL_simulation();
 
@@ -46,6 +50,7 @@ int main(int argc, char * argv[])
     OBS_TYPE * final_observable_array = nullptr;
 
     const size_t final_num_bins = simulation -> my_walker -> wl_walker.wl_histograms.num_bins;
+    const size_t final_num_obs_values = convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS) * final_num_bins;
 
     // Copy out the final logdos and the observables
     simulation -> my_walker -> export_energy_bins( final_energy_array );
@@ -55,9 +60,6 @@ int main(int argc, char * argv[])
     // Adjust the logdos by the ground state degeneracy
     array_shift_by_value( System_Parameters::ground_state_degeneracy - final_logdos_array[0], final_num_bins, final_logdos_array );
     MPI_Barrier(MPI_COMM_WORLD);
-
-    // TODO: Send arrays to master for concatenation
-    // TODO: Concatenate microcanonical observables
 
     printf("\nBefore thermodynamics with process %d\n", world_rank);
     MPI_Barrier(MPI_COMM_WORLD);
@@ -75,6 +77,28 @@ int main(int argc, char * argv[])
         std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
  
         /* ****************************************************************************** */
+
+        // Send arrays to master for concatenation
+        table<ENERGY_TYPE> energy_table  ( world_size );
+        table<LOGDOS_TYPE> logdos_table  ( world_size );
+        table<OBS_TYPE> observable_table ( world_size );
+
+        energy_table[ world_rank ] = std::vector<ENERGY_TYPE> ( final_energy_array, final_energy_array + final_num_bins ); 
+        logdos_table[ world_rank ] = std::vector<LOGDOS_TYPE> ( final_logdos_array, final_logdos_array + final_num_bins );
+        observable_table[ world_rank ] = std::vector<OBS_TYPE> ( final_observable_array, final_observable_array + final_num_obs_values );
+
+        for ( int proc = 0; proc != world_size; ++proc )
+        {
+            if ( proc != world_rank )
+            {
+                MPI_Status status; 
+                mpi_recv_array_to_vector<ENERGY_TYPE>( proc, energy_table[proc], MPI_ENERGY_TYPE, final_energy_tag, MPI_COMM_WORLD, &status );
+                mpi_recv_array_to_vector<LOGDOS_TYPE>( proc, logdos_table[proc], MPI_LOGDOS_TYPE, final_logdos_tag, MPI_COMM_WORLD, &status );
+                mpi_recv_array_to_vector<OBS_TYPE>( proc, observable_table[proc], MPI_OBS_TYPE, final_obs_tag, MPI_COMM_WORLD, &status );
+            }
+        }
+
+        // TODO: Concatenate microcanonical observables
         
         // Print out the microcanonical observables before thermally averaging
         write_microcanonical_observables<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE>( System_Parameters::N, final_num_bins, convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),
@@ -110,6 +134,13 @@ int main(int argc, char * argv[])
 #endif
         
         delete thermo;
+    }
+    else
+    {
+        // Send arrays to the master process for analysis.
+        mpi_send_array<ENERGY_TYPE>( REWL_MASTER_PROC, final_num_bins, final_energy_array, MPI_ENERGY_TYPE, final_energy_tag, MPI_COMM_WORLD );  
+        mpi_send_array<LOGDOS_TYPE>( REWL_MASTER_PROC, final_num_bins, final_logdos_array, MPI_LOGDOS_TYPE, final_logdos_tag, MPI_COMM_WORLD );  
+        mpi_send_array<OBS_TYPE>( REWL_MASTER_PROC, final_num_obs_values, final_observable_array, , MPI_OBS_TYPE, final_obs_tag, MPI_COMM_WORLD );  
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
