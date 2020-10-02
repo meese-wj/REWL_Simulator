@@ -14,7 +14,7 @@ if [[ $? == 0 ]]
 then
     echo
     echo
-    time valgrind --leak-check=yes ./bin/REWL_Simulator
+    time valgrind --verbose --leak-check=yes ./bin/REWL_Simulator
 else
     echo
     echo "Error in compilation. Exiting."

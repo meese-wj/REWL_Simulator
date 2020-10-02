@@ -29,9 +29,9 @@ then
     echo
     rm nc.vg*
     echo "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS}" \
-         "valgrind --leak-check=yes --show-reachable=yes --log-file=nc.vg%p ./bin/REWL_Simulator ${MPIEXEC_POSTFLAGS}"
+         "valgrind --verbose --leak-check=yes --show-reachable=yes --log-file=nc.vg%p ./bin/REWL_Simulator ${MPIEXEC_POSTFLAGS}"
     time ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} \
-         valgrind --leak-check=yes --show-reachable=yes --track-origins=yes --log-file=nc.vg%p ./bin/REWL_Simulator ${MPIEXEC_POSTFLAGS}
+         valgrind --verbose --leak-check=yes --show-reachable=yes --track-origins=yes --log-file=nc.vg%p ./bin/REWL_Simulator ${MPIEXEC_POSTFLAGS}
 else
     echo
     echo "Error in compilation. Exiting."
