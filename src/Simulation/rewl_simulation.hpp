@@ -111,21 +111,21 @@ void REWL_simulation::simulate(
 
             my_walker -> wl_walker.reset_histogram();
 
-            printf("\nincrementer before = %e", my_walker -> incrementer);
+            printf("\nID %d: incrementer before = %e", my_world_rank, my_walker -> incrementer);
             // TODO: Generalize to 1/t algorithm.
             my_walker -> incrementer *= 0.5;
 
-            printf("\nincrementer after = %e", my_walker -> incrementer);
+            printf("\nID %d: incrementer after = %e", my_world_rank, my_walker -> incrementer);
 
             simulation_incomplete = ( my_walker -> incrementer >= REWL_Parameters::final_increment );
 
 #if COLLECT_TIMINGS
             timer = std::chrono::high_resolution_clock::now();
             std::chrono::duration<float> time_elapsed = timer - iteration_start;
-            printf("\n\n\nIteration %ld complete after %e seconds.", iteration_counter, time_elapsed.count());
-            printf("\nTotal Sweeps = %ld = %e Wang Landau Updates.", sweep_counter, static_cast<float>(sweep_counter * System_Parameters::N) );
-            printf("\nSweep rate  = %e sweeps per second", static_cast<float>(sweep_counter)/time_elapsed.count());
-            printf("\nUpdate rate = %e updates per second", static_cast<float>(sweep_counter * System_Parameters::N)/time_elapsed.count());
+            printf("\n\n\nID %d: Iteration %ld complete after %e seconds.", my_world_rank, iteration_counter, time_elapsed.count());
+            printf("\nID %d: Total Sweeps = %ld = %e Wang Landau Updates.", my_world_rank, sweep_counter, static_cast<float>(sweep_counter * System_Parameters::N) );
+            printf("\nID %d: Sweep rate  = %e sweeps per second", my_world_rank, static_cast<float>(sweep_counter)/time_elapsed.count());
+            printf("\nID %d: Update rate = %e updates per second", my_world_rank, static_cast<float>(sweep_counter * System_Parameters::N)/time_elapsed.count());
             fflush(stdout);
             iteration_start = std::chrono::high_resolution_clock::now();
 #endif
@@ -137,7 +137,7 @@ void REWL_simulation::simulate(
 #if COLLECT_TIMINGS
             timer = std::chrono::high_resolution_clock::now();
             std::chrono::duration<float> simulation_time = timer - start;
-            printf("\n\nTotal Simulation Time: %e seconds.", simulation_time.count());
+            printf("\n\nID %d: Total Simulation Time: %e seconds.", my_world_rank, simulation_time.count());
 #endif
 }
 

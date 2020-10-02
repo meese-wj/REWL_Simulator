@@ -138,9 +138,16 @@ int main(int argc, char * argv[])
     delete [] final_logdos_array;
     delete [] final_observable_array;
 
+    final_energy_array = nullptr;
+    final_logdos_array = nullptr;
+    final_observable_array = nullptr;
+
     MPI_Barrier(MPI_COMM_WORLD);    
     printf("\nCompletely done with the simulation on process %d\n", world_rank);
     fflush(stdout);
-    MPI_Finalize();
+    //MPI_Abort(MPI_COMM_WORLD, 0);
+    int ret_val = MPI_Finalize();
+    printf("\nID %d: Finalize return = %d", world_rank, ret_val);
+    fflush(stdout);
     return 0;
 }

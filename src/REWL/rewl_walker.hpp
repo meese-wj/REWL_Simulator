@@ -27,7 +27,7 @@ struct REWL_Walker
 
 
     REWL_Walker(const energy_t _min, const energy_t _max, const energy_t _bsize, const size_t _nbins, const std::uint32_t _seed);
-    ~REWL_Walker() {}
+    ~REWL_Walker(){}
 
     void wang_landau_walk(const size_t num_sweeps);
 
@@ -61,25 +61,29 @@ REWL_Walker<energy_t,
                         system(),
                         system_obs(_nbins)
 {
-    bool in_range = hist_idx.energy_in_range(system.current_state.energy);
-    while ( !in_range )
-    {
-       size_t site = static_cast<size_t>( random() * System_Parameters::N );
-       State_t<obs_t> temporary_state;
-       system.change_state(site, temporary_state);
-       
-       if ( hist_idx.energy_too_low(system.current_state.energy) && temporary_state.energy > system.current_state.energy )
-           system.set_state(site, temporary_state);
-       else if ( hist_idx.energy_too_high(system.current_state.energy) && temporary_state.energy <= system.current_state.energy )
-           system.set_state(site, temporary_state);
-
-       in_range = hist_idx.energy_in_range(system.current_state.energy);
-    }
-
 #if MPI_ON
     MPI_Comm_rank( MPI_COMM_WORLD, &walker_world_rank );
     i_am_the_master = ( walker_world_rank == REWL_MASTER_PROC ? 1 : 0 );
 #endif 
+
+    bool in_range = hist_idx.energy_in_range(system.current_state.energy);
+    printf("\nID %d: current energy = %e, in_range = %s\n", walker_world_rank, system.current_state.energy, ( in_range ? "true" : "false" ));
+    while ( !in_range )
+    {
+        size_t site = static_cast<size_t>( random() * System_Parameters::N );
+        State_t<obs_t> temporary_state;
+        system.change_state(site, temporary_state);
+
+        if ( hist_idx.energy_too_low(system.current_state.energy) && temporary_state.energy > system.current_state.energy )
+        system.set_state(site, temporary_state);
+        else if ( hist_idx.energy_too_high(system.current_state.energy) && temporary_state.energy <= system.current_state.energy )
+        system.set_state(site, temporary_state);
+
+        in_range = hist_idx.energy_in_range(system.current_state.energy);
+        printf("\nID %d: current energy = %e, in_range = %s\n", walker_world_rank, system.current_state.energy, ( in_range ? "true" : "false" ));
+    }
+    printf("\nID %d: current energy = %e, in_range = %s\n", walker_world_rank, system.current_state.energy, ( in_range ? "true" : "false" ));
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
