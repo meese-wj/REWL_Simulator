@@ -7,8 +7,6 @@ using ENERGY_TYPE = float;
 using LOGDOS_TYPE = double;
 using OBS_TYPE = double;
 
-constexpr int REWL_MASTER_PROC = 0;
-
 namespace REWL_Parameters
 {
     int num_walkers = 1;

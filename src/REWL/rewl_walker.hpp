@@ -8,7 +8,7 @@
 #include "wang_landau.hpp"
 
 #if MPI_ON
-#include <mpi_rewl_helpers.hpp>
+#include <mpi_rewl_definitions.hpp>
 #endif
 
 template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
