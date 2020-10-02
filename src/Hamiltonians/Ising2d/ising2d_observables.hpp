@@ -46,7 +46,7 @@ struct Ising2d_Obs
         }
     }
 
-    ~Ising2d_Obs(){ if ( obs_array != nullptr ) delete [] obs_array; }
+    ~Ising2d_Obs(){ delete [] obs_array; }
 
     // Set the data pointed to by the observable array
     void set_observable(const data_t value, const Obs::enum_names ob, const size_t bin) const

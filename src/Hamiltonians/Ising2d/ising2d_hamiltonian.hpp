@@ -51,14 +51,13 @@ struct Ising2d
     Ising2d()
     {
         spin_array = new data_t [ Ising2d_Parameters::N ];
-        neighbor_array = new size_t [ Ising2d_Parameters::N * Ising2d_Parameters::num_neighbors_i ];
-        // Initialize all spins to 1.
         // TODO: change this to be randomized?
         for ( size_t idx = 0; idx != Ising2d_Parameters::N; ++idx )
             spin_array[idx] = 1.;
 
         // TODO: Generalize this to different types 
         // of grids.
+        // Allocate the neighbor array
         define_2d_square_periodic_neighbors(Ising2d_Parameters::L,
                                             Ising2d_Parameters::L,
                                             Ising2d_Parameters::num_neighbors_i,

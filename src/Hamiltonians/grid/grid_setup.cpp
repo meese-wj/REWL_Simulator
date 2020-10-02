@@ -7,7 +7,6 @@ void define_2d_square_periodic_neighbors(const size_t Lx,
                                          const size_t num_neighbors,
                                          size_t *& neighbor_array)
 {
-    neighbor_array = nullptr;
     neighbor_array = new size_t [num_neighbors * Lx * Ly];
 
     size_t neighbor_idx;
