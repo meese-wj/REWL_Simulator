@@ -83,7 +83,9 @@ REWL_Walker<energy_t,
         printf("\nID %d: current energy = %e, in_range = %s\n", walker_world_rank, system.current_state.energy, ( in_range ? "true" : "false" ));
     }
     printf("\nID %d: current energy = %e, in_range = %s\n", walker_world_rank, system.current_state.energy, ( in_range ? "true" : "false" ));
+#if MPI_ON
     MPI_Barrier(MPI_COMM_WORLD);
+#endif
 }
 
 template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
