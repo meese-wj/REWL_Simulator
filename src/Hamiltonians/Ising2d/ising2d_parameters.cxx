@@ -6,6 +6,7 @@
 // TODO: Add nonzero field.
 
 #ifndef ISING2D_PARAMETER_DEFINITIONS
+#define ISING2D_PARAMETER_DEFINITIONS
 
 #include <cmath>
 

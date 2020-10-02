@@ -1,9 +1,8 @@
 #ifndef ISING2D_HAMILTONIAN
 #define ISING2D_HAMILTONIAN
 
-// Include the parameters through the 
-// string header to avoid redefinitions of
-// the constexpr values.
+// Include the parameters 
+#include "ising2d_parameters.cxx"
 #include "ising2d_parameter_string.hpp"
 
 // Include the observables enum class
