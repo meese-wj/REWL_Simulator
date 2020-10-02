@@ -7,6 +7,8 @@ using ENERGY_TYPE = float;
 using LOGDOS_TYPE = double;
 using OBS_TYPE = double;
 
+constexpr int REWL_MASTER_PROC = 0;
+
 namespace REWL_Parameters
 {
     int num_walkers = 1;
@@ -14,7 +16,7 @@ namespace REWL_Parameters
     float window_overlap = static_cast<float>( single_bin_overlap ); 
 
     constexpr size_t sweeps_per_check = 1000;
-    constexpr LOGDOS_TYPE final_increment = 1e-7;
+    constexpr LOGDOS_TYPE final_increment = 5e-7;
     constexpr float flatness_criterion = 0.3;
 }
 
