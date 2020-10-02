@@ -9,9 +9,10 @@ using LOGDOS_TYPE = double;
 using OBS_TYPE = double;
 
 #if MPI_ON
-using MPI_ENERGY_TYPE = MPI_FLOAT;
-using MPI_LOGDOS_TYPE = MPI_DOUBLE;
-using MPI_OBS_TYPE    = MPI_DOUBLE;
+// TODO: Are these macros really necessary for type aliasing?
+#define MPI_ENERGY_TYPE MPI_FLOAT
+#define MPI_LOGDOS_TYPE MPI_DOUBLE
+#define MPI_OBS_TYPE MPI_DOUBLE
 #endif
 
 namespace REWL_Parameters
