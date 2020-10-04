@@ -22,8 +22,8 @@ namespace REWL_Parameters
     float window_overlap = static_cast<float>( single_bin_overlap ); 
 
     constexpr size_t sweeps_per_check = 1000;
-    constexpr LOGDOS_TYPE final_increment = 5e-7;
-    constexpr float flatness_criterion = 0.3;
+    constexpr LOGDOS_TYPE final_increment = 1e-7;
+    constexpr float flatness_criterion = 0.1;
 }
 
 #endif
