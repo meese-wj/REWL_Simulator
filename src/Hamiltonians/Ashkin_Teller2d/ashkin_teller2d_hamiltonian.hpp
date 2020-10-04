@@ -79,8 +79,8 @@ struct Ashkin_Teller2d
     }
 
     // Get sigma or tau at a site
-    data_t * sigma_at_site(const size_t site){ return &( spin_array[ static_cast<size_t>(spin_type::NUM_SPIN_TYPES) * site + spin_type::sigma ] ); }
-    data_t * tau_at_site(const size_t site){   return &( spin_array[ static_cast<size_t>(spin_type::NUM_SPIN_TYPES) * site + spin_type::tau ] ); }
+    data_t * sigma_at_site(const size_t site) const { return &( spin_array[ static_cast<size_t>(spin_type::NUM_SPIN_TYPES) * site + spin_type::sigma ] ); }
+    data_t * tau_at_site(const size_t site) const {   return &( spin_array[ static_cast<size_t>(spin_type::NUM_SPIN_TYPES) * site + spin_type::tau ] ); }
 
     ~Ashkin_Teller2d()
     {
