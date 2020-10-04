@@ -31,15 +31,24 @@ MPIEXEC MPIEXEC_NUMPROC_FLAG MPIEXEC_MAX_NUMPROCS MPIEXEC_PREFLAGS ./bin/REWL_Si
 ```
 Currently, there are no runtime flags to be passed as `<simulator-flags>` to the simulation.
 
-Some `cmake` options to be aware of are as follows
+### Build flags
+Some `cmake` options to be aware of are as follows:
+
+#### Global simulation control flags
 * `MPI_ON`
     * This engages parallelization and replica exchange. 
     * This option is deprecated and will soon be mandatory.
-* `ISING2D`
-    * This flag sets the Ising model on a 2d square periodic grid.
-    * It is the default Hamiltonian used.
 * `COLLECT_TIMINGS`
     * This flag compiles the timing functionality through the `C++` Standard Library (`std::chrono`).
 * `PRINT_HISTOGRAM`
     * When set, the histograms are intermittently written to a file.
     * Currently this is _not_ thread safe and will be corrected as the parallelization is implemented.
+
+#### Supported Hamiltonians
+If multiple Hamiltonians are selected at build time, then `cmake` will throw a `FATAL_ERROR`.
+* `ISING2D`
+    * This flag sets the Ising model on a 2d square periodic grid.
+    * It is the default Hamiltonian used.
+* `ASHKIN_TELLER2D`
+    * This flag sets the Ashkin-Teller model on a 2d square periodic grid.
+    * Right now, the Ashkin-Teller model is supported within the ferromagnetic Baxter regime. 
