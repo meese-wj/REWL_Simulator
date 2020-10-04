@@ -1,15 +1,15 @@
-#include "../ising2d_parameter_string.hpp"
+#include "../ashkin-teller2d_parameter_string.hpp"
 
-Ising2d_Parameter_String::Ising2d_Parameter_String()
+Askin_Teller2d_Parameter_String::Askin_Teller2d_Parameter_String()
 {
-    file_name_base = "REWL_L-" + L + "_J-" + J + "_h-" + h + ".dat";
+    file_name_base = "REWL_L-" + L + "_J-" + J + "_K-" + K + ".dat";
 
     file_header = "# REWL " + model_name + " on a Periodic Square Lattice\n#";
     file_header += "\n# Hamiltonian Parameters";
     file_header += "\n#    L = " + L;
     file_header += "\n#    N = " + N;
     file_header += "\n#    J = " + J;
-    file_header += "\n#    h = " + h;
+    file_header += "\n#    K = " + K;
     file_header += "\n#    num_neighbors = " + num_neighbors;
     file_header += "\n#";
     file_header += "\n# Wang Landau Parameters";
