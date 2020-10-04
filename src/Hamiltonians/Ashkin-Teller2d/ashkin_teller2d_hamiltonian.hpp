@@ -1,9 +1,9 @@
-#ifndef ISING2D_HAMILTONIAN
-#define ISING2D_HAMILTONIAN
+#ifndef ASKIN_TELLER2D_HAMILTONIAN
+#define ASKIN_TELLER2D_HAMILTONIAN
 
 // Include the parameters 
-#include "ising2d_parameters.cxx"
-#include "ising2d_parameter_string.hpp"
+#include "askin-teller2d_parameters.cxx"
+#include "askin-teller2d_parameter_string.hpp"
 
 // Include the observables enum class
 #include "ising2d_observables.hpp"

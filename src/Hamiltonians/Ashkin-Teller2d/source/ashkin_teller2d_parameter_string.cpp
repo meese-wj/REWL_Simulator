@@ -1,6 +1,6 @@
-#include "../ashkin-teller2d_parameter_string.hpp"
+#include "../ashkin_teller2d_parameter_string.hpp"
 
-Askin_Teller2d_Parameter_String::Askin_Teller2d_Parameter_String()
+Ashkin_Teller2d_Parameter_String::Ashkin_Teller2d_Parameter_String()
 {
     file_name_base = "REWL_L-" + L + "_J-" + J + "_K-" + K + ".dat";
 
