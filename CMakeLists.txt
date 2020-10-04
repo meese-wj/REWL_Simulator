@@ -10,6 +10,7 @@ add_compile_options(-std=c++17 -Wall -Werror -pedantic)
 
 option(MPI_ON "Turn on MPI. This engages parallelized a Wang Landau simulation." ON)
 option(ISING2D "Run a 2d Ising model on a periodic square lattice." ON)
+option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice." ON)
 option(COLLECT_TIMINGS "Print timings collected by STL Chrono." ON)
 option(PRINT_HISTOGRAM "Print the energy histogram to a file periodically." OFF)
 
@@ -30,8 +31,18 @@ if (MPI_ON)
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 endif()
 
+# Error out if more than one Hamiltonian is activated.
+# TODO: This is probably unsustainable for many models...
+if (ISING2D AND ASHKIN_TELLER2D)
+    message(FATAL_ERROR "More than one Hamiltonian is activated.")
+endif()
+
 if (ISING2D)
     add_definitions(-DISING2D)
+endif()
+
+if (ASHKIN_TELLER2D)
+    add_definitions(-DASHKIN_TELLER2D)
 endif()
 
 if (COLLECT_TIMINGS)

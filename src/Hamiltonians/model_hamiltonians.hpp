@@ -20,5 +20,22 @@
     
     template<typename data_t>
     using Hamiltonian_t = Ising2d<data_t>;
+#elif ASKIN_TELLER2D
+    #include "Askin-Teller2d/askin-teller2d_hamiltonian.hpp"
+    namespace System_Parameters = Askin_Teller2d_Parameters;
+
+    using System_Strings = Askin_Teller2d_Parameter_String;
+
+    template<typename data_t>
+    using State_t = State<data_t>;
+   
+    namespace System_Obs = Obs;
+    using System_Obs_enum_t = System_Obs::enum_names;
+
+    template<typename data_t>
+    using Observables_t = Askin_Teller2d_Obs<data_t>;
+    
+    template<typename data_t>
+    using Hamiltonian_t = Askin_Teller2d<data_t>;
 #endif
 #endif

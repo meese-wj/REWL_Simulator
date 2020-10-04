@@ -1,2 +1,2 @@
-add_library(ising2d_source
-            ising2d_parameter_string.cpp)
+add_library(ashkin-teller2d_source
+            ashkin-teller2d_parameter_string.cpp)
