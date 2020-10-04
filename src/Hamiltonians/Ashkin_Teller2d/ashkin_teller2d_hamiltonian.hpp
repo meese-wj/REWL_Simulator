@@ -2,8 +2,8 @@
 #define ASKIN_TELLER2D_HAMILTONIAN
 
 // Include the parameters 
-#include "ashkin-teller2d_parameters.cxx"
-#include "ashkin-teller2d_parameter_string.hpp"
+#include "ashkin_teller2d_parameters.cxx"
+#include "ashkin_teller2d_parameter_string.hpp"
 
 // Include the observables enum class
 #include "ashkin_teller2d_observables.hpp"
@@ -12,15 +12,21 @@
 // cmake include directories.
 #include <grid_setup.hpp>
 
+enum spin_type
+{
+    sigma, tau, NUM_SPIN_TYPES
+};
+
 // TODO: Upgrade the energies to allow for 
 // double calculations. 
 template<typename data_t>
 struct State
 {
-    short which_to_update = 0;       // 0: sigma, 1: tau
+    short which_to_update = spin_type::sigma;      
     float energy = 0;
     data_t sigma_magnetization = 0;
     data_t tau_magnetization = 0;
+    data_t nematicity = 0.;
     data_t DoF = 0.;                 // Store the local degree of freedom
 };
 
@@ -31,6 +37,7 @@ void print(const State<data_t> & stat)
     printf("\n\tenergy              = %e", stat.energy);
     printf("\n\tsigma magnetization = %e", stat.sigma_magnetization);
     printf("\n\ttau magnetization   = %e", stat.tau_magnetization);
+    printf("\n\tnematicity          = %e", stat.nematicity);
     printf("\n\tDoF                 = %e\n", stat.DoF);
 }
 
@@ -48,16 +55,16 @@ struct Ashkin_Teller2d
     float sigma_local_energy(const size_t idx, const data_t spin_value) const;
     float tau_local_energy(const size_t idx, const data_t spin_value) const;
     void recalculate_state();
-    void change_state(const size_t idx, State<data_t> & temp_state) const;
+    void change_state(const size_t idx, State<data_t> & temp_state);
     void set_state(const size_t idx, const State<data_t> & _state);
     void update_observables(const size_t bin, Ashkin_Teller2d_Obs<data_t> * obs_ptr) const;
 
     // Finally add the constructor and destructor.
     Ashkin_Teller2d()
     {
-        spin_array = new data_t [ 2 * Ashkin_Teller2d_Parameters::N ];
+        spin_array = new data_t [ static_cast<size_t>(spin_type::NUM_SPIN_TYPES) * Ashkin_Teller2d_Parameters::N ];
         // TODO: change this to be randomized?
-        for ( size_t idx = 0; idx != 2 * Ashkin_Teller2d_Parameters::N; ++idx )
+        for ( size_t idx = 0; idx != static_cast<size_t>(spin_type::NUM_SPIN_TYPES) * Ashkin_Teller2d_Parameters::N; ++idx )
             spin_array[idx] = 1.;
 
         // TODO: Generalize this to different types 
@@ -72,8 +79,8 @@ struct Ashkin_Teller2d
     }
 
     // Get sigma or tau at a site
-    data_t * sigma_at_site(const size_t site){ return &( spin_array[ 2 * site + 0 ] ); }
-    data_t * tau_at_site(const size_t site){   return &( spin_array[ 2 * site + 1 ] ); }
+    data_t * sigma_at_site(const size_t site){ return &( spin_array[ static_cast<size_t>(spin_type::NUM_SPIN_TYPES) * site + spin_type::sigma ] ); }
+    data_t * tau_at_site(const size_t site){   return &( spin_array[ static_cast<size_t>(spin_type::NUM_SPIN_TYPES) * site + spin_type::tau ] ); }
 
     ~Ashkin_Teller2d()
     {
@@ -159,19 +166,33 @@ void Ashkin_Teller2d<data_t>::recalculate_state()
 // would be if the change is accepted (the state is
 // passed by reference to avoid extra copies).
 template<typename data_t>
-void Ashkin_Teller2d<data_t>::change_state(const size_t idx, State<data_t> & temp_state) const
+void Ashkin_Teller2d<data_t>::change_state(const size_t idx, State<data_t> & temp_state)
 {
-    switch(temp_state.which_to_update)
+    switch(current_state.which_to_update)
     {
-        case 0:
+        case spin_type::sigma:
         {
+            temp_state.which_to_update = spin_type::sigma;     // Tell the temp_state that this is a sigma update
             temp_state.DoF = -1 * (*sigma_at_site(idx));    
-            temp_state.
+            temp_state.sigma_magnetization = current_state.sigma_magnetization + temp_state.DoF - *sigma_at_site(idx);
+            temp_state.tau_magnetization = current_state.tau_magnetization;
+            temp_state.nematicity = current_state.nematicity + *(tau_at_site(idx)) * ( temp_state.DoF - *sigma_at_site(idx) );
+            temp_state.energy = current_state.energy + sigma_local_energy( idx, temp_state.DoF ) - sigma_local_energy( idx, *sigma_at_site(idx) );
+            current_state.which_to_update = spin_type::tau;
+            break;
+        }
+        case spin_type::tau:
+        {
+            temp_state.which_to_update = spin_type::tau;       // Tell the temp_state that this is a tau update
+            temp_state.DoF = -1 * (*tau_at_site(idx));    
+            temp_state.sigma_magnetization = current_state.sigma_magnetization;
+            temp_state.tau_magnetization = current_state.tau_magnetization + temp_state.DoF - *tau_at_site(idx);
+            temp_state.nematicity = current_state.nematicity + *(sigma_at_site(idx)) * ( temp_state.DoF - *tau_at_site(idx) );
+            temp_state.energy = current_state.energy + tau_local_energy( idx, temp_state.DoF ) - tau_local_energy( idx, *tau_at_site(idx) );
+            current_state.which_to_update = spin_type::sigma;
+            break;
         }
     }
-    temp_state.DoF = -spin_array[idx];
-    temp_state.magnetization = current_state.magnetization + temp_state.DoF - spin_array[idx];
-    temp_state.energy = current_state.energy + local_energy(idx, temp_state.DoF) - local_energy(idx, spin_array[idx]);
 }
 
 // Set the current state
@@ -179,34 +200,66 @@ template<typename data_t>
 void Ashkin_Teller2d<data_t>::set_state(const size_t idx, const State<data_t> & _state)
 {
     current_state.energy = _state.energy;
-    current_state.magnetization = _state.magnetization;
-    spin_array[idx] = _state.DoF;
+    current_state.sigma_magnetization = _state.sigma_magnetization;
+    current_state.tau_magnetization = _state.tau_magnetization;
+    current_state.nematicity = _state.nematicity;
+    switch(_state.which_to_update)
+    {
+        case spin_type::sigma: // Change the local sigma 
+        {
+            *sigma_at_site(idx) = _state.DoF;
+            break;
+        }
+        case spin_type::tau:   // Change the local tau
+        {
+            *tau_at_site(idx) = _state.DoF;
+            break;
+        }
+    }
 }
 
 // Update the non-energetic observables
 template<typename data_t>
 void Ashkin_Teller2d<data_t>::update_observables(const size_t bin, Ashkin_Teller2d_Obs<data_t> * obs_ptr) const
 {
-    const data_t mag_val = abs( current_state.magnetization );
-    obs_ptr -> update_observable_average(mag_val, Obs::enum_names::mag, bin);
-    obs_ptr -> update_observable_average(mag_val * mag_val, Obs::enum_names::mag2, bin);
-    obs_ptr -> update_observable_average(mag_val * mag_val * mag_val * mag_val, Obs::enum_names::mag4, bin);
+    const data_t sigma_val = abs( current_state.sigma_magnetization );
+    const data_t tau_val   = abs( current_state.tau_magnetization );
+    const data_t nem_val   = abs( current_state.nematicity );
+    
+    obs_ptr -> update_observable_average(sigma_val, Obs::enum_names::sigma_mag, bin);
+    obs_ptr -> update_observable_average(sigma_val * sigma_val, Obs::enum_names::sigma_mag2, bin);
+    obs_ptr -> update_observable_average(sigma_val * sigma_val * sigma_val * sigma_val, Obs::enum_names::sigma_mag4, bin);
+
+    obs_ptr -> update_observable_average(tau_val, Obs::enum_names::tau_mag, bin);
+    obs_ptr -> update_observable_average(tau_val * tau_val, Obs::enum_names::tau_mag2, bin);
+    obs_ptr -> update_observable_average(tau_val * tau_val * tau_val * tau_val, Obs::enum_names::tau_mag4, bin);
+
+    obs_ptr -> update_observable_average(nem_val, Obs::enum_names::nem_mag, bin);
+    obs_ptr -> update_observable_average(nem_val * nem_val, Obs::enum_names::nem_mag2, bin);
+    obs_ptr -> update_observable_average(nem_val * nem_val * nem_val * nem_val, Obs::enum_names::nem_mag4, bin);
+    
     obs_ptr -> increment_counts_per_bin(bin);
 }
 
 template<typename data_t>
 void Ashkin_Teller2d<data_t>::print_lattice() const
 {
-    printf("\n");
+    printf("\n\nSigmas +/-");
     for ( size_t idx = 0; idx != Ashkin_Teller2d_Parameters::L; ++idx )
     {
         printf("\n%ld\t    ", idx * Ashkin_Teller2d_Parameters::L);
         for ( size_t jdx = 0; jdx != Ashkin_Teller2d_Parameters::L; ++jdx )
         {
-           if ( spin_array[idx * Ashkin_Teller2d_Parameters::L + jdx] == 1. )
-               printf("+ ");
-           else
-               printf("- ");
+            printf("%c ", *sigma_at_site( idx * Ashkin_Teller2d_Parameters::L + jdx ) == 1. ? '+' : '-');   
+        }
+    }
+    printf("\nTaus */o");
+    for ( size_t idx = 0; idx != Ashkin_Teller2d_Parameters::L; ++idx )
+    {
+        printf("\n%ld\t    ", idx * Ashkin_Teller2d_Parameters::L);
+        for ( size_t jdx = 0; jdx != Ashkin_Teller2d_Parameters::L; ++jdx )
+        {
+            printf("%c ", *tau_at_site( idx * Ashkin_Teller2d_Parameters::L + jdx ) == 1. ? '*' : 'o');   
         }
     }
 }

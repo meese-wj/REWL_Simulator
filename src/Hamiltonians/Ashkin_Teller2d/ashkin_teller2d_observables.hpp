@@ -12,15 +12,20 @@ static constexpr float DATA_INITIALIZER = 0.;
 // average quantities in each bin.
 namespace Obs
 {
+    // The "nematicity" here is product sigma * tau.
+    // The term comes from the J1-J2 antiferromagnetic
+    // Heisenberg model.
     enum class enum_names
     {
         sigma_mag, sigma_mag2, sigma_mag4, 
         tau_mag,   tau_mag2,   tau_mag4, 
+        nem_mag,   nem_mag2,   nem_mag4,
         counts_per_bin, NUM_OBS
     };
 
     const std::vector<std::string> string_names = { "Sigma Mag", "Sigma Mag2", "Sigma Mag4", 
                                                     "Tau Mag",   "Tau Mag2",   "Tau Mag4",
+                                                    "Nematicity", "Nematicity2", "Nematicity4",
                                                     "Counts per Bin", "NUM OBS" };
 }
 
