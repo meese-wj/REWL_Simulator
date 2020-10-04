@@ -2,11 +2,11 @@
 #define ASKIN_TELLER2D_HAMILTONIAN
 
 // Include the parameters 
-#include "askin-teller2d_parameters.cxx"
-#include "askin-teller2d_parameter_string.hpp"
+#include "ashkin-teller2d_parameters.cxx"
+#include "ashkin-teller2d_parameter_string.hpp"
 
 // Include the observables enum class
-#include "ising2d_observables.hpp"
+#include "ashkin_teller2d_observables.hpp"
 
 // Include the grid setup from the 
 // cmake include directories.
@@ -17,8 +17,10 @@
 template<typename data_t>
 struct State
 {
+    short which_to_update = 0;       // 0: sigma, 1: tau
     float energy = 0;
-    data_t magnetization = 0;
+    data_t sigma_magnetization = 0;
+    data_t tau_magnetization = 0;
     data_t DoF = 0.;                 // Store the local degree of freedom
 };
 
@@ -26,13 +28,14 @@ template<typename data_t>
 void print(const State<data_t> & stat)
 {
     printf("\nState:");
-    printf("\n\tenergy        = %e", stat.energy);
-    printf("\n\tmagnetization = %e", stat.magnetization);
-    printf("\n\tDoF           = %e\n", stat.DoF);
+    printf("\n\tenergy              = %e", stat.energy);
+    printf("\n\tsigma magnetization = %e", stat.sigma_magnetization);
+    printf("\n\ttau magnetization   = %e", stat.tau_magnetization);
+    printf("\n\tDoF                 = %e\n", stat.DoF);
 }
 
 template<typename data_t>
-struct Ising2d
+struct Ashkin_Teller2d
 {
     State<data_t> current_state;
 
@@ -40,33 +43,39 @@ struct Ising2d
     size_t * neighbor_array = nullptr;
 
     // Add some Hamiltonian dependent functions
-    float local_field(const size_t idx) const;
-    float local_energy(const size_t idx, const data_t spin_value) const;
+    float sigma_local_field(const size_t idx) const;
+    float tau_local_field(const size_t idx) const;
+    float sigma_local_energy(const size_t idx, const data_t spin_value) const;
+    float tau_local_energy(const size_t idx, const data_t spin_value) const;
     void recalculate_state();
     void change_state(const size_t idx, State<data_t> & temp_state) const;
     void set_state(const size_t idx, const State<data_t> & _state);
-    void update_observables(const size_t bin, Ising2d_Obs<data_t> * obs_ptr) const;
+    void update_observables(const size_t bin, Ashkin_Teller2d_Obs<data_t> * obs_ptr) const;
 
     // Finally add the constructor and destructor.
-    Ising2d()
+    Ashkin_Teller2d()
     {
-        spin_array = new data_t [ Ising2d_Parameters::N ];
+        spin_array = new data_t [ 2 * Ashkin_Teller2d_Parameters::N ];
         // TODO: change this to be randomized?
-        for ( size_t idx = 0; idx != Ising2d_Parameters::N; ++idx )
+        for ( size_t idx = 0; idx != 2 * Ashkin_Teller2d_Parameters::N; ++idx )
             spin_array[idx] = 1.;
 
         // TODO: Generalize this to different types 
         // of grids.
         // Allocate the neighbor array
-        define_2d_square_periodic_neighbors(Ising2d_Parameters::L,
-                                            Ising2d_Parameters::L,
-                                            Ising2d_Parameters::num_neighbors_i,
+        define_2d_square_periodic_neighbors(Ashkin_Teller2d_Parameters::L,
+                                            Ashkin_Teller2d_Parameters::L,
+                                            Ashkin_Teller2d_Parameters::num_neighbors_i,
                                             neighbor_array);
 
         recalculate_state();
     }
 
-    ~Ising2d()
+    // Get sigma or tau at a site
+    data_t * sigma_at_site(const size_t site){ return &( spin_array[ 2 * site + 0 ] ); }
+    data_t * tau_at_site(const size_t site){   return &( spin_array[ 2 * site + 1 ] ); }
+
+    ~Ashkin_Teller2d()
     {
         delete [] spin_array;
         delete [] neighbor_array;
@@ -76,39 +85,73 @@ struct Ising2d
 };
 
 template<typename data_t>
-float Ising2d<data_t>::local_field(const size_t idx) const
+float Ashkin_Teller2d<data_t>::sigma_local_field(const size_t idx) const
 {
-    float field = Ising2d_Parameters::h;
-    for ( size_t nidx = 0; nidx != Ising2d_Parameters::num_neighbors_i; ++nidx )
+    float field = 0.;
+    for ( size_t nidx = 0; nidx != Ashkin_Teller2d_Parameters::num_neighbors_i; ++nidx )
     {
-        field += Ising2d_Parameters::J * static_cast<float>( spin_array[ neighbor_array[ idx * Ising2d_Parameters::num_neighbors_i + nidx ] ] );
+        field += Ashkin_Teller2d_Parameters::J * static_cast<float>(  *(sigma_at_site( neighbor_array[ idx * Ashkin_Teller2d_Parameters::num_neighbors_i + nidx ] )) );
+        field += Ashkin_Teller2d_Parameters::K * static_cast<float>(  *(sigma_at_site( neighbor_array[ idx * Ashkin_Teller2d_Parameters::num_neighbors_i + nidx ] ))
+                                                                    * *(tau_at_site(   idx ))
+                                                                    * *(tau_at_site(   neighbor_array[ idx * Ashkin_Teller2d_Parameters::num_neighbors_i + nidx ] )) );
     }
 
     return field;
 }
 
 template<typename data_t>
-float Ising2d<data_t>::local_energy(const size_t idx, const data_t spin_value) const
+float Ashkin_Teller2d<data_t>::tau_local_field(const size_t idx) const
 {
-    return -1. * static_cast<float>( spin_value ) * local_field(idx);
+    float field = 0.;
+    for ( size_t nidx = 0; nidx != Ashkin_Teller2d_Parameters::num_neighbors_i; ++nidx )
+    {
+        field += Ashkin_Teller2d_Parameters::J * static_cast<float>(  *(tau_at_site(     neighbor_array[ idx * Ashkin_Teller2d_Parameters::num_neighbors_i + nidx ] )) );
+        field += Ashkin_Teller2d_Parameters::K * static_cast<float>(  *(tau_at_site(     neighbor_array[ idx * Ashkin_Teller2d_Parameters::num_neighbors_i + nidx ] ))
+                                                                    * *(sigma_at_site(   idx ))
+                                                                    * *(sigma_at_site(   neighbor_array[ idx * Ashkin_Teller2d_Parameters::num_neighbors_i + nidx ] )) );
+    }
+
+    return field;
 }
 
 template<typename data_t>
-void Ising2d<data_t>::recalculate_state()
+float Ashkin_Teller2d<data_t>::sigma_local_energy(const size_t idx, const data_t spin_value) const
+{
+    return -1. * static_cast<float>( spin_value ) * sigma_local_field(idx);
+}
+
+template<typename data_t>
+float Ashkin_Teller2d<data_t>::tau_local_energy(const size_t idx, const data_t spin_value) const
+{
+    return -1. * static_cast<float>( spin_value ) * tau_local_field(idx);
+}
+
+
+template<typename data_t>
+void Ashkin_Teller2d<data_t>::recalculate_state()
 {
     float temp_energy = 0.;
-    data_t temp_magnetization = 0.;
+    data_t temp_sigma_mag = 0.;
+    data_t temp_tau_mag = 0.;
 
-    for ( size_t idx = 0; idx != Ising2d_Parameters::N; ++idx )
+    for ( size_t idx = 0; idx != Ashkin_Teller2d_Parameters::N; ++idx )
     {
-       temp_magnetization += spin_array[idx];
-       // First term is necessary to account for h field loss
-       // when 0.5 multiplies the energy to avoid double counting.
-       temp_energy += -0.5 * Ising2d_Parameters::h * static_cast<float>(spin_array[idx]) + 0.5 * local_energy(idx, spin_array[idx]);
+       temp_sigma_mag += *(sigma_at_site(idx));
+       temp_tau_mag   += *(tau_at_site(idx));
+       temp_energy += 0.5 * ( sigma_local_energy(idx, *sigma_at_site(idx)) + tau_local_energy(idx, *tau_at_site(idx)) );
+       // These next terms are necessary to avoid the double counting
+       // that occurs in the K term.
+       for ( size_t nidx = 0; nidx != Ashkin_Teller2d_Parameters::num_neighbors_i; ++nidx )
+       {
+           temp_energy -= 0.5 * Ashkin_Teller2d_Parameters::K * static_cast<float>( (*sigma_at_site(idx)) * (*tau_at_site(idx))
+                                                                                   * (*sigma_at_site( neighbor_array[ idx * Ashkin_Teller2d_Parameters::num_neighbors_i + nidx ] ))
+                                                                                   * (*tau_at_site(   neighbor_array[ idx * Ashkin_Teller2d_Parameters::num_neighbors_i + nidx ] )));
+       }
     }
 
     current_state.energy = temp_energy;
-    current_state.magnetization = temp_magnetization;
+    current_state.sigma_magnetization = temp_sigma_mag;
+    current_state.tau_magnetization   = temp_tau_mag;
 }
 
 // Change the state by changing the value of the spin
@@ -116,8 +159,16 @@ void Ising2d<data_t>::recalculate_state()
 // would be if the change is accepted (the state is
 // passed by reference to avoid extra copies).
 template<typename data_t>
-void Ising2d<data_t>::change_state(const size_t idx, State<data_t> & temp_state) const
+void Ashkin_Teller2d<data_t>::change_state(const size_t idx, State<data_t> & temp_state) const
 {
+    switch(temp_state.which_to_update)
+    {
+        case 0:
+        {
+            temp_state.DoF = -1 * (*sigma_at_site(idx));    
+            temp_state.
+        }
+    }
     temp_state.DoF = -spin_array[idx];
     temp_state.magnetization = current_state.magnetization + temp_state.DoF - spin_array[idx];
     temp_state.energy = current_state.energy + local_energy(idx, temp_state.DoF) - local_energy(idx, spin_array[idx]);
@@ -125,7 +176,7 @@ void Ising2d<data_t>::change_state(const size_t idx, State<data_t> & temp_state)
 
 // Set the current state
 template<typename data_t>
-void Ising2d<data_t>::set_state(const size_t idx, const State<data_t> & _state)
+void Ashkin_Teller2d<data_t>::set_state(const size_t idx, const State<data_t> & _state)
 {
     current_state.energy = _state.energy;
     current_state.magnetization = _state.magnetization;
@@ -134,7 +185,7 @@ void Ising2d<data_t>::set_state(const size_t idx, const State<data_t> & _state)
 
 // Update the non-energetic observables
 template<typename data_t>
-void Ising2d<data_t>::update_observables(const size_t bin, Ising2d_Obs<data_t> * obs_ptr) const
+void Ashkin_Teller2d<data_t>::update_observables(const size_t bin, Ashkin_Teller2d_Obs<data_t> * obs_ptr) const
 {
     const data_t mag_val = abs( current_state.magnetization );
     obs_ptr -> update_observable_average(mag_val, Obs::enum_names::mag, bin);
@@ -144,15 +195,15 @@ void Ising2d<data_t>::update_observables(const size_t bin, Ising2d_Obs<data_t> *
 }
 
 template<typename data_t>
-void Ising2d<data_t>::print_lattice() const
+void Ashkin_Teller2d<data_t>::print_lattice() const
 {
     printf("\n");
-    for ( size_t idx = 0; idx != Ising2d_Parameters::L; ++idx )
+    for ( size_t idx = 0; idx != Ashkin_Teller2d_Parameters::L; ++idx )
     {
-        printf("\n%ld\t    ", idx * Ising2d_Parameters::L);
-        for ( size_t jdx = 0; jdx != Ising2d_Parameters::L; ++jdx )
+        printf("\n%ld\t    ", idx * Ashkin_Teller2d_Parameters::L);
+        for ( size_t jdx = 0; jdx != Ashkin_Teller2d_Parameters::L; ++jdx )
         {
-           if ( spin_array[idx * Ising2d_Parameters::L + jdx] == 1. )
+           if ( spin_array[idx * Ashkin_Teller2d_Parameters::L + jdx] == 1. )
                printf("+ ");
            else
                printf("- ");

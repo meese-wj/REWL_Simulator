@@ -1,5 +1,5 @@
-#ifndef ISING2D_OBSERVABLES
-#define ISING2D_OBSERVABLES
+#ifndef ASHKIN_TELLER2D_OBSERVABLES
+#define ASHKIN_TELLER2D_OBSERVABLES
 #include <string>
 #include <vector>
 
@@ -14,10 +14,14 @@ namespace Obs
 {
     enum class enum_names
     {
-        mag, mag2, mag4, counts_per_bin, NUM_OBS
+        sigma_mag, sigma_mag2, sigma_mag4, 
+        tau_mag,   tau_mag2,   tau_mag4, 
+        counts_per_bin, NUM_OBS
     };
 
-    const std::vector<std::string> string_names = { "Magnetization", "Magnetization2", "Magnetization4", "Counts per Bin", "NUM OBS" };
+    const std::vector<std::string> string_names = { "Sigma Mag", "Sigma Mag2", "Sigma Mag4", 
+                                                    "Tau Mag",   "Tau Mag2",   "Tau Mag4",
+                                                    "Counts per Bin", "NUM OBS" };
 }
 
 constexpr size_t convert(const Obs::enum_names obs_val)
@@ -26,13 +30,13 @@ constexpr size_t convert(const Obs::enum_names obs_val)
 }
 
 template<typename data_t>
-struct Ising2d_Obs
+struct Ashkin_Teller2d_Obs
 {
     const size_t num_bins; 
 
     data_t * obs_array = nullptr;
 
-    Ising2d_Obs(const size_t nbins) : num_bins(nbins)
+    Ashkin_Teller2d_Obs(const size_t nbins) : num_bins(nbins)
     {
         obs_array = new data_t [ num_bins * convert(Obs::enum_names::NUM_OBS) ];
         
@@ -47,7 +51,7 @@ struct Ising2d_Obs
         }
     }
 
-    ~Ising2d_Obs(){ delete [] obs_array; }
+    ~Ashkin_Teller2d_Obs(){ delete [] obs_array; }
 
     // Set the data pointed to by the observable array
     void set_observable(const data_t value, const Obs::enum_names ob, const size_t bin) const
@@ -90,9 +94,9 @@ struct Ising2d_Obs
 };
 
 template<typename data_t>
-void Ising2d_Obs<data_t>::update_observable_average(const data_t value, 
-                                                    const Obs::enum_names ob, 
-                                                    const size_t bin) const
+void Ashkin_Teller2d_Obs<data_t>::update_observable_average(const data_t value, 
+                                                            const Obs::enum_names ob, 
+                                                            const size_t bin) const
 {
     data_t current_avg = get_observable(ob, bin);
     data_t counts = get_observable(Obs::enum_names::counts_per_bin, bin);
