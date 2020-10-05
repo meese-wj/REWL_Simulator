@@ -8,6 +8,7 @@ Ashkin_Teller2d_Parameter_String::Ashkin_Teller2d_Parameter_String()
     file_header += "\n# Hamiltonian Parameters";
     file_header += "\n#    L = " + L;
     file_header += "\n#    N = " + N;
+    file_header += "\n#    num_DoF = " + num_DoF;
     file_header += "\n#    J = " + J;
     file_header += "\n#    K = " + K;
     file_header += "\n#    num_neighbors = " + num_neighbors;

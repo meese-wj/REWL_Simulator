@@ -46,6 +46,7 @@ namespace Ising2d_Parameters
     // Hamiltonian parameters
     constexpr size_t L = SYSTEM_SIZE_L;
     constexpr size_t N = L * L;
+    constexpr size_t num_DoF = N;        // Number of independent degrees of freedom
     constexpr float J = SYSTEM_EXCHANGE_J;
     constexpr float h = SYSTEM_FIELD_H;
     constexpr size_t num_neighbors_i = SYSTEM_NUM_NEAREST_NEIGHBORS_int;

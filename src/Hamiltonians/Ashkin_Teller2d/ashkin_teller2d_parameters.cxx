@@ -45,6 +45,7 @@ namespace Ashkin_Teller2d_Parameters
     // Hamiltonian parameters
     constexpr size_t L = SYSTEM_SIZE_L;
     constexpr size_t N = L * L;
+    constexpr size_t num_DoF = 2 * N;     // Number of independent degrees of freedom.
     constexpr float J = SYSTEM_EXCHANGE_J;
     constexpr float K = SYSTEM_EXCHANGE_K;
     constexpr size_t num_neighbors_i = SYSTEM_NUM_NEAREST_NEIGHBORS_int;

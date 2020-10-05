@@ -93,9 +93,10 @@ template<typename energy_t, typename logdos_t, typename obs_t, class histogram_i
 void REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::wang_landau_walk(const size_t num_sweeps)
 {
     size_t system_size = System_Parameters::N;
+    size_t num_flavors = System_Parameters::num_DoF / system_size;
     for ( size_t sweep = 0; sweep != num_sweeps; ++sweep )
     {
-        wl_walker.wang_landau_sweep(system_size, incrementer, &system, &system_obs, random, hist_idx);    
+        wl_walker.wang_landau_sweep(system_size, num_flavors, incrementer, &system, &system_obs, random, hist_idx);    
     }
 }
 

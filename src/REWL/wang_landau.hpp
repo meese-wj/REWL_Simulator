@@ -27,7 +27,7 @@ struct Wang_Landau
     void wang_landau_update(const size_t idx, const logdos_t incrementer, Hamiltonian_t * const ham,
                             Observables_t * const ham_obs, rng<float> & random, const histogram_index_functor & hist_idx);
 
-    void wang_landau_sweep(const size_t system_size, const logdos_t incrementer, Hamiltonian_t * const ham, 
+    void wang_landau_sweep(const size_t system_size, const size_t num_flavors, const logdos_t incrementer, Hamiltonian_t * const ham, 
                            Observables_t * const ham_obs, rng<float> & random, const histogram_index_functor & hist_idx );
 
     bool is_flat(const float tolerance) const;
@@ -114,13 +114,18 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
 // Wang Landau method on the system
 template<typename energy_t, typename logdos_t, class Hamiltonian_t, 
          class Observables_t, class State_t, class histogram_index_functor>
-void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::wang_landau_sweep(const size_t system_size, const logdos_t incrementer,
+void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::wang_landau_sweep(const size_t system_size, const size_t num_flavors, const logdos_t incrementer,
                                                                                    Hamiltonian_t * const ham, Observables_t * const ham_obs, 
                                                                                    rng<float> & random, const histogram_index_functor & hist_idx)
 {
-    for ( size_t dof_idx = 0; dof_idx != system_size; ++dof_idx )
+    // Update each flavor of the degree of freedom independently
+    // while all others are quenched for a single sweep.
+    for ( size_t flavor = 0; flavor != num_flavors; ++flavor )
     {
-        wang_landau_update(dof_idx, incrementer, ham, ham_obs, random, hist_idx);
+        for ( size_t dof_idx = 0; dof_idx != system_size; ++dof_idx )
+        {
+            wang_landau_update(dof_idx, incrementer, ham, ham_obs, random, hist_idx);
+        }
     }
 }
 

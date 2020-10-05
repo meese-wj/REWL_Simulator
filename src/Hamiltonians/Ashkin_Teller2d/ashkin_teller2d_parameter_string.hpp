@@ -8,6 +8,7 @@ struct Ashkin_Teller2d_Parameter_String
 {
     const std::string L = std::to_string(Ashkin_Teller2d_Parameters::L);
     const std::string N = std::to_string(Ashkin_Teller2d_Parameters::N);
+    const std::string num_DoF = std::to_string(Ashkin_Teller2d_Parameters::num_DoF);
     const std::string J = std::to_string(Ashkin_Teller2d_Parameters::J);
     const std::string K = std::to_string(Ashkin_Teller2d_Parameters::K);
     const std::string num_neighbors = std::to_string(Ashkin_Teller2d_Parameters::num_neighbors_i);
