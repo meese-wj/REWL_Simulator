@@ -17,7 +17,7 @@ constexpr size_t SYSTEM_SIZE_L = 8;
 constexpr float SYSTEM_EXCHANGE_J = 1.0;
 
 // Mixed spin coupling K > 0 is ferromagnetic
-constexpr float SYSTEM_EXCHANGE_K = 0.;
+constexpr float SYSTEM_EXCHANGE_K = 1.;
 
 // Number of nearest neighbors
 constexpr size_t SYSTEM_NUM_NEAREST_NEIGHBORS_int = 4;
