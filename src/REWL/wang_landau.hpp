@@ -42,21 +42,22 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
                                                                                     Hamiltonian_t * const ham, Observables_t * const ham_obs, 
                                                                                     rng<float> & random, const histogram_index_functor & hist_idx)
 {
-    //printf("\n\nSite %ld of %ld: spin = %e", idx, System_Parameters::N-1, ham -> spin_array[idx]);
-    //printf("\n\nDoF %ld = %c before", idx, ham -> spin_array[idx] == 1. ? '+' : '-');
-    //ham -> print_lattice();
+    printf("\n\nSite %ld of %ld: spin = %e", idx, System_Parameters::N-1, ham -> spin_array[idx]);
+    printf("\n\nDoF %ld = %c before", idx, ham -> spin_array[idx] == 1. ? '+' : '-');
+    ham -> print_lattice();
     State_t temporary_state;
-    //printf("\n\ncurrent state");
-    //print(ham -> current_state);
+    printf("\n\ncurrent state");
+    print(ham -> current_state);
     ham -> change_state(idx, temporary_state);
-    //printf("\n\ntemporary state");
-    //print(temporary_state);
+    printf("\n\ntemporary state");
+    print(temporary_state);
     
     size_t current_bin = hist_idx(ham -> current_state.energy);
 
     /*
     if ( current_bin <= 1 )
     {
+    */
         printf("\n\nSite %ld of %ld: spin = %e", idx, System_Parameters::N-1, ham -> spin_array[idx]);
         printf("\n\nDoF %ld = %c before", idx, ham -> spin_array[idx] == 1. ? '+' : '-');
         ham -> print_lattice();
@@ -64,7 +65,7 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
         print(ham -> current_state);
         printf("\n\ntemporary state");
         print(temporary_state);
-        printf("\n*************************************************************************\n");
+    /*
     }
     */
 
@@ -99,11 +100,15 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
     /*
     if ( current_bin <= 2 )
     {
+    */
         printf("\n\nDoF %ld = %c after", idx, ham -> spin_array[idx] == 1. ? '+' : '-');
         ham -> print_lattice();
 
         printf("\n\n");
-        
+        printf("\n*************************************************************************\n");
+        printf("\n*************************************************************************\n");
+        printf("\n*************************************************************************\n");
+    /*    
     }
     */
 }
