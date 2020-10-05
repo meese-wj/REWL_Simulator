@@ -181,6 +181,17 @@ int main(int argc, char * argv[])
         printf("\nReturning error value.\n\n");
         return 1;
     }
+
+    /* ****************************************************************************** */
+    /* Set up the file system for this simulation.                                    */
+    /* ****************************************************************************** */
+    
+    System_Strings sys_strings = System_Strings();
+    REWL_Parameter_String rewl_strings = REWL_Parameter_String();
+    std::filesystem::path data_path = create_output_path( sys_strings.model_name, sys_strings.size_string ); 
+    std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
+
+    /* ****************************************************************************** */
  
     REWL_simulation * simulation = new REWL_simulation();
 
@@ -209,18 +220,7 @@ int main(int argc, char * argv[])
     array_shift_by_value( System_Parameters::ground_state_degeneracy - final_logdos_array[0], final_num_bins, final_logdos_array );
 
     printf("\nBefore thermodynamics with process %d\n", world_rank);
-    
-    /* ****************************************************************************** */
-    /* Set up the file system for this simulation.                                    */
-    /* ****************************************************************************** */
-    
-    System_Strings sys_strings = System_Strings();
-    REWL_Parameter_String rewl_strings = REWL_Parameter_String();
-    std::filesystem::path data_path = create_output_path( sys_strings.model_name, sys_strings.size_string ); 
-    std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
-
-    /* ****************************************************************************** */
-    
+       
     // Print out the microcanonical observables before thermally averaging
     write_microcanonical_observables<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE>( System_Parameters::N, final_num_bins,
                                                                           convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),
