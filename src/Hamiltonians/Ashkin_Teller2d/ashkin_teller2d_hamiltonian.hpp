@@ -27,7 +27,7 @@ struct State
     data_t sigma_magnetization = 0;
     data_t tau_magnetization = 0;
     data_t nematicity = 0.;
-    data_t DoF = 0.;                 // Store the local degree of freedom
+    data_t DoF [spin_type::NUM_SPIN_TYPES] = { 1., 1. }; // Store the local degree of freedom
 };
 
 template<typename data_t>
@@ -186,25 +186,47 @@ void Ashkin_Teller2d<data_t>::change_state(const size_t idx, State<data_t> & tem
     {
         case spin_type::sigma:
         {
-            temp_state.which_to_update = spin_type::sigma;     // Tell the temp_state that this is a sigma update
-            temp_state.DoF = -1. * (*spin_at_site(idx, spin_type::sigma));    
-            temp_state.sigma_magnetization = current_state.sigma_magnetization + temp_state.DoF - (*spin_at_site(idx, spin_type::sigma));
-            temp_state.tau_magnetization = current_state.tau_magnetization;
-            temp_state.nematicity = current_state.nematicity + (*spin_at_site(idx, spin_type::tau)) * ( temp_state.DoF - (*spin_at_site(idx, spin_type::sigma)) );
-            temp_state.energy = current_state.energy + sigma_local_energy( idx, temp_state.DoF ) - sigma_local_energy( idx, *spin_at_site(idx, spin_type::sigma) );
-            current_state.which_to_update = spin_type::tau;
+            temp_state.which_to_update       = spin_type::sigma;     // Tell the temp_state that this is a sigma update
+            temp_state.DoF[spin_type::sigma] = -1. * (*spin_at_site(idx, spin_type::sigma));    
+            temp_state.DoF[spin_type::tau]   = *spin_at_site(idx, spin_type::tau);    
+
+            temp_state.sigma_magnetization = current_state.sigma_magnetization + temp_state.DoF[spin_type::sigma] - (*spin_at_site(idx, spin_type::sigma));
+            temp_state.tau_magnetization   = current_state.tau_magnetization;
+            temp_state.nematicity          = current_state.nematicity + temp_state.DoF[spin_type::tau] * ( temp_state.DoF[spin_type::sigma] - (*spin_at_site(idx, spin_type::sigma)) );
+            temp_state.energy              = current_state.energy + sigma_local_energy( idx, temp_state.DoF[spin_type::sigma] ) - sigma_local_energy( idx, *spin_at_site(idx, spin_type::sigma) );
+
             break;
         }
         case spin_type::tau:
         {
-            temp_state.which_to_update = spin_type::tau;       // Tell the temp_state that this is a tau update
-            temp_state.DoF = -1. * (*spin_at_site(idx, spin_type::tau));    
+            temp_state.which_to_update       = spin_type::tau;       // Tell the temp_state that this is a tau update
+            temp_state.DoF[spin_type::tau]   = -1. * (*spin_at_site(idx, spin_type::tau));    
+            temp_state.DoF[spin_type::sigma] = *spin_at_site(idx, spin_type::sigma);
+            
             temp_state.sigma_magnetization = current_state.sigma_magnetization;
-            temp_state.tau_magnetization = current_state.tau_magnetization + temp_state.DoF - (*spin_at_site(idx, spin_type::tau));
-            temp_state.nematicity = current_state.nematicity + (*spin_at_site(idx, spin_type::sigma)) * ( temp_state.DoF - (*spin_at_site(idx, spin_type::tau)) );
-            temp_state.energy = current_state.energy + tau_local_energy( idx, temp_state.DoF ) - tau_local_energy( idx, *spin_at_site(idx, spin_type::tau) );
-            current_state.which_to_update = spin_type::sigma;
+            temp_state.tau_magnetization   = current_state.tau_magnetization + temp_state.DoF[spin_type::tau] - (*spin_at_site(idx, spin_type::tau));
+            temp_state.nematicity          = current_state.nematicity + temp_state.DoF[spin_type::sigma] * ( temp_state.DoF[spin_type::tau] - (*spin_at_site(idx, spin_type::tau)) );
+            temp_state.energy              = current_state.energy + tau_local_energy( idx, temp_state.DoF[spin_type::tau] ) - tau_local_energy( idx, *spin_at_site(idx, spin_type::tau) );
+
             break;
+        }
+    }
+
+    // After a single sweep, switch the spin type being updated
+    if ( idx == Ashkin_Teller2d_Parameters::N - 1 )
+    {
+        switch(current_state.which_to_update)
+        {
+            case spin_type::sigma: 
+            {
+                current_state.which_to_update = spin_type::tau;
+                break;
+            }
+            case spin_type::tau: 
+            {
+                current_state.which_to_update = spin_type::sigma;
+                break;
+            }
         }
     }
 }
@@ -213,23 +235,14 @@ void Ashkin_Teller2d<data_t>::change_state(const size_t idx, State<data_t> & tem
 template<typename data_t>
 void Ashkin_Teller2d<data_t>::set_state(const size_t idx, const State<data_t> & _state)
 {
-    current_state.energy              = _state.energy;
-    current_state.sigma_magnetization = _state.sigma_magnetization;
-    current_state.tau_magnetization   = _state.tau_magnetization;
-    current_state.nematicity          = _state.nematicity;
-    switch(_state.which_to_update)
-    {
-        case spin_type::sigma: // Change the local sigma 
-        {
-            *spin_at_site(idx, spin_type::sigma) = _state.DoF;
-            break;
-        }
-        case spin_type::tau:   // Change the local tau
-        {
-            *spin_at_site(idx, spin_type::tau) = _state.DoF;
-            break;
-        }
-    }
+    current_state.energy                 = _state.energy;
+
+    current_state.sigma_magnetization    = _state.sigma_magnetization;
+    current_state.tau_magnetization      = _state.tau_magnetization;
+    current_state.nematicity             = _state.nematicity;
+
+    *spin_at_site(idx, spin_type::sigma) = _state.DoF[spin_type::sigma];
+    *spin_at_site(idx, spin_type::tau)   = _state.DoF[spin_type::tau];
 }
 
 // Update the non-energetic observables
