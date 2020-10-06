@@ -51,6 +51,7 @@ struct Ashkin_Teller2d
     size_t * neighbor_array = nullptr;
 
     // Add some Hamiltonian dependent functions
+    float local_energy(const size_t idx, const data_t * const spins) const;
     float sigma_local_field(const size_t idx) const;
     float tau_local_field(const size_t idx) const;
     float sigma_local_energy(const size_t idx, const data_t spin_value) const;
@@ -81,6 +82,7 @@ struct Ashkin_Teller2d
 
     // Get sigma or tau at a site
     data_t * spin_at_site(const size_t site, const spin_type type) const {   return &( spin_array[ static_cast<size_t>(spin_type::NUM_SPIN_TYPES) * site + static_cast<size_t>(type)] ); }
+    data_t * spins_address(const size_t site) const {   return &( spin_array[ static_cast<size_t>(spin_type::NUM_SPIN_TYPES) * site ] ); }
 
     ~Ashkin_Teller2d()
     {
@@ -90,6 +92,26 @@ struct Ashkin_Teller2d
 
     void print_lattice() const;
 };
+
+template<typename data_t>
+float Ashkin_Teller2d<data_t>::local_energy(const size_t idx, const data_t * const spins ) const
+{
+    float en = 0.;
+    data_t sigma_idx = *(spins + spin_type::sigma);
+    data_t tau_idx   = *(spins + spin_type::tau);
+
+    size_t neighbor = 0;
+    for ( size_t nidx = 0; nidx != Ashkin_Teller2d_Parameters::num_neighbors_i; ++nidx )
+    {
+        neighbor = neighbor_array[ idx * Ashkin_Teller2d_Parameters::num_neighbors_i + nidx ];
+        en += Ashkin_Teller2d_Parameters::J * static_cast<float>( sigma_idx * (*spin_at_site(neighbor, spin_type::sigma)) );
+        en += Ashkin_Teller2d_Parameters::J * static_cast<float>( tau_idx   * (*spin_at_site(neighbor, spin_type::tau)  ) );
+        en += Ashkin_Teller2d_Parameters::K * static_cast<float>( sigma_idx * tau_idx
+                                                                * (*spin_at_site(neighbor, spin_type::sigma))
+                                                                * (*spin_at_site(neighbor, spin_type::tau)  )   );
+    }
+    return -en;
+}
 
 // The local field is defined such that the local energy at site
 // i is 
@@ -157,6 +179,7 @@ void Ashkin_Teller2d<data_t>::recalculate_state()
        temp_sigma_mag += *spin_at_site(idx, spin_type::sigma);
        temp_tau_mag   += *spin_at_site(idx, spin_type::tau);
        temp_nematicity += (*spin_at_site(idx, spin_type::sigma)) * (*spin_at_site(idx, spin_type::tau));
+       /*
        temp_energy += 0.5 * ( sigma_local_energy(idx, *spin_at_site(idx, spin_type::sigma)) + tau_local_energy(idx, *spin_at_site(idx, spin_type::tau)) );
        // These next terms are necessary to avoid the double counting
        // that occurs in the K term.
@@ -167,6 +190,8 @@ void Ashkin_Teller2d<data_t>::recalculate_state()
                                                                                     * (*spin_at_site(neighbor, spin_type::sigma))
                                                                                     * (*spin_at_site(neighbor, spin_type::tau))                                     );
        }
+       */
+       temp_energy += 0.5 * local_energy(idx, spins_address(idx));
     }
 
     current_state.energy              = temp_energy;
@@ -182,6 +207,22 @@ void Ashkin_Teller2d<data_t>::recalculate_state()
 template<typename data_t>
 void Ashkin_Teller2d<data_t>::change_state(const size_t idx, State<data_t> & temp_state)
 {
+    temp_state.DoF[spin_type::sigma] = *spin_at_site(idx, spin_type::sigma);
+    temp_state.DoF[spin_type::tau]   = *spin_at_site(idx, spin_type::tau);
+
+    if (current_state.which_to_update == spin_type::sigma)
+        temp_state.DoF[spin_type::sigma] *= -1.;
+    else
+        temp_state.DoF[spin_type::tau]   *= -1.;
+
+    temp_state.sigma_magnetization = current_state.sigma_magnetization + temp_state.DoF[spin_type::sigma] - (*spin_at_site(idx, spin_type::sigma));
+    temp_state.tau_magnetization   = current_state.tau_magnetization   + temp_state.DoF[spin_type::tau]   - (*spin_at_site(idx, spin_type::tau));
+    temp_state.nematicity          = current_state.nematicity + (temp_state.DoF[spin_type::sigma] * temp_state.DoF[spin_type::tau]) - ( *spin_at_site(idx, spin_type::sigma) * (*spin_at_site(idx, spin_type::tau)) );
+
+    temp_state.energy              = current_state.energy + local_energy(idx, &(temp_state.DoF[0])) - local_energy(idx, spins_address(idx) );
+
+
+    /*
     switch(current_state.which_to_update)
     {
         case spin_type::sigma:
@@ -211,6 +252,7 @@ void Ashkin_Teller2d<data_t>::change_state(const size_t idx, State<data_t> & tem
             break;
         }
     }
+    */
 
     // After a single sweep, switch the spin type being updated
     if ( idx == Ashkin_Teller2d_Parameters::N - 1 )
