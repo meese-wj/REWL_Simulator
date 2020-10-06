@@ -43,6 +43,9 @@ Some `cmake` options to be aware of are as follows:
 * `PRINT_HISTOGRAM`
     * When set, the histograms are intermittently written to a file.
     * Currently this is _not_ thread safe and will be corrected as the parallelization is implemented.
+* `REDUCE_LOGDOS`
+    * This truncates the logDoS at the same time as the energy histogram such that the ground state value of the logDoS is zero. Since only differences in the logDoS affect the Monte Carlo moves, this is allowed.
+    * The idea here is to reduce the degree of numerical error saturation in calculating acceptance probabilities. When the logDoS gets too large, it will overflow the mantissa, especially when the incrementer is much smaller than the magnitude of the logDoS.
 
 #### Supported Hamiltonians
 If multiple Hamiltonians are selected at build time, then `cmake` will throw a `FATAL_ERROR`.
