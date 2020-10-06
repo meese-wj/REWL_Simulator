@@ -52,10 +52,6 @@ struct Ashkin_Teller2d
 
     // Add some Hamiltonian dependent functions
     float local_energy(const size_t idx, const data_t * const spins) const;
-    float sigma_local_field(const size_t idx) const;
-    float tau_local_field(const size_t idx) const;
-    float sigma_local_energy(const size_t idx, const data_t spin_value) const;
-    float tau_local_energy(const size_t idx, const data_t spin_value) const;
     void recalculate_state();
     void change_state(const size_t idx, State<data_t> & temp_state);
     void set_state(const size_t idx, const State<data_t> & _state);
@@ -113,59 +109,6 @@ float Ashkin_Teller2d<data_t>::local_energy(const size_t idx, const data_t * con
     return -en;
 }
 
-// The local field is defined such that the local energy at site
-// i is 
-// sigma_i * sum_{j neighbors} ( -J * sigma_j - K * sigma_j * tau_i * tau_j )
-template<typename data_t>
-float Ashkin_Teller2d<data_t>::sigma_local_field(const size_t idx) const
-{
-    float field = 0.;
-    for ( size_t nidx = 0; nidx != Ashkin_Teller2d_Parameters::num_neighbors_i; ++nidx )
-    {
-        const size_t neighbor = neighbor_array[ idx * Ashkin_Teller2d_Parameters::num_neighbors_i + nidx ];
-
-        field += Ashkin_Teller2d_Parameters::J * static_cast<float>( *spin_at_site( neighbor, spin_type::sigma ) );
-
-        field += Ashkin_Teller2d_Parameters::K * static_cast<float>(   (*spin_at_site(idx,      spin_type::tau))
-                                                                     * (*spin_at_site(neighbor, spin_type::sigma)) 
-                                                                     * (*spin_at_site(neighbor, spin_type::tau))   );
-    }
-    return field;
-}
-
-// The local field is defined such that the local energy at site
-// i is 
-// tau_i * sum_{j neighbors} ( -J * tau_j - K * tau_j * sigma_i * sigma_j )
-template<typename data_t>
-float Ashkin_Teller2d<data_t>::tau_local_field(const size_t idx) const
-{
-    float field = 0.;
-    for ( size_t nidx = 0; nidx != Ashkin_Teller2d_Parameters::num_neighbors_i; ++nidx )
-    {
-        const size_t neighbor = neighbor_array[ idx * Ashkin_Teller2d_Parameters::num_neighbors_i + nidx ];
-
-        field += Ashkin_Teller2d_Parameters::J * static_cast<float>( *spin_at_site( neighbor, spin_type::tau ) );
-
-        field += Ashkin_Teller2d_Parameters::K * static_cast<float>(   (*spin_at_site(idx,      spin_type::sigma))
-                                                                     * (*spin_at_site(neighbor, spin_type::tau)) 
-                                                                     * (*spin_at_site(neighbor, spin_type::sigma)) );
-    }
-    return field;
-}
-
-template<typename data_t>
-float Ashkin_Teller2d<data_t>::sigma_local_energy(const size_t idx, const data_t spin_value) const
-{
-    return -1. * static_cast<float>( spin_value ) * sigma_local_field(idx);
-}
-
-template<typename data_t>
-float Ashkin_Teller2d<data_t>::tau_local_energy(const size_t idx, const data_t spin_value) const
-{
-    return -1. * static_cast<float>( spin_value ) * tau_local_field(idx);
-}
-
-
 template<typename data_t>
 void Ashkin_Teller2d<data_t>::recalculate_state()
 {
@@ -179,18 +122,6 @@ void Ashkin_Teller2d<data_t>::recalculate_state()
        temp_sigma_mag += *spin_at_site(idx, spin_type::sigma);
        temp_tau_mag   += *spin_at_site(idx, spin_type::tau);
        temp_nematicity += (*spin_at_site(idx, spin_type::sigma)) * (*spin_at_site(idx, spin_type::tau));
-       /*
-       temp_energy += 0.5 * ( sigma_local_energy(idx, *spin_at_site(idx, spin_type::sigma)) + tau_local_energy(idx, *spin_at_site(idx, spin_type::tau)) );
-       // These next terms are necessary to avoid the double counting
-       // that occurs in the K term.
-       for ( size_t nidx = 0; nidx != Ashkin_Teller2d_Parameters::num_neighbors_i; ++nidx )
-       {
-           const size_t neighbor = neighbor_array[ idx * Ashkin_Teller2d_Parameters::num_neighbors_i + nidx ];
-           temp_energy += 0.5 * Ashkin_Teller2d_Parameters::K * static_cast<float>(   (*spin_at_site(idx, spin_type::sigma)) * (*spin_at_site(idx, spin_type::tau))
-                                                                                    * (*spin_at_site(neighbor, spin_type::sigma))
-                                                                                    * (*spin_at_site(neighbor, spin_type::tau))                                     );
-       }
-       */
        temp_energy += 0.5 * local_energy(idx, spins_address(idx));
     }
 
@@ -211,9 +142,15 @@ void Ashkin_Teller2d<data_t>::change_state(const size_t idx, State<data_t> & tem
     temp_state.DoF[spin_type::tau]   = *spin_at_site(idx, spin_type::tau);
 
     if (current_state.which_to_update == spin_type::sigma)
+    {
         temp_state.DoF[spin_type::sigma] *= -1.;
+        temp_state.which_to_update = spin_type::tau;    // Which spin to switch to IFF a switch is made
+    }
     else
+    {
         temp_state.DoF[spin_type::tau]   *= -1.;
+        temp_state.which_to_update = spin_type::sigma;  // Which spin to switch to IFF a switch is made
+    }
 
     temp_state.sigma_magnetization = current_state.sigma_magnetization + temp_state.DoF[spin_type::sigma] - (*spin_at_site(idx, spin_type::sigma));
     temp_state.tau_magnetization   = current_state.tau_magnetization   + temp_state.DoF[spin_type::tau]   - (*spin_at_site(idx, spin_type::tau));
@@ -221,56 +158,10 @@ void Ashkin_Teller2d<data_t>::change_state(const size_t idx, State<data_t> & tem
 
     temp_state.energy              = current_state.energy + local_energy(idx, &(temp_state.DoF[0])) - local_energy(idx, spins_address(idx) );
 
-
-    /*
-    switch(current_state.which_to_update)
-    {
-        case spin_type::sigma:
-        {
-            temp_state.which_to_update       = spin_type::sigma;     // Tell the temp_state that this is a sigma update
-            temp_state.DoF[spin_type::sigma] = -1. * (*spin_at_site(idx, spin_type::sigma));    
-            temp_state.DoF[spin_type::tau]   = *spin_at_site(idx, spin_type::tau);    
-
-            temp_state.sigma_magnetization = current_state.sigma_magnetization + temp_state.DoF[spin_type::sigma] - (*spin_at_site(idx, spin_type::sigma));
-            temp_state.tau_magnetization   = current_state.tau_magnetization;
-            temp_state.nematicity          = current_state.nematicity + temp_state.DoF[spin_type::tau] * ( temp_state.DoF[spin_type::sigma] - (*spin_at_site(idx, spin_type::sigma)) );
-            temp_state.energy              = current_state.energy + sigma_local_energy( idx, temp_state.DoF[spin_type::sigma] ) - sigma_local_energy( idx, *spin_at_site(idx, spin_type::sigma) );
-
-            break;
-        }
-        case spin_type::tau:
-        {
-            temp_state.which_to_update       = spin_type::tau;       // Tell the temp_state that this is a tau update
-            temp_state.DoF[spin_type::tau]   = -1. * (*spin_at_site(idx, spin_type::tau));    
-            temp_state.DoF[spin_type::sigma] = *spin_at_site(idx, spin_type::sigma);
-            
-            temp_state.sigma_magnetization = current_state.sigma_magnetization;
-            temp_state.tau_magnetization   = current_state.tau_magnetization + temp_state.DoF[spin_type::tau] - (*spin_at_site(idx, spin_type::tau));
-            temp_state.nematicity          = current_state.nematicity + temp_state.DoF[spin_type::sigma] * ( temp_state.DoF[spin_type::tau] - (*spin_at_site(idx, spin_type::tau)) );
-            temp_state.energy              = current_state.energy + tau_local_energy( idx, temp_state.DoF[spin_type::tau] ) - tau_local_energy( idx, *spin_at_site(idx, spin_type::tau) );
-
-            break;
-        }
-    }
-    */
-
     // After a single sweep, switch the spin type being updated
     if ( idx == Ashkin_Teller2d_Parameters::N - 1 )
-    {
-        switch(current_state.which_to_update)
-        {
-            case spin_type::sigma: 
-            {
-                current_state.which_to_update = spin_type::tau;
-                break;
-            }
-            case spin_type::tau: 
-            {
-                current_state.which_to_update = spin_type::sigma;
-                break;
-            }
-        }
-    }
+        current_state.which_to_update = temp_state.which_to_update;
+        
 }
 
 // Set the current state
