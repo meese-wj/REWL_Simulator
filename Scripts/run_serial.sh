@@ -7,7 +7,7 @@ echo
 ls
 echo
 echo "Building and running code."
-cmake .. -DMPI_ON=OFF
+cmake .. -DMPI_ON=OFF -DCMAKE_BUILD_TYPE=Release
 
 make -j
 if [[ $? == 0 ]]

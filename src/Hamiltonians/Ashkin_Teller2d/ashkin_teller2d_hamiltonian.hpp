@@ -141,15 +141,20 @@ void Ashkin_Teller2d<data_t>::change_state(const size_t idx, State<data_t> & tem
     temp_state.DoF[spin_type::sigma] = *spin_at_site(idx, spin_type::sigma);
     temp_state.DoF[spin_type::tau]   = *spin_at_site(idx, spin_type::tau);
 
-    if (current_state.which_to_update == spin_type::sigma)
+    switch (current_state.which_to_update == spin_type::sigma)
     {
-        temp_state.DoF[spin_type::sigma] *= -1.;
-        temp_state.which_to_update = spin_type::tau;    // Which spin to switch to IFF a switch is made
-    }
-    else
-    {
-        temp_state.DoF[spin_type::tau]   *= -1.;
-        temp_state.which_to_update = spin_type::sigma;  // Which spin to switch to IFF a switch is made
+        case spin_type::sigma:
+        {
+            temp_state.DoF[spin_type::sigma] *= -1.;
+            temp_state.which_to_update = spin_type::tau;    // Which spin to switch to IFF a switch is made    
+            break;
+        }
+        case spin_type::tau:
+        {
+            temp_state.DoF[spin_type::tau]   *= -1.;
+            temp_state.which_to_update = spin_type::sigma;  // Which spin to switch to IFF a switch is made
+            break;
+        }
     }
 
     temp_state.sigma_magnetization = current_state.sigma_magnetization + temp_state.DoF[spin_type::sigma] - (*spin_at_site(idx, spin_type::sigma));
