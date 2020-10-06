@@ -23,7 +23,7 @@
 
 /* Define some constexpr to be used later on. */
 static constexpr uint64_t count_initializer = 0;
-static constexpr uint64_t logdos_initializer = 1;
+static constexpr uint64_t logdos_initializer = 0;
 constexpr float ratio_failure = FLT_MAX;
 #if PRINT_HISTOGRAM
 const std::string histogram_file = "histogram_";
@@ -80,9 +80,16 @@ struct rewl_histograms
     // Reset the counts
     void reset_counts() const
     {
+#if REDUCE_LOGDOS
+        data_t logdos_reducer = -histograms[ 0 ].logdos + logdos_initializer;
+        printf("\nReducer = %e\n", logdos_reducer);
+#endif
         for ( size_t idx = 0; idx != num_bins; ++idx )
         {
             histograms[ idx ].count = count_initializer;
+#if REDUCE_LOGDOS
+            histograms[ idx ].logdos += logdos_reducer;
+#endif
         }
     }
 
