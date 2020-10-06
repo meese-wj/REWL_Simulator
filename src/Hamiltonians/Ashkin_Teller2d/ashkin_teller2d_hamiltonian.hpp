@@ -141,7 +141,7 @@ void Ashkin_Teller2d<data_t>::change_state(const size_t idx, State<data_t> & tem
     temp_state.DoF[spin_type::sigma] = *spin_at_site(idx, spin_type::sigma);
     temp_state.DoF[spin_type::tau]   = *spin_at_site(idx, spin_type::tau);
 
-    switch (current_state.which_to_update == spin_type::sigma)
+    switch (current_state.which_to_update)
     {
         case spin_type::sigma:
         {
