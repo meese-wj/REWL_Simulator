@@ -7,7 +7,8 @@
 #include <file_manager.hpp>
 #include <fstream>
 
-const std::string DELIMITER = "  ";
+// This string needs to be defined somewhere!
+// const std::string DELIMITER = "  ";
 
 template<typename energy_t, typename obs_t>
 void write_nonlinear_obs_to_file( const size_t num_temps, const size_t num_obs,
@@ -40,6 +41,7 @@ void write_nonlinear_obs_to_file( const size_t num_temps, const size_t num_obs,
         
         for ( size_t ob = 0; ob != num_obs; ++ob )
         {
+            printf("\nob = %ld", ob);
             output_file << nonlinear_obs_names[ Tidx * num_obs + ob ];
 
             if ( ob != num_obs - 1 ) output_file << DELIMITER; 

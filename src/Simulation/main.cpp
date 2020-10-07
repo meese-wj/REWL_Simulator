@@ -252,8 +252,8 @@ int main(int argc, char * argv[])
     write_observables_to_file<ENERGY_TYPE, OBS_TYPE>( num_T, total_observables, sys_strings.file_name_base, data_file_header,
                                                       thermal_obs_names, data_path, thermo -> temperatures, thermo -> canonical_observables ); 
    
-    write_nonlinear_obs_to_file<ENERGY_TYPE, OBS_TYPE>( num_T, System_Obs::nonlinear_obs_enum::NUM_OBS, sys_strings.file_name_base, data_file_header,
-                                                      System_Obs::nonlinear_obs_strings, data_path, thermo -> temperatures, nonlinear_obs_array ); 
+    write_nonlinear_obs_to_file<ENERGY_TYPE, OBS_TYPE>( num_T, convert(System_Obs::nonlinear_obs_enum::NUM_OBS), sys_strings.file_name_base, data_file_header,
+                                                        System_Obs::nonlinear_obs_strings, data_path, thermo -> temperatures, nonlinear_obs_array ); 
     
 #if COLLECT_TIMINGS
     timer_end = std::chrono::high_resolution_clock::now();
