@@ -13,7 +13,7 @@
 // Calculate the EXTENSIVE susceptibility from
 // an intensive m and m2. If m and m2 are extensive
 // then set size = 1
-template<typename obs_t>
+template<typename obs_t, typename energy_t>
 inline obs_t calculate_susceptibility( const obs_t m2, const obs_t m, const energy_t Tvalue, const size_t size )
 {
     return (size * m2 - size * size * m * m) / static_cast<obs_t>(Tvalue);
@@ -22,7 +22,7 @@ inline obs_t calculate_susceptibility( const obs_t m2, const obs_t m, const ener
 // Calculate the Binder parameter (kurtosis) 
 // from an intensive m2 and m4. If they are 
 // extensive, set size = 1.
-template<template obs_t>
+template<typename obs_t>
 inline obs_t calculate_Binder_parameter( const obs_t m4, const obs_t m2, const size_t size )
 {
     return m4 / ( size * m2 * m2 );
@@ -31,11 +31,19 @@ inline obs_t calculate_Binder_parameter( const obs_t m4, const obs_t m2, const s
 // Calculate the Binder cumulant of a scalar order parameter
 // from an intensive m2 and m4. If they are extensive, set
 // size = 1.
-template<template obs_t>
-inline obs_t calculate_Binder_parameter( const obs_t m4, const obs_t m2, const size_t size )
+template<typename obs_t>
+inline obs_t calculate_Binder_cumulant( const obs_t m4, const obs_t m2, const size_t size )
 {
     return 1. - calculate_Binder_parameter(m4, m2, size) / 3.;
 }
 
+// Calculate the Binder cumulant of a two-component order parameter
+// from an intensive m2 and m4. If they are extensive, set
+// size = 1.
+template<typename obs_t>
+inline obs_t calculate_two_component_Binder_cumulant( const obs_t m4, const obs_t m2, const size_t size )
+{
+    return 2. * ( 1. - 0.5 * ( m4 / ( size * m2 * m2 ) ) );
+}
 
 #endif

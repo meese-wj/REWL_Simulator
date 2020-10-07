@@ -187,9 +187,10 @@ void Ashkin_Teller2d<data_t>::set_state(const size_t idx, const State<data_t> & 
 template<typename data_t>
 void Ashkin_Teller2d<data_t>::update_observables(const size_t bin, Ashkin_Teller2d_Obs<data_t> * obs_ptr) const
 {
-    const data_t sigma_val = abs( current_state.sigma_magnetization );
-    const data_t tau_val   = abs( current_state.tau_magnetization );
-    const data_t nem_val   = abs( current_state.nematicity );
+    const data_t sigma_val  = abs( current_state.sigma_magnetization );
+    const data_t tau_val    = abs( current_state.tau_magnetization );
+    const data_t order_val2 = sigma_val * sigma_val + tau_val * tau_val;
+    const data_t nem_val    = abs( current_state.nematicity );
     
     obs_ptr -> update_observable_average(sigma_val, Obs::enum_names::sigma_mag, bin);
     obs_ptr -> update_observable_average(sigma_val * sigma_val, Obs::enum_names::sigma_mag2, bin);
@@ -198,6 +199,10 @@ void Ashkin_Teller2d<data_t>::update_observables(const size_t bin, Ashkin_Teller
     obs_ptr -> update_observable_average(tau_val, Obs::enum_names::tau_mag, bin);
     obs_ptr -> update_observable_average(tau_val * tau_val, Obs::enum_names::tau_mag2, bin);
     obs_ptr -> update_observable_average(tau_val * tau_val * tau_val * tau_val, Obs::enum_names::tau_mag4, bin);
+
+    obs_ptr -> update_observable_average(sqrt(order_val2), Obs::enum_names::order_param, bin);
+    obs_ptr -> update_observable_average(order_val2,  Obs::enum_names::order_param2, bin);
+    obs_ptr -> update_observable_average(order_val2 * order_val2, Obs::enum_names::order_param4, bin);
 
     obs_ptr -> update_observable_average(nem_val, Obs::enum_names::nem_mag, bin);
     obs_ptr -> update_observable_average(nem_val * nem_val, Obs::enum_names::nem_mag2, bin);

@@ -2,6 +2,7 @@
 #define ASHKIN_TELLER2D_OBSERVABLES
 #include <string>
 #include <vector>
+#include <order_parameter_cumulants.hpp>
 
 static constexpr float DATA_INITIALIZER = 0.;
 
@@ -19,14 +20,23 @@ namespace Obs
     {
         sigma_mag, sigma_mag2, sigma_mag4, 
         tau_mag,   tau_mag2,   tau_mag4, 
+        order_param, order_param2, order_param4,
         nem_mag,   nem_mag2,   nem_mag4,
         counts_per_bin, NUM_OBS
     };
 
+    enum class nonlinear_obs_enum
+    {
+        order_param, susc, binder_cumulant, NUM_OBS
+    };
+
     const std::vector<std::string> string_names = { "Sigma Mag", "Sigma Mag2", "Sigma Mag4", 
                                                     "Tau Mag",   "Tau Mag2",   "Tau Mag4",
+                                                    "Order Parameter", "Order Parameter2", "Order Parameter4",
                                                     "Nematicity", "Nematicity2", "Nematicity4",
                                                     "Counts per Bin", "NUM OBS" };
+
+    const std::vector<std::string> nonlinear_obs_strings = { "Order Parameter", "Susceptibility", "Binder Cumulant" };
 }
 
 constexpr size_t convert(const Obs::enum_names obs_val)
@@ -109,6 +119,31 @@ void Ashkin_Teller2d_Obs<data_t>::update_observable_average(const data_t value,
     current_avg = ( value + counts * current_avg ) / ( counts + 1 );
 
     set_observable(current_avg, ob, bin);
+}
+
+
+// Calculate the thermally-averaged nonlinear observables
+// given a thermodynamics enum and the thermally-averaged
+// linear observables.
+template<typename data_t, typename thermo_enum, class thermo_t>
+void calculate_nonlinear_observables( const size_t num_temps, const size_t system_size, const * thermo_t const thermo, data_t *& nonlinear_obs )
+{
+    // Wipe the nonlinear observables completely
+    delete [] nonlinear_obs;
+    // Create a new array (add an extra index for the temperature)
+    const size_t num_nonlinear_obs = static_cast<size_t>(Obs::nonlinear_obs_enum::NUM_OBS);
+    nonlinear_obs = new data_t [ num_nonlinear_obs * num_temps ];
+
+    for ( size_t Tidx = 0; Tidx != num_temps; ++Tidx )
+    {
+        const data_t temperature = static_cast<data_t>( thermo -> temperatures[Tidx] );
+
+        // Calculate the susceptibility
+        nonlinear_obs[ Tidx * num_nonlinear_obs + Obs::nonlinear_obs_enum::susc ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, Obs::enum_names::order_param2 ), thermo -> get_system_obs( Tidx, Obs::enum_names::order_param ), temperature, system_size );
+
+        // Calculate the two-component Binder cumulant
+        nonlinear_obs[ Tidx * num_nonlinear_obs + Obs::nonlinear_obs_enum::binder_cumulant ] = calculate_two_component_Binder_cumulant( thermo -> get_system_obs( Tidx, Obs::enum_names::order_param4 ), thermo -> get_system_obs( Tidx, Obs::enum_names::order_param2 ), system_size );
+    }
 }
 
 #endif
