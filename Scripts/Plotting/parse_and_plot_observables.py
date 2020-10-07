@@ -1,4 +1,4 @@
-# Plot the self-averaged observables
+# Plot the observables
 # for many system sizes at some fixed
 # coupling.
 
@@ -10,13 +10,15 @@ mpl.use('Agg')  # THIS IS REQUIRED FOR WSL2
 import matplotlib.pyplot as plt
 import os
 
-data_file_stem = "self_averaged_observables"
-observable_marker = "Intensive Observable"
+#data_file_stem = "self_averaged_observables"
+#observable_marker = "Intensive Observable"
 output_path = "Figures"
 
 def setup_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("model_name", help = "Model being studied", type = str)
+    parser.add_argument("data_file_stem", help = "Observable type being plotted", type = str)
+    parser.add_argument("observable_marker", help = "Line in data header before observable labels", type = str)
     parser.add_argument("coupling_symbol", help = "The constant value to parse through", type = str)
     parser.add_argument("coupling_value",  help = "Value of the coupling", type = str)
 
@@ -35,7 +37,7 @@ def find_string_value( string_type, file_string ):
     return file_string[start:end]
 
 
-def collect_observables_and_data(coupling_symbol, coupling_value, comment = "#"):
+def collect_observables_and_data( data_file_stem, observable_marker, coupling_symbol, coupling_value, comment = "#"):
 
     labels = []
 
@@ -98,7 +100,7 @@ def main():
 
     check_for_output()
 
-    labels, data_tuples = collect_observables_and_data( args.coupling_symbol, args.coupling_value )
+    labels, data_tuples = collect_observables_and_data( args.data_file_stem, args.observable_marker, args.coupling_symbol, args.coupling_value )
 
     plot_data_tuples( args.model_name, args.coupling_symbol, args.coupling_value, labels, data_tuples )
 

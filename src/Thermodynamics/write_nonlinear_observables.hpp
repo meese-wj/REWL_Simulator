@@ -26,7 +26,7 @@ void write_nonlinear_obs_to_file( const size_t num_temps, const size_t num_obs,
     output_file << file_header;
     
     size_t counter = 1;
-    output_file << "# Extensive Nonlinear Observable Names by Column";
+    output_file << "# Intensive Nonlinear Observable Names by Column";
     output_file << "\n#    1: Temperature";
     for ( size_t obs_idx = 0, num_obs = nonlinear_obs_names.size(); obs_idx != num_obs; ++obs_idx )
     {
