@@ -239,6 +239,9 @@ int main(int argc, char * argv[])
 #endif
     thermo -> calculate_thermodynamics( System_Parameters::N, final_energy_array, final_logdos_array, final_observable_array ); 
 
+    OBS_TYPE * nonlinear_obs_array = nullptr;
+    calculate_nonlinear_observables<OBS_TYPE, thermo_t>( num_T, System_Parameters::N, thermo, nonlinear_obs_array ); 
+
     printf("\nWriting thermodynamics to file.");
 
     constexpr size_t total_observables =   convert<Energy_Obs::enum_names>(Energy_Obs::enum_names::NUM_OBS) 
@@ -248,6 +251,9 @@ int main(int argc, char * argv[])
 
     write_observables_to_file<ENERGY_TYPE, OBS_TYPE>( num_T, total_observables, sys_strings.file_name_base, data_file_header,
                                                       thermal_obs_names, data_path, thermo -> temperatures, thermo -> canonical_observables ); 
+   
+    write_nonlinear_obs_to_file<ENERGY_TYPE, OBS_TYPE>( num_T, System_Obs::nonlinear_obs_enum::NUM_OBS, sys_strings.file_name_base, data_file_header,
+                                                      System_Obs::nonlinear_obs_strings, data_path, thermo -> temperatures, nonlinear_obs_array ); 
     
 #if COLLECT_TIMINGS
     timer_end = std::chrono::high_resolution_clock::now();
@@ -263,14 +269,12 @@ int main(int argc, char * argv[])
 
     delete thermo;
     delete simulation;
-   
+  
+    delete [] nonlinear_obs_array;
     delete [] final_energy_array;
     delete [] final_logdos_array;
     delete [] final_observable_array;
 
-    final_energy_array = nullptr;
-    final_logdos_array = nullptr;
-    final_observable_array = nullptr;
     return 0;
 }
 #endif

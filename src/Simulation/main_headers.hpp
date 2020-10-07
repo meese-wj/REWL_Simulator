@@ -19,6 +19,7 @@ const std::string DELIMITER = "  ";
 #include <write_microcanonical_observables.hpp>
 #include <thermodynamics.hpp>
 #include <write_self_averaged_observables.hpp>
+#include <write_nonlinear_observables.hpp>
 
 
 

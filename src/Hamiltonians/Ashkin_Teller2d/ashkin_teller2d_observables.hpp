@@ -123,10 +123,10 @@ void Ashkin_Teller2d_Obs<data_t>::update_observable_average(const data_t value,
 
 
 // Calculate the thermally-averaged nonlinear observables
-// given a thermodynamics enum and the thermally-averaged
+// given a thermodynamics object and the thermally-averaged
 // linear observables.
-template<typename data_t, typename thermo_enum, class thermo_t>
-void calculate_nonlinear_observables( const size_t num_temps, const size_t system_size, const * thermo_t const thermo, data_t *& nonlinear_obs )
+template<typename data_t, class thermo_t>
+void calculate_nonlinear_observables( const size_t num_temps, const size_t system_size, const thermo_t * const thermo, data_t *& nonlinear_obs )
 {
     // Wipe the nonlinear observables completely
     delete [] nonlinear_obs;
