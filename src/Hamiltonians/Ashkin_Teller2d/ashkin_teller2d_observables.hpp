@@ -27,6 +27,9 @@ namespace Obs
 
     enum class nonlinear_obs_enum
     {
+        sigma_susc, sigma_binder, 
+        tau_susc, tau_binder,
+        nem_susc, nem_binder_cumulant,
         susc, binder_cumulant, NUM_OBS
     };
 
@@ -36,7 +39,10 @@ namespace Obs
                                                     "Nematicity", "Nematicity2", "Nematicity4",
                                                     "Counts per Bin", "NUM OBS" };
 
-    const std::vector<std::string> nonlinear_obs_strings = { "Susceptibility", "Binder Cumulant" };
+    const std::vector<std::string> nonlinear_obs_strings = { "Sigma Susceptibility", "Sigma Binder Cumulant",
+                                                             "Tau Susceptibility",   "Tau Binder Cumulant",
+                                                             "Nematicity Susceptibility",   "Nematicity Binder Cumulant",
+                                                             "Susceptibility", "Binder Cumulant" };
 }
 
 constexpr size_t convert(const Obs::enum_names obs_val)
@@ -137,12 +143,25 @@ void calculate_nonlinear_observables( const size_t num_temps, const size_t syste
     delete [] nonlinear_obs;
     // Create a new array (add an extra index for the temperature)
     const size_t num_nonlinear_obs = static_cast<size_t>(Obs::nonlinear_obs_enum::NUM_OBS);
-    printf("\nnum_nonlinear_obs * num_temps = %ld\n", num_nonlinear_obs * num_temps );
     nonlinear_obs = new data_t [ num_nonlinear_obs * num_temps ];
 
     for ( size_t Tidx = 0; Tidx != num_temps; ++Tidx )
     {
         const data_t temperature = static_cast<data_t>( thermo -> temperatures[Tidx] );
+        
+        // Calculate the sigma susceptibility
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::sigma_susc) ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::sigma_mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::sigma_mag) ), temperature, system_size );
+
+        // Calculate the sigma Binder cumulant
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::sigma_binder) ] = calculate_Binder_cumulant( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::sigma_mag4) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::sigma_mag2) ), system_size );
+    
+        
+        // Calculate the tau susceptibility
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::tau_susc) ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::tau_mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::tau_mag) ), temperature, system_size );
+
+        // Calculate the tau Binder cumulant
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::tau_binder) ] = calculate_Binder_cumulant( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::tau_mag4) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::tau_mag2) ), system_size );
+    
 
         // Calculate the susceptibility
         nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::susc) ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::order_param2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::order_param) ), temperature, system_size );
