@@ -82,7 +82,6 @@ struct rewl_histograms
     {
 #if REDUCE_LOGDOS
         data_t logdos_reducer = -histograms[ 0 ].logdos + logdos_initializer;
-        printf("\nReducer = %e\n", logdos_reducer);
 #endif
         for ( size_t idx = 0; idx != num_bins; ++idx )
         {
