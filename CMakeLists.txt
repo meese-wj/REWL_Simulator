@@ -9,8 +9,8 @@ add_compile_options(-std=c++17 -Wall -Werror -pedantic)
 # Add compile-time options below.
 
 option(MPI_ON "Turn on MPI. This engages parallelized a Wang Landau simulation." ON)
-option(ISING2D "Run a 2d Ising model on a periodic square lattice." OFF)
-option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice." ON)
+option(ISING2D "Run a 2d Ising model on a periodic square lattice." ON)
+option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice." OFF)
 option(COLLECT_TIMINGS "Print timings collected by STL Chrono." ON)
 option(PRINT_HISTOGRAM "Print the energy histogram to a file periodically." ON)
 option(REDUCE_LOGDOS "Truncate the logDoS after each iteration to heighten numerical sensitivity." ON)
