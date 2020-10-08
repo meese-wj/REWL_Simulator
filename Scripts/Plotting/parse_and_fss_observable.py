@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import os
 
 output_path = "Figures"
+dimension = 2
 
 def setup_args():
     parser = argparse.ArgumentParser()
@@ -88,24 +89,34 @@ def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_valu
     Lvalues = np.array(Lvalues)
     max_obs = np.array(max_obs)
 
-    # Now fit on a loglog plot
-
-
-
-    print("\nPlotting %s vs %s" % (labels[lbl], xlabel))
+    print("\nPlotting FSS max{ %s } vs %s" % (labels[lbl], xlabel))
     fig, ax = plt.subplots(1,1)
 
-    for Ldx in range(0, len(data_tuples)):
+    # Now fit on a loglog plot
+    fit_scaling = np.polyfit( np.log(Lvalues), np.log(max_obs), 1 )
+    fit_predictions = np.poly1d( fit_scaling )
 
-        Lvalue = data_tuples[Ldx][0]
-        ax.plot(data_tuples[Ldx][1][:,0], data_tuples[Ldx][1][:,lbl], label = "L = %s" % Lvalue)
+    label_string = ""
+    if fss_observable == "Specific Heat":
+        label_string = "$c_V \sim t^{-\\alpha},\; \\alpha = %.3f$" % fit_scaling[0]
+        print("\nSpecific Heat alpha = %.3f\n" % fit_scaling[0])
+    elif fss_observable == "Susceptibility":
+        label_string = "$\chi \sim t^{-\gamma},\; \gamma = %.3f$" % fit_scaling[0]
+        print("\nSusceptibility gamma = %.3f\n" % fit_scaling[0])
+
+    # Finally Plot the results
+    ax.scatter( Lvalues, max_obs, label = None )
+    ax.plot( Lvalues, np.exp( fit_predictions( np.log(Lvalues) ) ), color = "red", ls = "dashed", label = r"FSS Fit: %s" % label_string )
+
+    ax.set_xscale("log")
+    ax.set_yscale("log")
 
     ax.set_xlabel(xlabel, fontsize = 12)
-    ax.set_ylabel(labels[lbl], fontsize = 12)
+    ax.set_ylabel("Peak %s" % labels[lbl], fontsize = 12)
     ax.set_title(model_name + ": " + key_string, fontsize = 12)
     ax.legend(fontsize = 12)
 
-    plotname = "%s" % (labels[lbl] + "_vs_" + xlabel + ".png")
+    plotname = "%s" % ("Peak " + labels[lbl] + " vs " + xlabel + ".png")
 
     plt.savefig(output_path + "/" + plotname)
 
