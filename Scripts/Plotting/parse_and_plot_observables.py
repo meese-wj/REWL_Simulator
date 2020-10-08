@@ -21,6 +21,7 @@ def setup_args():
     parser.add_argument("observable_marker", help = "Line in data header before observable labels", type = str)
     parser.add_argument("coupling_symbol", help = "The constant value to parse through", type = str)
     parser.add_argument("coupling_value",  help = "Value of the coupling", type = str)
+    parser.add_argument("--Tc", default = None, help = "Optional value of Tc for vertical lines", type = str)
 
     return parser.parse_args()
 
@@ -71,7 +72,7 @@ def collect_observables_and_data( data_file_stem, observable_marker, coupling_sy
 
     return labels, data_tuples
 
-def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_value, labels, data_tuples, plot_directory ):
+def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_value, labels, data_tuples, plot_directory, Tc_val = None ):
 
     xlabel = labels[0]
     key_string = coupling_string + " = " + "%.3f" % float(coupling_value)
@@ -84,9 +85,13 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
         for Ldx in range(0, len(data_tuples)):
 
             Lvalue = data_tuples[Ldx][0]
-            ax.plot(data_tuples[Ldx][1][:,0], data_tuples[Ldx][1][:,lbl], label = "L = %s" % Lvalue)
+            ax.plot(data_tuples[Ldx][1][:,0], data_tuples[Ldx][1][:,lbl], label = r"$L = %s$" % Lvalue)
 
         ymin, ymax = ax.get_ylim()
+        print(ymin,ymax)
+        if Tc_val != None and Tc_val != "":
+            if "microcanonical" not in data_file_stem:
+                ax.plot( float(Tc_val) + 0. * np.linspace(0,1,10), ymin + (ymax - ymin) * np.linspace(0,1,10), color = "gray", lw = 1, ls = "dashed", label = r"$T_c = %s$" % Tc_val )
 
         ax.set_ylim([ymin, ymax])
 
@@ -100,12 +105,6 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
         plt.savefig(plot_directory + "/" + plotname)
 
         plt.close()
-""" This is for known Tc.
-    TODO: Generalize this in some way...
-        if "microcanonical" not in data_file_stem:
-            ax.plot( 3.6496 + 0 * np.arange(10), (ymax - ymin) * np.arange(10) / 10.  )
-"""
-
 
 def main():
 
@@ -115,7 +114,7 @@ def main():
 
     labels, data_tuples = collect_observables_and_data( args.data_file_stem, args.observable_marker, args.coupling_symbol, args.coupling_value )
 
-    plot_data_tuples( args.model_name, args.data_file_stem, args.coupling_symbol, args.coupling_value, labels, data_tuples, plot_directory )
+    plot_data_tuples( args.model_name, args.data_file_stem, args.coupling_symbol, args.coupling_value, labels, data_tuples, plot_directory, args.Tc )
 
 
 

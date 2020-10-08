@@ -1,12 +1,13 @@
 #!/bin/bash
 
-while getopts ":m:d:c:v:" arg;
+while getopts ":m:d:c:v:T:" arg;
 do
     case $arg in
         m) MODEL=$OPTARG;;
         d) DATE=$OPTARG;;
         c) COUPLING=$OPTARG;;
         v) VALUE=$OPTARG;;
+        T) TC_VALUE=$OPTARG;;  # Optional Tc for vertical line
     esac
 done
 
@@ -14,7 +15,7 @@ done
 if [ -z "$MODEL" ]
 then
     echo -e "\nA model type is required."
-    echo -e "Run code with options: -m 'MODEL' -d 'DATE' -c 'COUPLING' -v 'VALUE'\n"
+    echo -e "Run code with options: -m 'MODEL' -d 'DATE' -c 'COUPLING' -v 'VALUE' [OPTIONAL] -T 'TC_VALUE'\n"
     exit 1
 fi
 
@@ -22,7 +23,7 @@ fi
 if [ -z "$DATE" ]
 then
     echo -e "\nA date is required."
-    echo -e "Run code with options: -m 'MODEL' -d 'DATE' -c 'COUPLING' -v 'VALUE'\n"
+    echo -e "Run code with options: -m 'MODEL' -d 'DATE' -c 'COUPLING' -v 'VALUE' [OPTIONAL] -T 'TC_VALUE'\n"
     exit 1
 fi
 
@@ -30,7 +31,7 @@ fi
 if [ -z "$COUPLING" ]
 then
     echo -e "\nA coupling is required."
-    echo -e "Run code with options: -m 'MODEL' -d 'DATE' -c 'COUPLING' -v 'VALUE'\n"
+    echo -e "Run code with options: -m 'MODEL' -d 'DATE' -c 'COUPLING' -v 'VALUE' [OPTIONAL] -T 'TC_VALUE'\n"
     exit 1
 fi
 
@@ -38,7 +39,7 @@ fi
 if [ -z "$VALUE" ]
 then
     echo -e "\nA coupling value is required."
-    echo -e "Run code with options: -m 'MODEL' -d 'DATE' -c 'COUPLING' -v 'VALUE'\n"
+    echo -e "Run code with options: -m 'MODEL' -d 'DATE' -c 'COUPLING' -v 'VALUE' [OPTIONAL] -T 'TC_VALUE'\n"
     exit 1
 fi
 
@@ -77,13 +78,13 @@ PLOTTER=/home/joe/Linux_Code_Dev/REWL_Simulator/Scripts/Plotting/parse_and_plot_
 SCALING=/home/joe/Linux_Code_Dev/REWL_Simulator/Scripts/Plotting/parse_and_fss_observable.py
 
 echo -e "\n\nPlotting microcanonical observables"
-python3 $PLOTTER $MODEL "microcanonical_observables" "Intensive Observable" $COUPLING $VALUE
+python3 $PLOTTER $MODEL "microcanonical_observables" "Intensive Observable" $COUPLING $VALUE --Tc $TC_VALUE
 
 echo -e "\n\nPlotting self-averaged observables"
-python3 $PLOTTER $MODEL "self_averaged_observables" "Intensive Observable" $COUPLING $VALUE
+python3 $PLOTTER $MODEL "self_averaged_observables" "Intensive Observable" $COUPLING $VALUE --Tc $TC_VALUE
 
 echo -e "\n\nPlotting nonlinear observables"
-python3 $PLOTTER $MODEL "nonlinear_observables" "Intensive Nonlinear Observable" $COUPLING $VALUE
+python3 $PLOTTER $MODEL "nonlinear_observables" "Intensive Nonlinear Observable" $COUPLING $VALUE --Tc $TC_VALUE
 
 echo -e "\n\nPerforming FSS on Specific Heat"
 python3 $SCALING $MODEL "Specific Heat" "self_averaged_observables" "Intensive Observable" $COUPLING $VALUE
