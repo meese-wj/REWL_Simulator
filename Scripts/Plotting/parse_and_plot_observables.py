@@ -68,7 +68,7 @@ def collect_observables_and_data( data_file_stem, observable_marker, coupling_sy
 
     return labels, data_tuples
 
-def plot_data_tuples( model_name, coupling_string, coupling_value, labels, data_tuples ):
+def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_value, labels, data_tuples ):
 
     xlabel = labels[0]
     key_string = coupling_string + " = " + "%.3f" % float(coupling_value)
@@ -82,6 +82,16 @@ def plot_data_tuples( model_name, coupling_string, coupling_value, labels, data_
 
             Lvalue = data_tuples[Ldx][0]
             ax.plot(data_tuples[Ldx][1][:,0], data_tuples[Ldx][1][:,lbl], label = "L = %s" % Lvalue)
+
+        ymin, ymax = ax.get_ylim()
+
+""" This is for known Tc.
+    TODO: Generalize this in some way...
+        if "microcanonical" not in data_file_stem:
+            ax.plot( 3.6496 + 0 * np.arange(10), (ymax - ymin) * np.arange(10) / 10.  )
+"""
+
+        ax.set_ylim([ymin, ymax])
 
         ax.set_xlabel(xlabel, fontsize = 12)
         ax.set_ylabel(labels[lbl], fontsize = 12)
@@ -102,7 +112,7 @@ def main():
 
     labels, data_tuples = collect_observables_and_data( args.data_file_stem, args.observable_marker, args.coupling_symbol, args.coupling_value )
 
-    plot_data_tuples( args.model_name, args.coupling_symbol, args.coupling_value, labels, data_tuples )
+    plot_data_tuples( args.model_name, args.data_file_stem, args.coupling_symbol, args.coupling_value, labels, data_tuples )
 
 
 
