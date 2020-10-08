@@ -72,9 +72,9 @@ fi
 cd $DATE
 
 # Check if the Figures folder is present
-if [ ! -d "Figures" ]
+if [ ! -d "Figures_${COUPLING}-${VALUE}" ]
 then
-    echo "\nNo Figures to copy to Windows\n"
+    echo "\nNo Figures_${COUPLING}-${VALUE} to copy to Windows\n"
     exit 1
 fi
 
@@ -111,7 +111,7 @@ fi
 
 if [ $? == 0 ]
 then
-    echo -e "\nMoving data from\n${SIMDATA}/${MODEL}/${DATE}/Figures to\n${WINDIR}/${MODEL}/${PLOTDIR}/${DATE}/${COUPLING}_${VALUE}"
-    cp -r "${SIMDATA}/${MODEL}/${DATE}/Figures" "${WINDIR}/${MODEL}/${PLOTDIR}/${DATE}/${COUPLING}_${VALUE}"
+    echo -e "\nMoving data from\n${SIMDATA}/${MODEL}/${DATE}/Figures_${COUPLING}-${VALUE} to\n${WINDIR}/${MODEL}/${PLOTDIR}/${DATE}/${COUPLING}_${VALUE}"
+    cp -r "${SIMDATA}/${MODEL}/${DATE}/Figures_${COUPLING}-${VALUE}"/* "${WINDIR}/${MODEL}/${PLOTDIR}/${DATE}/${COUPLING}_${VALUE}"
 fi
 

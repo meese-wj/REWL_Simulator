@@ -23,10 +23,13 @@ def setup_args():
 
     return parser.parse_args()
 
-def check_for_output():
+def check_for_output(coupling_symbol, coupling_value):
 
-    if not os.path.isdir( os.getcwd() + "/" + output_path ):
-        os.mkdir( os.getcwd() + "/" + output_path )
+    key_string = coupling_symbol + "-" + coupling_value
+    if not os.path.isdir( os.getcwd() + "/" + output_path + "_" + key_string ):
+        os.mkdir( os.getcwd() + "/" + output_path + "_" + key_string )
+
+    return os.getcwd() + "/" + output_path + "_" + key_string
 
 def find_string_value( string_type, file_string ):
 
@@ -71,7 +74,7 @@ def collect_observables_and_data( data_file_stem, fss_observable, observable_mar
 
     return labels, data_tuples
 
-def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_value, labels, data_tuples ):
+def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_value, labels, data_tuples, plot_directory ):
 
     xlabel = "System Size L"
     key_string = coupling_string + " = " + "%.3f" % float(coupling_value)
@@ -93,16 +96,17 @@ def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_valu
     fig, ax = plt.subplots(1,1)
 
     # Now fit on a loglog plot
-    fit_scaling = np.polyfit( np.log(Lvalues), np.log(max_obs), 1 )
+    fit_scaling, covariance = np.polyfit( np.log(Lvalues), np.log(max_obs), 1, cov = True, full = False )
     fit_predictions = np.poly1d( fit_scaling )
+    errors = np.sqrt( np.diag( covariance ) )
 
     label_string = ""
     if fss_observable == "Specific Heat":
-        label_string = "$c_V \sim t^{-\\alpha},\; \\alpha = %.3f$" % fit_scaling[0]
-        print("\nSpecific Heat alpha = %.3f\n" % fit_scaling[0])
+        label_string = "$c_V \sim t^{-\\alpha},\; \\alpha = %.3f \pm %.3f$" % (fit_scaling[0], errors[0])
+        print("\nSpecific Heat alpha = %.3f +/- %.3f\n" % (fit_scaling[0], errors[0]) )
     elif fss_observable == "Susceptibility":
-        label_string = "$\chi \sim t^{-\gamma},\; \gamma = %.3f$" % fit_scaling[0]
-        print("\nSusceptibility gamma = %.3f\n" % fit_scaling[0])
+        label_string = "$\chi \sim t^{-\gamma},\; \gamma = %.3f \pm %.3f$" % (fit_scaling[0], errors[0])
+        print("\nSusceptibility gamma = %.3f +/- %.3f\n" % (fit_scaling[0], errors[0]) )
 
     # Finally Plot the results
     ax.scatter( Lvalues, max_obs, label = None )
@@ -118,7 +122,7 @@ def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_valu
 
     plotname = "%s" % ("Peak " + labels[lbl] + " vs " + xlabel + ".png")
 
-    plt.savefig(output_path + "/" + plotname)
+    plt.savefig(plot_directory + "/" + plotname)
 
     plt.close()
 
@@ -126,14 +130,14 @@ def main():
 
     args = setup_args()
 
-    check_for_output()
+    plot_directory = check_for_output(args.coupling_symbol, args.coupling_value)
 
     labels, data_tuples = collect_observables_and_data( args.data_file_stem, args.fss_observable, args.observable_marker, args.coupling_symbol, args.coupling_value )
 
     if labels == None or data_tuples == None:
         return None
 
-    plot_data_tuples( args.model_name, args.fss_observable, args.coupling_symbol, args.coupling_value, labels, data_tuples )
+    plot_data_tuples( args.model_name, args.fss_observable, args.coupling_symbol, args.coupling_value, labels, data_tuples, plot_directory )
 
 
 

@@ -74,6 +74,7 @@ cd $DATE
 # Now plot Ashkin-Teller data
 
 PLOTTER=/home/joe/Linux_Code_Dev/REWL_Simulator/Scripts/Plotting/parse_and_plot_observables.py
+SCALING=/home/joe/Linux_Code_Dev/REWL_Simulator/Scripts/Plotting/parse_and_fss_observable.py
 
 echo -e "\n\nPlotting microcanonical observables"
 python3 $PLOTTER $MODEL "microcanonical_observables" "Intensive Observable" $COUPLING $VALUE
@@ -83,5 +84,11 @@ python3 $PLOTTER $MODEL "self_averaged_observables" "Intensive Observable" $COUP
 
 echo -e "\n\nPlotting nonlinear observables"
 python3 $PLOTTER $MODEL "nonlinear_observables" "Intensive Nonlinear Observable" $COUPLING $VALUE
+
+echo -e "\n\nPerforming FSS on Specific Heat"
+python3 $SCALING $MODEL "Specific Heat" "self_averaged_observables" "Intensive Observable" $COUPLING $VALUE
+
+echo -e "\n\nPerforming FSS on Susceptibility"
+python3 $SCALING $MODEL "Susceptibility" "nonlinear_observables" "Intensive Nonlinear Observable" $COUPLING $VALUE
 
 echo -e "\nPlotting complete.\n"
