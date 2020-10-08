@@ -24,11 +24,20 @@ struct Wang_Landau
 
     ~Wang_Landau() {}
 
+#if SAMPLE_AFTER
+    void wang_landau_update(const size_t idx, const bool sample_observables, const logdos_t incrementer, Hamiltonian_t * const ham,
+                            Observables_t * const ham_obs, rng<float> & random, const histogram_index_functor & hist_idx);
+
+    void wang_landau_sweep(const size_t system_size, const size_t num_flavors, const bool sample_observables, const logdos_t incrementer, Hamiltonian_t * const ham, 
+                           Observables_t * const ham_obs, rng<float> & random, const histogram_index_functor & hist_idx );
+#else
     void wang_landau_update(const size_t idx, const logdos_t incrementer, Hamiltonian_t * const ham,
                             Observables_t * const ham_obs, rng<float> & random, const histogram_index_functor & hist_idx);
 
     void wang_landau_sweep(const size_t system_size, const size_t num_flavors, const logdos_t incrementer, Hamiltonian_t * const ham, 
                            Observables_t * const ham_obs, rng<float> & random, const histogram_index_functor & hist_idx );
+#endif
+
 
     bool is_flat(const float tolerance) const;
     void reset_histogram() const;
@@ -38,7 +47,11 @@ struct Wang_Landau
 // normal Wang Landau method
 template<typename energy_t, typename logdos_t, class Hamiltonian_t, 
          class Observables_t, class State_t, class histogram_index_functor>
-void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::wang_landau_update(const size_t idx, const logdos_t incrementer,
+void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::wang_landau_update(const size_t idx, 
+#if SAMPLE_AFTER
+        const bool sample_observables,
+#endif
+        const logdos_t incrementer,
                                                                                     Hamiltonian_t * const ham, Observables_t * const ham_obs, 
                                                                                     rng<float> & random, const histogram_index_functor & hist_idx)
 {
@@ -93,7 +106,11 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
     // and update the observables.
     wl_histograms.increment_count( current_bin );
     wl_histograms.increment_logdos( current_bin, incrementer );
+#if SAMPLE_AFTER
+    if ( sample_observables ) ham -> update_observables( current_bin, ham_obs );
+#else
     ham -> update_observables( current_bin, ham_obs );
+#endif
   
     /*
     if ( current_bin >= System_Parameters::num_bins -6)
@@ -114,8 +131,11 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
 // Wang Landau method on the system
 template<typename energy_t, typename logdos_t, class Hamiltonian_t, 
          class Observables_t, class State_t, class histogram_index_functor>
-void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::wang_landau_sweep(const size_t system_size, const size_t num_flavors, const logdos_t incrementer,
-                                                                                   Hamiltonian_t * const ham, Observables_t * const ham_obs, 
+void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::wang_landau_sweep(const size_t system_size, const size_t num_flavors, 
+#if SAMPLE_AFTER
+        const bool sample_observables,
+#endif
+        const logdos_t incrementer, Hamiltonian_t * const ham, Observables_t * const ham_obs, 
                                                                                    rng<float> & random, const histogram_index_functor & hist_idx)
 {
     // Update each flavor of the degree of freedom independently
@@ -124,7 +144,11 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
     {
         for ( size_t dof_idx = 0; dof_idx != system_size; ++dof_idx )
         {
-            wang_landau_update(dof_idx, incrementer, ham, ham_obs, random, hist_idx);
+            wang_landau_update(dof_idx, 
+#if SAMPLE_AFTER
+                    sample_observables,
+#endif
+                    incrementer, ham, ham_obs, random, hist_idx);
         }
     }
 }

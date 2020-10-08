@@ -30,7 +30,11 @@ struct REWL_Walker
     REWL_Walker(const energy_t _min, const energy_t _max, const energy_t _bsize, const size_t _nbins, const std::uint32_t _seed);
     ~REWL_Walker(){}
 
+#if SAMPLE_AFTER
+    void wang_landau_walk(const size_t num_sweeps, const bool sample_observables);
+#else
     void wang_landau_walk(const size_t num_sweeps);
+#endif
 
     void export_energy_bins( energy_t *& data_arr )
     {
@@ -90,13 +94,21 @@ REWL_Walker<energy_t,
 }
 
 template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
-void REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::wang_landau_walk(const size_t num_sweeps)
+void REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::wang_landau_walk(const size_t num_sweeps
+#if SAMPLE_AFTER
+        , const bool sample_observables 
+#endif
+    )
 {
     size_t system_size = System_Parameters::N;
     size_t num_flavors = System_Parameters::num_DoF / system_size;
     for ( size_t sweep = 0; sweep != num_sweeps; ++sweep )
     {
-        wl_walker.wang_landau_sweep(system_size, num_flavors, incrementer, &system, &system_obs, random, hist_idx);    
+        wl_walker.wang_landau_sweep(system_size, num_flavors,
+#if SAMPLE_AFTER
+                sample_observables,
+#endif 
+                incrementer, &system, &system_obs, random, hist_idx);    
     }
 }
 

@@ -46,6 +46,9 @@ Some `cmake` options to be aware of are as follows:
 * `REDUCE_LOGDOS`
     * This truncates the logDoS at the same time as the energy histogram such that the ground state value of the logDoS is zero. Since only differences in the logDoS affect the Monte Carlo moves, this is allowed.
     * The idea here is to reduce the degree of numerical error saturation in calculating acceptance probabilities. When the logDoS gets too large, it will overflow the mantissa, especially when the incrementer is much smaller than the magnitude of the logDoS.
+* `SAMPLE_AFTER`
+    * This waits until one full round of REWL (or simply WL) has been completed before any sampling of the non-energetic observables is performed. By doing so, this guarantees that _Detailed-Balance_ is more closely approximated for these statistical observables.
+    * For the second round of REWL moves with observable sampling, then the logDoS incrementer is reset back to one, and the simulation proceeds as it did before, only now it takes measurements concurrently.
 
 #### Supported Hamiltonians
 If multiple Hamiltonians are selected at build time, then `cmake` will throw a `FATAL_ERROR`.

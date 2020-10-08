@@ -14,6 +14,7 @@ option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice
 option(COLLECT_TIMINGS "Print timings collected by STL Chrono." ON)
 option(PRINT_HISTOGRAM "Print the energy histogram to a file periodically." ON)
 option(REDUCE_LOGDOS "Truncate the logDoS after each iteration to heighten numerical sensitivity." ON)
+option(SAMPLE_AFTER "Sample observables after one round of WL updates" ON)
 
 # *********************************************************************
 # Add consequences of the options below.
@@ -56,6 +57,10 @@ endif()
 
 if (REDUCE_LOGDOS)
     add_definitions(-DREDUCE_LOGDOS)
+endif()
+
+if (SAMPLE_AFTER)
+    add_definitions(-DSAMPLE_AFTER)
 endif()
 
 add_subdirectory(src)

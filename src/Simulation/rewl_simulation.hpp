@@ -88,12 +88,19 @@ void REWL_simulation::simulate(
     size_t iteration_counter = 1;
     size_t sweep_counter = 0;
     bool simulation_incomplete = true;
+#if SAMPLE_AFTER
+    bool sample_observables = false;
+#endif
     
     while (simulation_incomplete)
     {
         // First update the walker up until the 
         // sweeps_per_check
+#if SAMPLE_AFTER
+        my_walker -> wang_landau_walk(REWL_Parameters::sweeps_per_check, sample_observables); 
+#else
         my_walker -> wang_landau_walk(REWL_Parameters::sweeps_per_check); 
+#endif
         sweep_counter += REWL_Parameters::sweeps_per_check;
 
 #if PRINT_HISTOGRAM
@@ -117,8 +124,22 @@ void REWL_simulation::simulate(
             my_walker -> incrementer *= 0.5;
 
             printf("\nID %d: incrementer after = %e", my_world_rank, my_walker -> incrementer);
-
+            
+#if SAMPLE_AFTER
+            if ( my_walker -> incrementer < REWL_Parameters::final_increment )
+            {
+                if (sample_observables == false) 
+                {
+                    sample_observables = true;
+                    my_walker -> incrementer = 1.;   // Reset the incrementer and walk again
+                    simulation_incomplete = true;
+                }
+                else simulation_incomplete = false;  // Kill the simulation if it is complete after sampling
+            }
+            else simulation_incomplete = true;
+#else
             simulation_incomplete = ( my_walker -> incrementer >= REWL_Parameters::final_increment );
+#endif
 
 #if COLLECT_TIMINGS
             timer = std::chrono::high_resolution_clock::now();
