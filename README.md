@@ -49,6 +49,9 @@ Some `cmake` options to be aware of are as follows:
 * `SAMPLE_AFTER`
     * This waits until one full round of REWL (or simply WL) has been completed before any sampling of the non-energetic observables is performed. By doing so, this guarantees that _Detailed-Balance_ is more closely approximated for these statistical observables.
     * For the second round of REWL moves with observable sampling, then the logDoS incrementer is reset back to one, and the simulation proceeds as it did before, only now it takes measurements concurrently.
+* `TRAPEZOIDAL_RULE`
+    * Evaluate the thermodynamic integrals with the trapezoidal rule. 
+    * This will likely be absorbed into the main code in the future.
 
 #### Supported Hamiltonians
 If multiple Hamiltonians are selected at build time, then `cmake` will throw a `FATAL_ERROR`.

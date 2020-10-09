@@ -12,9 +12,10 @@ option(MPI_ON "Turn on MPI. This engages parallelized a Wang Landau simulation."
 option(ISING2D "Run a 2d Ising model on a periodic square lattice." ON)
 option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice." OFF)
 option(COLLECT_TIMINGS "Print timings collected by STL Chrono." ON)
-option(PRINT_HISTOGRAM "Print the energy histogram to a file periodically." ON)
+option(PRINT_HISTOGRAM "Print the energy histogram to a file periodically." OFF)
 option(REDUCE_LOGDOS "Truncate the logDoS after each iteration to heighten numerical sensitivity." ON)
 option(SAMPLE_AFTER "Sample observables after one round of WL updates" ON)
+option(TRAPEZOIDAL_RULE "Use trapezoidal rule to evaluate the thermodynamical integrals" ON)
 
 # *********************************************************************
 # Add consequences of the options below.
@@ -61,6 +62,10 @@ endif()
 
 if (SAMPLE_AFTER)
     add_definitions(-DSAMPLE_AFTER)
+endif()
+
+if (TRAPEZOIDAL_RULE)
+    add_definitions(-DTRAPEZOIDAL_RULE)
 endif()
 
 add_subdirectory(src)
