@@ -101,6 +101,8 @@ void glazier<data_t, histogram_index_functor>::construct_windows()
             window_min = global_bin_size * static_cast<data_t> (indexer( window_min )); 
         }
 
+        window_bins = static_cast<size_t> ( (window_max - window_min) / global_bin_size );
+
         for ( size_t replica = 0; replica != replicas_per_window; ++replica )
         {
             all_windows[ wdx * replicas_per_window + replica ].minimum = window_min;
