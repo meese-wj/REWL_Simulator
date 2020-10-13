@@ -7,7 +7,7 @@
  * Here, a table is a typedef of the 
  * std::vector<std::vector< ... > >    */
 
-#include <numerical_derivatives.hpp>
+#include <vector_matching.hpp>
 
 template <typename data_t>
 using table = std::vector<std::vector<data_t> >;
@@ -131,6 +131,10 @@ void concatenate_tables_single_overlap( const size_t num_obs,
 // Concatenate the energy, logdos, and 
 // observable tables after the REWL process
 // for a multiple bin overlap
+//
+// This should concatenate AFTER the replicas
+// from a single window have had their 
+// measurements averaged.
 template<typename energy_t, typename logdos_t, typename obs_t>
 void concatenate_tables_multiple_overlap( const size_t num_obs, 
                                           const size_t counts_index,
@@ -141,78 +145,130 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
                                           std::vector<logdos_t> & final_logdos_values,
                                           std::vector<obs_t>    & final_obs_values )
 {
-    const size_t num_walkers = energy_table.size();
+    const size_t num_windows = energy_table.size();
     logdos_t logdos_shifter = 0;
 
-    // Add values for the first walker's first bin
-    simply_push_back_vectors<energy_t, 
-                             logdos_t, 
-                             obs_t> ( 0, 0, num_obs, logdos_shifter,
-                                      energy_table, logdos_table, obs_table, 
-                                      final_energy_values, final_logdos_values,
-                                      final_obs_values); 
+    // Create a vector for the indices in the left
+    // window where the overlap first occurs
+    std::vector<size_t> left_indices_at_overlap (num_windows - 1);
+    find_left_indices<energy_t>(left_indices_at_overlap, energy_table);
 
-    for ( size_t walker = 0; walker != num_walkers; ++walker )
+    // Create a vector for the indices after the 
+    // left starter index where the concatenation
+    // will take place
+    std::vector<size_t> left_concatenation_indices (num_windows - 1);
+    find_left_concatenation_indices<energy_t, logdos_t>( left_concatenation_indices,
+                                                         left_indices_at_overlap,
+                                                         logdos_table, energy_table );
+
+    // Go through the first window until the 
+    // first overlapping bin
+    for ( size_t bin = 0; bin != left_indices_at_overlap[0]; ++bin )
     {
-        const size_t num_bins = energy_table[walker].size();
-        // Fill up the tables for each walker up until the last bin
-        // (the first bin is used in the concatenation)
-        for ( size_t bin = 1; bin != num_bins - 1; ++bin )
-        {
-           simply_push_back_vectors<energy_t, 
-                                    logdos_t, 
-                                    obs_t> ( walker, bin, num_obs, logdos_shifter,
-                                             energy_table, logdos_table, obs_table, 
-                                             final_energy_values, final_logdos_values,
-                                             final_obs_values);             
-        }
-
-        // Now for all but the last walker, concatenate at the last bin
-        if ( walker != num_walkers - 1 )
-        { 
-            // The energies should be identical
-            final_energy_values.push_back( energy_table[walker][num_bins - 1] );
-
-            // Add the logdos
-            final_logdos_values.push_back( logdos_table[walker][num_bins - 1] + logdos_shifter );
-
-            // Subtract out the bottom of the logdos in the right window
-            // and add the value of the shifted logdos in the left window
-            // now at the end of the final_logdos_values vector.
-            // This fixes the logdos to be equal at the concatenation 
-            // point.
-            logdos_shifter = -logdos_table[walker + 1][0] + final_logdos_values.back();
-
-            // Average observables in the overlap by their counts
-            size_t left_obs_bin  = ( num_bins - 1 ) * num_obs;
-            size_t right_obs_bin = ( 0 ) * num_obs;
-            obs_t obs_value = 0;
-            for ( size_t ob = 0; ob != num_obs; ++ob )
-            {
-                if ( ob != counts_index )
-                    obs_value = average_two_windows<obs_t>( obs_table[walker    ][left_obs_bin  + ob],
-                                                            obs_table[walker + 1][right_obs_bin + ob],
-                                                            obs_table[walker    ][left_obs_bin + counts_index],
-                                                            obs_table[walker + 1][right_obs_bin + counts_index]);
-                else  // Save the total number of measurements in the overlap. Not sure if this is better or worse than averaging?
-                    obs_value = obs_table[walker][left_obs_bin + counts_index] + obs_table[walker + 1][right_obs_bin + counts_index];
-
-                final_obs_values.push_back( obs_value );
-            }
-
-        }        
-        else // For the last walker, include the last bin
-        {
-            simply_push_back_vectors<energy_t, 
-                                     logdos_t, 
-                                     obs_t> ( walker, num_bins - 1,
-                                              num_obs, logdos_shifter,
-                                              energy_table, logdos_table, obs_table, 
-                                              final_energy_values, final_logdos_values,
-                                              final_obs_values); 
-        }
-
+        simply_push_back_vectors<energy_t, 
+                                 logdos_t, 
+                                 obs_t> ( 0, bin, num_obs, logdos_shifter,
+                                          energy_table, logdos_table, obs_table, 
+                                          final_energy_values, final_logdos_values,
+                                          final_obs_values); 
     }
+
+    // Now go through the overlapping regions
+    size_t previous_bin_overlap = 0;
+    size_t right_bin = 0;
+    for ( size_t window = 0; window != num_windows - 1; ++window )
+    {
+        const size_t num_bins = energy_table[window].size();
+        const size_t left_concat_bin = left_indices_at_overlap[window] + left_concatenation_indices[window];
+
+        // Start from the bin above the last overlapping one
+        for ( size_t bin = 0; num_bins = energy_table[window].size() - (previous_bin_overlap + 1); bin != num_bins; ++bin )
+        {
+            size_t left_bin = bin + previous_bin_overlap + 1;
+            if ( previous_bin_overlap > left_concat_bin )
+            {
+                // This should never happen as long as there is the 
+                // bin >= left_concatenate_indices[window - 1] conditional
+                // in find_left_concatenation_indices(...)
+                printf("\n\nERROR: MISSING DATA IN OVERLAPPING REGIONS FOR WINDOWS %ld AND %ld\n\n", window, window + 1);
+            }
+                
+            // First if there is no overlap, then simply add
+            if ( left_bin < left_indices_at_overlap[window] )
+            {
+                 simply_push_back_vectors<energy_t, 
+                                          logdos_t, 
+                                          obs_t> ( window, left_bin, num_obs, logdos_shifter,
+                                                   energy_table, logdos_table, obs_table, 
+                                                   final_energy_values, final_logdos_values,
+                                                   final_obs_values);  
+            }
+            // Now add the overlapping region stuff
+            else 
+            {
+                // TODO: This else guarantees that only left-to-right averaging occurs once.
+                // I.e. if three windows overlap, then only the lower two are averaged
+                // and the third is lost in the overlap region. This might be a problem
+                // if the concatenation for the higher two windows occurs in this 
+                // discarded region. If the overlapping regions are sufficiently small,
+                // then this will not happen.
+                
+                // Calculate the right_bin 
+                right_bin = bin - left_indices_at_overlap[window];
+
+                // Energies should be identical
+                final_energy_values.push_back( energy_table[window][left_bin] );
+
+                // Take the leftward logdos up until
+                // the concatenation point, and then
+                // take the rightward logdos thereafter
+                if ( bin <= left_concat_bin )
+                    final_logdos_values.push_back( logdos_table[window][left_bin] + logdos_shifter );
+                else
+                    final_logdos_values.push_back( logdos_table[window + 1][right_bin] + logdos_shifter );
+
+                // At the concatenation point, change the logdos_shifter
+                // after the leftward logdos was added to the final logdos
+                if ( bin == left_concat_bin )
+                {
+                    logdos_shifter = -logdos_table[window + 1][left_concatenation_indices[window]] + *final_logdos_values.back();
+                }
+
+
+                // Average observables throughout overlap
+                size_t left_obs_bin  = left_bin  * num_obs;
+                size_t right_obs_bin = right_bin * num_obs;
+                obs_t obs_value = 0;
+                for ( size_t ob = 0; ob != num_obs; ++ob )
+                {
+                    if ( ob != counts_index )
+                        obs_value = average_two_windows<obs_t>( obs_table[window    ][left_obs_bin  + ob],
+                                                                obs_table[window + 1][right_obs_bin + ob],
+                                                                obs_table[window    ][left_obs_bin + counts_index],
+                                                                obs_table[window + 1][right_obs_bin + counts_index]);
+                    else  // Save the total number of measurements in the overlap. Not sure if this is better or worse than averaging?
+                        obs_value = obs_table[window][left_obs_bin + counts_index] + obs_table[window + 1][right_obs_bin + counts_index];
+
+                    final_obs_values.push_back( obs_value );
+                } 
+            }    
+        }     
+        // Finally, set the bin of the last overlapping window
+        previous_bin_overlap = right_bin;
+    }
+
+    // After all of the above, we must now simply add
+    // the remainder of the last window
+    for ( size_t bin = previous_bin_overlap + 1, num_bins = energy_table[num_windows - 1].size(); bin != num_bins; ++bin )
+    {
+        simply_push_back_vectors<energy_t, 
+                                 logdos_t, 
+                                 obs_t> ( num_windows - 1, bin, num_obs, logdos_shifter,
+                                          energy_table, logdos_table, obs_table, 
+                                          final_energy_values, final_logdos_values,
+                                          final_obs_values); 
+    }
+
 }
 
 // Concatenate the energy, logdos, and 

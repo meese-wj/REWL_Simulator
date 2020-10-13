@@ -1,6 +1,7 @@
 add_library(utilities
             array_shift.hpp
             numerical_derivatives.hpp
+            vector_matching.hpp
             random_number_generators.hpp
             write_microcanonical_observables.hpp
             mpi_rewl_helpers.hpp
