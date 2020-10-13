@@ -137,6 +137,10 @@ def main():
     if labels == None or data_tuples == None:
         return None
 
+    if len(data_tuples) == 1:
+        print("\nCannot perform FSS of %s due to too few system sizes. Exiting.\n" % args.fss_observable)
+        return
+
     plot_data_tuples( args.model_name, args.fss_observable, args.coupling_symbol, args.coupling_value, labels, data_tuples, plot_directory )
 
 

@@ -131,7 +131,11 @@ int main(int argc, char * argv[])
         auto timer_start = std::chrono::high_resolution_clock::now();
         auto timer_end = timer_start;
 #endif
-        thermo -> calculate_thermodynamics( System_Parameters::N, final_energy_array, final_logdos_array, final_observable_array ); 
+        thermo -> calculate_thermodynamics( System_Parameters::N, final_energy_vector.data(), final_logdos_vector.data(), final_observable_vector.data() ); 
+
+        OBS_TYPE * nonlinear_obs_array = nullptr;
+        calculate_nonlinear_observables<OBS_TYPE, thermo_t>( num_T, System_Parameters::N, thermo, nonlinear_obs_array ); 
+
 
         printf("\nWriting thermodynamics to file.");
 
@@ -142,6 +146,9 @@ int main(int argc, char * argv[])
 
         write_observables_to_file<ENERGY_TYPE, OBS_TYPE>( num_T, total_observables, sys_strings.file_name_base, data_file_header,
                                                           thermal_obs_names, data_path, thermo -> temperatures, thermo -> canonical_observables ); 
+    
+        write_nonlinear_obs_to_file<ENERGY_TYPE, OBS_TYPE>( num_T, convert(System_Obs::nonlinear_obs_enum::NUM_OBS), sys_strings.file_name_base, data_file_header,
+                                                            System_Obs::nonlinear_obs_strings, data_path, thermo -> temperatures, nonlinear_obs_array ); 
         
 #if COLLECT_TIMINGS
         timer_end = std::chrono::high_resolution_clock::now();
@@ -150,6 +157,7 @@ int main(int argc, char * argv[])
 #endif
         
         delete thermo;
+        delete [] nonlinear_obs_array;
     }
     else
     {
