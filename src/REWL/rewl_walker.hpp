@@ -85,7 +85,7 @@ REWL_Walker<energy_t,
         system.set_state(site, temporary_state);
 
         in_range = hist_idx.energy_in_range(system.current_state.energy);
-        printf("\nID %d: current energy = %e, in_range = %s\n", walker_world_rank, system.current_state.energy, ( in_range ? "true" : "false" ));
+        //printf("\nID %d: current energy = %e, in_range = %s\n", walker_world_rank, system.current_state.energy, ( in_range ? "true" : "false" ));
     }
     printf("\nID %d: current energy = %e, in_range = %s\n", walker_world_rank, system.current_state.energy, ( in_range ? "true" : "false" ));
 #if MPI_ON
