@@ -31,7 +31,7 @@ void find_left_indices( std::vector<size_t> & left_indices, const std::vector<st
 // in the leftward energy windows via
 // numerical differentiation of the 
 // logDoS
-template<typename energy_t, logdos_t>
+template<typename energy_t, typename logdos_t>
 void find_left_concatenation_indices( std::vector<size_t> & left_concatenate_indices,
                                       const std::vector<size_t> & left_start_indices,
                                       const std::vector<std::vector<logdos_t> > & logdos_table,

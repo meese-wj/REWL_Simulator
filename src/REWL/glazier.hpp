@@ -18,10 +18,10 @@ struct window_data
     // Relevant data for the energy windows
     // defined on the interval: [minimum, maximum)
     // with num_bins bins of size bin_size.
-    data_t minimum;
-    data_t maximum;
-    data_t bin_size;
-    size_t num_bins;
+    data_t minimum = 0.;
+    data_t maximum = 0.;
+    data_t bin_size = 0.;
+    size_t num_bins = 0;
 };
 
 template<typename data_t, class histogram_index_functor>
@@ -42,7 +42,7 @@ struct glazier
                                                  global_bin_size(gbs), num_windows(nw), 
                                                  replicas_per_window(rpw), window_overlap(ow)
     {
-        all_windows = new window_data<data_t> [ num_windows * replicas_per_window ];
+        all_windows = new window_data<data_t> [ num_windows *  replicas_per_window ];
     }
     
     ~glazier()
@@ -68,6 +68,9 @@ void glazier<data_t, histogram_index_functor>::construct_windows()
     data_t window_min = global_min;
     data_t window_max = global_min + initial_window_size;
     size_t window_bins = static_cast<size_t> ( (window_max - window_min) / global_bin_size );
+        
+    printf("\nwindow %d: window min = %e", 0, window_min);
+    printf("\nwindow %d: window max = %e", 0, window_max);
     
     // Set up the lowest energy window
     for ( size_t replica = 0; replica != replicas_per_window; ++replica )
@@ -84,9 +87,12 @@ void glazier<data_t, histogram_index_functor>::construct_windows()
         window_min = global_min + initial_window_size * static_cast<data_t> (wdx);
         window_max = global_min + initial_window_size * static_cast<data_t> (wdx + 1);
 
-        histogram_index_functor indexer (all_windows[ wdx * replicas_per_window ].minimum,
-                                         all_windows[ wdx * replicas_per_window ].maximum,
-                                         all_windows[ wdx * replicas_per_window ].bin_size );
+        printf("\nwindow %ld: window min = %e", wdx, window_min);
+        printf("\nwindow %ld: window max = %e", wdx, window_max);
+
+        histogram_index_functor indexer (all_windows[ (wdx - 1) * replicas_per_window ].minimum,
+                                         all_windows[ (wdx - 1) * replicas_per_window ].maximum,
+                                         all_windows[ (wdx - 1) * replicas_per_window ].bin_size );
         
         if ( window_overlap == static_cast<data_t>(single_bin_overlap) )
         {
@@ -95,13 +101,18 @@ void glazier<data_t, histogram_index_functor>::construct_windows()
         else
         {
             // Find the nearest bin to grab onto
-            window_min -= window_overlap * ( global_bin_size * all_windows[ wdx * replicas_per_window ].num_bins );
+            printf("\nwindow min = %e", window_min);
+            window_min -= window_overlap * ( all_windows[ (wdx - 1) * replicas_per_window ].maximum - all_windows[ (wdx - 1) * replicas_per_window ].minimum );
+            printf("\noverlap = %e", window_overlap * ( all_windows[ (wdx - 1) * replicas_per_window ].maximum - all_windows[ (wdx - 1) * replicas_per_window ].minimum ) );
+            printf("\nwindow min = %e\n", window_min);
             // Get the index from the previous window and then scale
             // adjust appropriately
-            window_min = global_bin_size * static_cast<data_t> (indexer( window_min )); 
+            window_min = all_windows[ (wdx - 1) * replicas_per_window ].minimum + global_bin_size * static_cast<data_t> (indexer( window_min )); 
+            printf("window min = %e\n", window_min);
         }
 
         window_bins = static_cast<size_t> ( (window_max - window_min) / global_bin_size );
+        printf("\nwindow %ld: min = %e, max = %e, binsize = %e, num bins = %ld\n", wdx, window_min, window_max, global_bin_size, window_bins);
 
         for ( size_t replica = 0; replica != replicas_per_window; ++replica )
         {

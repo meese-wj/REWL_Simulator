@@ -178,11 +178,10 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
     size_t right_bin = 0;
     for ( size_t window = 0; window != num_windows - 1; ++window )
     {
-        const size_t num_bins = energy_table[window].size();
         const size_t left_concat_bin = left_indices_at_overlap[window] + left_concatenation_indices[window];
 
         // Start from the bin above the last overlapping one
-        for ( size_t bin = 0; num_bins = energy_table[window].size() - (previous_bin_overlap + 1); bin != num_bins; ++bin )
+        for ( size_t bin = 0, num_bins = energy_table[window].size() - (previous_bin_overlap + 1); bin != num_bins; ++bin )
         {
             size_t left_bin = bin + previous_bin_overlap + 1;
             if ( previous_bin_overlap > left_concat_bin )
@@ -231,7 +230,7 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
                 // after the leftward logdos was added to the final logdos
                 if ( bin == left_concat_bin )
                 {
-                    logdos_shifter = -logdos_table[window + 1][left_concatenation_indices[window]] + *final_logdos_values.back();
+                    logdos_shifter = -logdos_table[window + 1][left_concatenation_indices[window]] + final_logdos_values.back();
                 }
 
 
@@ -298,10 +297,10 @@ void concatenate_tables( const bool single_overlap,
         }
         case false:
         {
-            concatenate_tables_multiple_overlap_overlap<energy_t,
-                                                        logdos_t,
-                                                        obs_t>( num_obs, counts_index, energy_table, logdos_table, obs_table,
-                                                                final_energy_values, final_logdos_values, final_obs_values );
+            concatenate_tables_multiple_overlap<energy_t,
+                                                logdos_t,
+                                                obs_t>( num_obs, counts_index, energy_table, logdos_table, obs_table,
+                                                        final_energy_values, final_logdos_values, final_obs_values );
             break;
         }
     }
