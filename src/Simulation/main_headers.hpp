@@ -7,6 +7,7 @@
 
 #if MPI_ON
 #include <mpi_rewl_helpers.hpp>
+#include <concatenate_rewl_tables.hpp>
 #endif
 
 const std::string DELIMITER = "  ";

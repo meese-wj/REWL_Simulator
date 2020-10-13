@@ -4,6 +4,7 @@ add_library(utilities
             random_number_generators.hpp
             write_microcanonical_observables.hpp
             mpi_rewl_helpers.hpp
-            mpi_rewl_definitions.hpp)
+            mpi_rewl_definitions.hpp
+            concatenate_rewl_tables.hpp)
 
 set_target_properties(utilities PROPERTIES LINKER_LANGUAGE CXX)

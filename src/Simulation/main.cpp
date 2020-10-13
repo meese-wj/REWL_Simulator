@@ -6,9 +6,6 @@ constexpr ENERGY_TYPE Tmax = 6.71;
 constexpr size_t num_T = 3000;
 
 #if MPI_ON
-template <typename data_t>
-using table = std::vector<std::vector<data_t> >;
-
 int main(int argc, char * argv[])
 {
     MPI_Init(&argc, &argv);
@@ -49,8 +46,8 @@ int main(int argc, char * argv[])
     LOGDOS_TYPE * final_logdos_array = nullptr;
     OBS_TYPE * final_observable_array = nullptr;
 
-    const size_t final_num_bins = simulation -> my_walker -> wl_walker.wl_histograms.num_bins;
-    const size_t final_num_obs_values = convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS) * final_num_bins;
+    size_t final_num_bins = simulation -> my_walker -> wl_walker.wl_histograms.num_bins;
+    size_t final_num_obs_values = convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS) * final_num_bins;
 
     // Copy out the final logdos and the observables
     simulation -> my_walker -> export_energy_bins( final_energy_array );
@@ -103,14 +100,27 @@ int main(int argc, char * argv[])
                 }
             }
         }
-
-        // TODO: Concatenate microcanonical observables
         
+        std::vector<ENERGY_TYPE> final_energy_vector;
+        std::vector<LOGDOS_TYPE> final_logdos_vector;
+        std::vector<OBS_TYPE>    final_observable_vector;
+        // TODO: Concatenate microcanonical observables
+        concatenate_tables<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE>
+            ( REWL_Parameters::window_overlap == static_cast<float>( single_bin_overlap ),
+              convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),
+              convert<System_Obs_enum_t>(System_Obs_enum_t::counts_per_bin),
+              energy_table, logdos_table, observable_table,
+              final_energy_vector, final_logdos_vector, final_observable_vector );
+ 
+        // Finally, after concatenation, reset the final number of bins
+        final_num_bins = final_energy_vector.size();
+        final_num_obs_values = final_observable_vector.size();
+
         // Print out the microcanonical observables before thermally averaging
         write_microcanonical_observables<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE>( System_Parameters::N, final_num_bins, convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),
                                                                               convert<System_Obs_enum_t>(System_Obs_enum_t::counts_per_bin),
                                                                               sys_strings.file_name_base, data_file_header, System_Obs::string_names,
-                                                                              data_path, final_energy_array, final_logdos_array, final_observable_array ); 
+                                                                              data_path, final_energy_vector.data(), final_logdos_vector.data(), final_observable_vector.data() ); 
 
         thermo_t * thermo = new thermo_t ( final_num_bins, Tmin, Tmax, num_T );
         
@@ -163,14 +173,9 @@ int main(int argc, char * argv[])
     delete [] final_logdos_array;
     delete [] final_observable_array;
 
-    final_energy_array = nullptr;
-    final_logdos_array = nullptr;
-    final_observable_array = nullptr;
-
     MPI_Barrier(MPI_COMM_WORLD);    
     printf("\nCompletely done with the simulation on process %d\n", world_rank);
     fflush(stdout);
-    //MPI_Abort(MPI_COMM_WORLD, 0);
     int ret_val = MPI_Finalize();
     printf("\nID %d: Finalize return = %d", world_rank, ret_val);
     fflush(stdout);
