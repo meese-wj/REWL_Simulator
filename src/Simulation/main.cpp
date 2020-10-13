@@ -95,6 +95,12 @@ int main(int argc, char * argv[])
                 mpi_recv_array_to_vector<ENERGY_TYPE>( proc, energy_table[proc], MPI_FLOAT, final_energy_tag, MPI_COMM_WORLD, &status );
                 mpi_recv_array_to_vector<LOGDOS_TYPE>( proc, logdos_table[proc], MPI_LOGDOS_TYPE, final_logdos_tag, MPI_COMM_WORLD, &status );
                 mpi_recv_array_to_vector<OBS_TYPE>( proc, observable_table[proc], MPI_OBS_TYPE, final_obs_tag, MPI_COMM_WORLD, &status );
+
+                printf("\nProcessor %d sent the following energy values to %d\n", proc, world_rank );
+                for ( size_t bin = 0, en_size = energy_table[proc].size(); bin != en_size; ++bin )
+                {
+                    printf("%e  ", energy_table[proc][bin]);
+                }
             }
         }
 
