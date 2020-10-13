@@ -81,18 +81,19 @@ void concatenate_tables_single_overlap( const size_t num_obs,
 
         // Now for all but the last walker, concatenate at the last bin
         if ( walker != num_walkers - 1 )
-        {
-            // Subtract out the bottom of the logdos in the right window
-            // and add the value of the logdos in the left window.
-            // This fixes the logdos to be equal at the concatenation 
-            // point.
-            logdos_shifter = -logdos_table[walker + 1][0] + logdos_table[walker][num_bins - 1];
-
+        { 
             // The energies should be identical
             final_energy_values.push_back( energy_table[walker][num_bins - 1] );
 
             // Add the logdos
-            final_logdos_values.push_back( logdos_table[walker + 1][0] + logdos_shifter );
+            final_logdos_values.push_back( logdos_table[walker][num_bins - 1] + logdos_shifter );
+
+            // Subtract out the bottom of the logdos in the right window
+            // and add the value of the shifted logdos in the left window
+            // now at the end of the final_logdos_values vector.
+            // This fixes the logdos to be equal at the concatenation 
+            // point.
+            logdos_shifter = -logdos_table[walker + 1][0] + final_logdos_values.back();
 
             // Average observables in the overlap by their counts
             size_t left_obs_bin  = ( num_bins - 1 ) * num_obs;

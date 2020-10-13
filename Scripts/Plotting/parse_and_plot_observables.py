@@ -90,6 +90,7 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
         ymin, ymax = ax.get_ylim()
         if Tc_val != None and Tc_val != "":
             if "microcanonical" not in data_file_stem:
+                ax.set_xlim([0, 2 * float(Tc_val)])
                 ax.plot( float(Tc_val) + 0. * np.linspace(0,1,10), ymin + (ymax - ymin) * np.linspace(0,1,10), color = "gray", lw = 1, ls = "dashed", label = r"$T_c = %s$" % Tc_val )
 
         ax.set_ylim([ymin, ymax])

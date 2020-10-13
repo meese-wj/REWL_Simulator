@@ -28,7 +28,7 @@ int main(int argc, char * argv[])
     REWL_simulation * simulation = new REWL_simulation();
 
     if ( world_rank == REWL_MASTER_PROC )
-        printf("\nStarting simulation...");
+        printf("\nStarting simulation...\n");
     MPI_Barrier(MPI_COMM_WORLD);
 #if PRINT_HISTOGRAM
     simulation -> simulate( data_path / "Histograms" / sys_strings.size_string );
