@@ -105,6 +105,7 @@ int main(int argc, char * argv[])
         std::vector<LOGDOS_TYPE> final_logdos_vector;
         std::vector<OBS_TYPE>    final_observable_vector;
         // TODO: Concatenate microcanonical observables
+        printf("\noverlap = %e", REWL_Parameters::window_overlap);
         concatenate_tables<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE>
             ( REWL_Parameters::window_overlap == static_cast<float>( single_bin_overlap ),
               convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),

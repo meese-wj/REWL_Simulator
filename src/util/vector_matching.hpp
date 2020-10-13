@@ -49,7 +49,7 @@ void find_left_concatenation_indices( std::vector<size_t> & left_concatenate_ind
 
         // Go through the overlapping bins and 
         // find the minimum beta difference
-        for ( size_t bin = 1, num_bins = energy_table[window].size(); bin != num_bins; ++bin )
+        for ( size_t bin = 1, num_bins = energy_table[window].size() - left_start; bin != num_bins; ++bin )
         {
             left_beta = derivative_of_vector( left_start + bin, logdos_table[window], energy_table[window] );
             right_beta = derivative_of_vector( bin, logdos_table[window + 1], energy_table[window + 1] );

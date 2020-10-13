@@ -161,24 +161,29 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
                                                          left_indices_at_overlap,
                                                          logdos_table, energy_table );
 
-    // Go through the first window until the 
-    // first overlapping bin
-    for ( size_t bin = 0; bin != left_indices_at_overlap[0]; ++bin )
-    {
-        simply_push_back_vectors<energy_t, 
-                                 logdos_t, 
-                                 obs_t> ( 0, bin, num_obs, logdos_shifter,
-                                          energy_table, logdos_table, obs_table, 
-                                          final_energy_values, final_logdos_values,
-                                          final_obs_values); 
-    }
-
-    // Now go through the overlapping regions
+    // Now go through the overlapping regions. Save
+    // the end of the last window for last (this one
+    // presumably has no overlaps).
     size_t previous_bin_overlap = 0;
     size_t right_bin = 0;
+    printf("\n\nEnergy values:");
+    for ( size_t window = 0; window != num_windows; ++window )
+    {
+        printf("\nWindow %ld:\n", window);
+        for (size_t bin = 0; bin != energy_table[window].size(); ++bin)
+        {
+            printf("%e  ", energy_table[window][bin]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+
     for ( size_t window = 0; window != num_windows - 1; ++window )
     {
+        printf("\nstart index = %ld, concat index = %ld", left_indices_at_overlap[window], left_concatenation_indices[window]);
         const size_t left_concat_bin = left_indices_at_overlap[window] + left_concatenation_indices[window];
+        printf(", left concat bin = %ld, energy[ %ld ] = %e", left_concat_bin, left_concat_bin, energy_table[window][left_concat_bin]);
+        printf("\nenergy window size = %ld\n", energy_table[window].size());
 
         // Start from the bin above the last overlapping one
         for ( size_t bin = 0, num_bins = energy_table[window].size() - (previous_bin_overlap + 1); bin != num_bins; ++bin )
@@ -230,7 +235,9 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
                 // after the leftward logdos was added to the final logdos
                 if ( bin == left_concat_bin )
                 {
+                    printf("\nprevious shifter = %e", logdos_shifter);
                     logdos_shifter = -logdos_table[window + 1][left_concatenation_indices[window]] + final_logdos_values.back();
+                    printf("\nafter shifter = %e\n", logdos_shifter);
                 }
 
 
