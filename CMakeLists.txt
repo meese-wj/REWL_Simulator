@@ -14,7 +14,7 @@ option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice
 option(COLLECT_TIMINGS "Print timings collected by STL Chrono." ON)
 option(PRINT_HISTOGRAM "Print the energy histogram to a file periodically." OFF)
 option(REDUCE_LOGDOS "Truncate the logDoS after each iteration to heighten numerical sensitivity." ON)
-option(SAMPLE_AFTER "Sample observables after one round of WL updates" OFF)
+option(SAMPLE_AFTER "Sample observables after one round of WL updates" ON)
 option(TRAPEZOIDAL_RULE "Use trapezoidal rule to evaluate the thermodynamical integrals" ON)
 
 # *********************************************************************
