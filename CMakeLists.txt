@@ -6,16 +6,18 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 add_compile_options(-std=c++17 -Wall -Werror -pedantic)
 
 # *********************************************************************
-# Add compile-time options below.
+# Add compile-time options below for the Global Simulation
 
 option(MPI_ON "Turn on MPI. This engages parallelized a Wang Landau simulation." ON)
-option(ISING2D "Run a 2d Ising model on a periodic square lattice." ON)
-option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice." OFF)
 option(COLLECT_TIMINGS "Print timings collected by STL Chrono." ON)
 option(PRINT_HISTOGRAM "Print the energy histogram to a file periodically." OFF)
 option(REDUCE_LOGDOS "Truncate the logDoS after each iteration to heighten numerical sensitivity." ON)
 option(SAMPLE_AFTER "Sample observables after one round of WL updates" ON)
 option(TRAPEZOIDAL_RULE "Use trapezoidal rule to evaluate the thermodynamical integrals" ON)
+
+# Add compile-time options to specify the Hamiltonian
+option(ISING2D "Run a 2d Ising model on a periodic square lattice." ON)
+option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice." OFF)
 
 # *********************************************************************
 # Add consequences of the options below.
