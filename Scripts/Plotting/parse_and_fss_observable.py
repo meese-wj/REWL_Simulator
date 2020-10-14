@@ -137,7 +137,7 @@ def main():
     if labels == None or data_tuples == None:
         return None
 
-    if len(data_tuples) == 1:
+    if len(data_tuples) < 3:
         print("\nCannot perform FSS of %s due to too few system sizes. Exiting.\n" % args.fss_observable)
         return
 
