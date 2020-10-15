@@ -10,6 +10,7 @@
 #include <glazier.hpp>
 #include <rewl_walker.hpp>
 #include <rewl_parameter_string.hpp>
+#include <mpi_rewl_comm_setup.hpp>
 
 struct REWL_simulation
 {
@@ -36,6 +37,9 @@ struct REWL_simulation
     void simulate(
 #if PRINT_HISTOGRAM
                   const std::filesystem::path & histogram_path
+#endif
+#ifndef INDEPENDENT_WALKERS
+                  , const int * const my_ids_per_comm, const int * const my_comm_ids, const MPI_Comm * const local_communicators
 #endif
             ) const;
 };
@@ -172,6 +176,9 @@ void REWL_simulation::simulate(
 #if PRINT_HISTOGRAM
                                 const std::filesystem::path & histogram_path
 #endif
+#ifndef INDEPENDENT_WALKERS
+                                , const int * const my_ids_per_comm, const int * const my_comm_ids, const MPI_Comm * const local_communicators
+#endif
                                ) const
 {
 #if COLLECT_TIMINGS
@@ -183,6 +190,7 @@ void REWL_simulation::simulate(
     size_t iteration_counter = 1;
     size_t sweep_counter = 0;
     bool simulation_incomplete = true;
+    int exchange_direction = Communicators::even_comm;
 #if SAMPLE_AFTER
     bool sample_observables = false;
 #endif
@@ -199,6 +207,41 @@ void REWL_simulation::simulate(
         sweep_counter += REWL_Parameters::sweeps_per_check;
 
         // TODO: After a set number of sweeps, undergo replica exchange.
+        int comm_id = my_comm_ids[ exchange_direction ];
+        if ( comm_id != Communicators::NONE )
+        {
+            int partners [ 2 * REWL_Parameters::replicas_per_window ];
+
+            // Only have the communicator master assign partners
+            if ( my_ids_per_comm[ exchange_direction ] == 0 )
+            {
+                // Get the partner indices
+                partners[0] = REWL_Parameters::replicas_per_window;
+                partners[2 * REWL_Parameters::replicas_per_window - 1] = 0;
+            }
+             
+            // Scatter the partner indices to everyone
+            int partner_index = Communicators::NONE; 
+            MPI_Scatter( partners, 1, MPI_INT, &partner_index, MPI_INT, 0, local_communicators[ comm_id ] );
+
+            // Wait for everyone to get their partners
+            MPI_Barrier( local_communicators[ comm_id ] );
+
+            // Now proceed with the exchange
+            if ( partner_index != Communicators::NONE )
+            {
+                MPI_Status status;
+
+                ENERGY_TYPE current_energy = my_walker -> current_energy();
+                ENERGY_TYPE new_energy = current_energy;      
+
+                // Send the new energy to the partner index to use in the exchange
+                MPI_Sendrecv_replace( &new_energy, 1, MPI_ENERGY_TYPE, partner_index, 1, partner_index, 1, local_communicators[ comm_id ], &status );
+
+                // Currently at line 900 in old code
+            }
+        }
+
 
 #if PRINT_HISTOGRAM
         if ( sweep_counter % (REWL_Parameters::sweeps_per_check) == 0 )
