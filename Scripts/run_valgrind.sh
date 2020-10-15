@@ -7,7 +7,8 @@ echo
 ls
 echo
 echo "Building and running code."
-cmake ..
+rm -rf /home/joe/Linux_Code_Dev/REWL_Simulator/build/*
+cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
 # *******************************
 # Set MPI variables from CMake

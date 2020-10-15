@@ -7,7 +7,8 @@ echo
 ls
 echo
 echo "Building and running code."
-cmake .. -DMPI_ON=OFF
+rm -rf /home/joe/Linux_Code_Dev/REWL_Simulator/build_serial/*
+cmake .. -DMPI_ON=OFF -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
 make -j
 if [[ $? == 0 ]]

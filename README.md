@@ -52,6 +52,8 @@ Some `cmake` options to be aware of are as follows:
 * `TRAPEZOIDAL_RULE`
     * Evaluate the thermodynamic integrals with the trapezoidal rule. 
     * This will likely be absorbed into the main code in the future.
+* `INDEPENDENT_WALKERS`
+    * If engaged, there will be no replica exchange, nor will there be any intra-window walker averaging.
 
 #### Supported Hamiltonians
 If multiple Hamiltonians are selected at build time, then `cmake` will throw a `FATAL_ERROR`.

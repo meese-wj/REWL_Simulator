@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(REWL VERSION 0.1.0)
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
+set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 add_compile_options(-std=c++17 -Wall -Werror -pedantic)
@@ -14,6 +14,7 @@ option(PRINT_HISTOGRAM "Print the energy histogram to a file periodically." OFF)
 option(REDUCE_LOGDOS "Truncate the logDoS after each iteration to heighten numerical sensitivity." ON)
 option(SAMPLE_AFTER "Sample observables after one round of WL updates" ON)
 option(TRAPEZOIDAL_RULE "Use trapezoidal rule to evaluate the thermodynamical integrals" ON)
+option(INDEPENDENT_WALKERS "Do not allow for exchange or for intra-window walkers to average" OFF)
 
 # Add compile-time options to specify the Hamiltonian
 option(ISING2D "Run a 2d Ising model on a periodic square lattice." ON)

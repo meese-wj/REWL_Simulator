@@ -72,6 +72,8 @@ REWL_simulation::REWL_simulation()
                 (walker_min, walker_max, walker_bin_size, walker_num_bins, walker_seed);
 }
 
+#if INDEPENDENT_WALKERS /* This will not turn on replica exchange */
+
 // Main function for the simulation.
 void REWL_simulation::simulate(
 #if PRINT_HISTOGRAM
@@ -162,5 +164,104 @@ void REWL_simulation::simulate(
             printf("\n\nID %d: Total Simulation Time: %e seconds.", my_world_rank, simulation_time.count());
 #endif
 }
+
+#else /* This will turn on replica exchange. */
+
+// Main function for the simulation.
+void REWL_simulation::simulate(
+#if PRINT_HISTOGRAM
+                                const std::filesystem::path & histogram_path
+#endif
+                               ) const
+{
+#if COLLECT_TIMINGS
+    auto start = std::chrono::high_resolution_clock::now();
+    auto iteration_start = start;
+    auto timer = start;
+#endif
+
+    size_t iteration_counter = 1;
+    size_t sweep_counter = 0;
+    bool simulation_incomplete = true;
+#if SAMPLE_AFTER
+    bool sample_observables = false;
+#endif
+    
+    while (simulation_incomplete)
+    {
+        // First update the walker up until the 
+        // sweeps_per_check
+#if SAMPLE_AFTER
+        my_walker -> wang_landau_walk(REWL_Parameters::sweeps_per_check, sample_observables); 
+#else
+        my_walker -> wang_landau_walk(REWL_Parameters::sweeps_per_check); 
+#endif
+        sweep_counter += REWL_Parameters::sweeps_per_check;
+
+        // TODO: After a set number of sweeps, undergo replica exchange.
+
+#if PRINT_HISTOGRAM
+        if ( sweep_counter % (REWL_Parameters::sweeps_per_check) == 0 )
+            my_walker -> wl_walker.wl_histograms.print_histogram_counts(iteration_counter, histogram_path);
+#endif
+
+        // Now check to see if the histogram is flat
+        // TODO: Generalize this for multiple walkers per window.
+        if ( my_walker -> wl_walker.is_flat( REWL_Parameters::flatness_criterion ) )
+        {
+            // Reset only the energy histogram and leave
+            // the logdos alone.
+#if PRINT_HISTOGRAM
+            my_walker -> wl_walker.wl_histograms.print_histogram_counts(iteration_counter, histogram_path);
+#endif
+
+            // TODO: Generalize for multiple walkers per window. Specifically average data here.
+
+            my_walker -> wl_walker.reset_histogram();
+
+            printf("\nID %d: incrementer before = %e", my_world_rank, my_walker -> incrementer);
+            // TODO: Generalize to 1/t algorithm.
+            my_walker -> incrementer *= 0.5;
+
+            printf("\nID %d: incrementer after = %e", my_world_rank, my_walker -> incrementer);
+            
+#if SAMPLE_AFTER
+            if ( my_walker -> incrementer < REWL_Parameters::final_increment )
+            {
+                if (sample_observables == false) 
+                {
+                    sample_observables = true;
+                    my_walker -> incrementer = 1.;   // Reset the incrementer and walk again
+                    simulation_incomplete = true;
+                }
+                else simulation_incomplete = false;  // Kill the simulation if it is complete after sampling
+            }
+            else simulation_incomplete = true;
+#else
+            simulation_incomplete = ( my_walker -> incrementer >= REWL_Parameters::final_increment );
+#endif
+
+#if COLLECT_TIMINGS
+            timer = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<float> time_elapsed = timer - iteration_start;
+            printf("\n\n\nID %d: Iteration %ld complete after %e seconds.", my_world_rank, iteration_counter, time_elapsed.count());
+            printf("\nID %d: Total Sweeps = %ld = %e Wang Landau Updates.", my_world_rank, sweep_counter, static_cast<float>(sweep_counter * System_Parameters::N) );
+            printf("\nID %d: Sweep rate  = %e sweeps per second", my_world_rank, static_cast<float>(sweep_counter)/time_elapsed.count());
+            printf("\nID %d: Update rate = %e updates per second", my_world_rank, static_cast<float>(sweep_counter * System_Parameters::N)/time_elapsed.count());
+            fflush(stdout);
+            iteration_start = std::chrono::high_resolution_clock::now();
+#endif
+            ++iteration_counter;
+            sweep_counter = 0;
+        }
+    }
+
+#if COLLECT_TIMINGS
+            timer = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<float> simulation_time = timer - start;
+            printf("\n\nID %d: Total Simulation Time: %e seconds.", my_world_rank, simulation_time.count());
+#endif
+}
+#endif
 
 #endif
