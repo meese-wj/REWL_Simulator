@@ -5,6 +5,10 @@
 #include <vector>
 #include <mpi.h>
 
+/* *************************************************************************************** */
+/* Array send/recv helpers                                                                 */
+/* *************************************************************************************** */
+
 // This is a blocking send of an array
 template<typename data_t>
 void mpi_send_array( const int proc_recv, const size_t data_size, const data_t * const data,
