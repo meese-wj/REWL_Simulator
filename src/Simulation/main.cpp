@@ -24,7 +24,52 @@ int main(int argc, char * argv[])
         return 1;
     }
     MPI_Barrier(MPI_COMM_WORLD);
- 
+
+#ifndef INDEPENDENT_WALKERS
+    /* **************************************************************************** */
+    /* Set up the communicators                                                     */
+    /*     Each processor belongs to four communicators:                            */
+    /*         * MPI_COMM_WORLD                                                     */
+    /*         * Their own energy window                                            */
+    /*         * Their even communicator                                            */
+    /*         * Their odd communicator                                             */
+    /* **************************************************************************** */
+
+    int my_ids_per_comm [ Communicators::NUM_COMMS ];     // IDs of the walker in 
+                                                          // each communicator
+                                                          // except for WORLD.
+    int my_comm_ids [ Communicators::NUM_COMMS ];         // IDs of each of the 
+                                                          // communicator the walker
+                                                          // belongs to.
+    // Set up the global group
+    MPI_Group world_group;
+    MPI_Comm_group( MPI_COMM_WORLD, &world_group );         
+
+    // Define the local communicators
+    int num_local_comms = ( world_size / replicas_per_window ) - 1;
+    MPI_Group * local_groups  = new MPI_Group [ num_local_comms ];
+    MPI_Comm  * local_comms   = new MPI_Comm  [ num_local_comms ];
+    MPI_Group * window_groups = new MPI_Group [ world_size / replicas_per_window ];
+    MPI_Comm  * window_comms  = new MPI_Comm  [ world_size / replicas_per_window ];
+
+    // Create the local groups and communicators for a single window
+    define_window_communicators( world_size, replicas_per_window, world_group,
+                                 window_groups, window_comms ); 
+
+    // Create the local groups and communicators between windows
+    create_local_groups_and_communicators( world_size, replicas_per_window, world_group,
+                                           local_groups, local_comms );
+
+    // Populate the IDs for the walkers and communicators
+    determine_my_local_IDs( my_world_rank, world_size, replicas_per_window, 
+                            my_ids_per_comm, local_comms, window_comms ); 
+
+    determine_my_communicators( my_world_rank, world_size, replicas_per_window, my_comm_ids );
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    /* **************************************************************************** */
+#endif
+
     REWL_simulation * simulation = new REWL_simulation();
 
     if ( world_rank == REWL_MASTER_PROC )
@@ -174,6 +219,13 @@ int main(int argc, char * argv[])
     delete [] final_energy_array;
     delete [] final_logdos_array;
     delete [] final_observable_array;
+
+#ifndef INDEPENDENT_WALKERS
+    delete [] local_groups;
+    delete [] local_comms;
+    delete [] window_groups;
+    delete [] window_comms;
+#endif
 
     MPI_Barrier(MPI_COMM_WORLD);    
     printf("\nCompletely done with the simulation on process %d\n", world_rank);

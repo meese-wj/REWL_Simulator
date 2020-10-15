@@ -8,6 +8,9 @@
 #if MPI_ON
 #include <mpi_rewl_helpers.hpp>
 #include <concatenate_rewl_tables.hpp>
+#ifndef INDEPENDENT_WALKERS
+#include <mpi_rewl_comm_setup.hpp>
+#endif
 #endif
 
 const std::string DELIMITER = "  ";

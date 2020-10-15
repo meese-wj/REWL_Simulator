@@ -112,10 +112,15 @@ void create_local_groups_and_communicators( const int num_procs, const int repli
 
 // Set up the IDs of a single walker within the local communicators
 void determine_my_local_IDs( const int my_world_rank, const int num_procs, const int replicas_per_window,
-                             int * const my_ids_per_comm, const MPI_Comm * const local_communicators )
+                             int * const my_ids_per_comm, const MPI_Comm * const local_communicators, const MPI_Comm * const window_communicators )
 {
     int comm_id = INT32_MAX;
-    
+
+    // First find the window communicator id
+    comm_id = get_local_comm_ID( my_world_rank, Communicators::window_comm, num_procs, replicas_per_window );
+    MPI_Comm_rank( window_communicators[ comm_id ], &my_ids_per_comm[ Communicators::window_comm ] );
+   
+    // Now populate the even/odd communicators
     // TODO: A picture will probably help...
     //
     // my_ids_per_comm[ Communicators::even_comm ] : even communicaotr ID defined for all walkers outside
@@ -124,7 +129,7 @@ void determine_my_local_IDs( const int my_world_rank, const int num_procs, const
     //                                            the highest energy window if the window number is even
     //                                            and for the lowest energy window
 
-    for ( int which_comm = 0; which_comm != Communicators::NUM_COMMS; ++window_comm )
+    for ( int which_comm = Communicators::window_comm + 1; which_comm != Communicators::NUM_COMMS; ++window_comm )
     {
         comm_id = get_local_comm_ID( my_world_rank, which_comm, num_procs, replicas_per_window );
         if ( comm_id != Communicators::NONE )
