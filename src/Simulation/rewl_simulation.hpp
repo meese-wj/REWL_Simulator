@@ -210,6 +210,7 @@ void REWL_simulation::simulate(
         if ( sweep_counter % REWL_Parameters::sweeps_per_exchange == 0 )
         {
             int comm_id = my_comm_ids[ exchange_direction ];
+            printf("\n\nID %d on iteration %ld has comm_id = %d\n", my_world_rank, iteration_counter, comm_id);
             if ( comm_id != Communicators::NONE )
             {
                 // TODO: Generalize this for multiple walkers
@@ -232,6 +233,7 @@ void REWL_simulation::simulate(
 
                 // Wait for everyone to get their partners
                 MPI_Barrier( local_communicators[ comm_id ] );
+                printf("\nID %d on iteration %ld got partner index %d\n", my_world_rank, iteration_counter, partner_index);
 
                 // Now proceed with the exchange
                 if ( partner_index != Communicators::NONE )
@@ -290,14 +292,15 @@ void REWL_simulation::simulate(
 #endif
                     
                 }
-                // Wait for all walkers in the window to get here.
-                MPI_Barrier( local_communicators[comm_id] );
             }
             // Change the exchange direction
             exchange_direction = ( exchange_direction == Communicators::even_comm ? Communicators::odd_comm : Communicators::even_comm );
+            
+            // Wait for all walkers in the window to get here.
+            //MPI_Barrier( local_communicators[comm_id] );
         }
         
-        printf("\nID %d got here\n", my_world_rank);
+        printf("\nID %d got here which is after an exchange update\n", my_world_rank);
 
 #if PRINT_HISTOGRAM
         if ( sweep_counter % (REWL_Parameters::sweeps_per_check) == 0 )
@@ -361,19 +364,24 @@ void REWL_simulation::simulate(
             fflush(stdout);
             iteration_start = std::chrono::high_resolution_clock::now();
 #endif
-            ++iteration_counter;
-            sweep_counter = 0;
 
             // Throw up a barrier to check if the simulation is over
             int completed_reduction = 0;
             MPI_Barrier(MPI_COMM_WORLD);
+            printf("\nID %d says completed_reduction = %d on iteration %ld\n", my_world_rank, completed_reduction, iteration_counter);
             MPI_Allreduce( &i_am_done, &completed_reduction, 1, MPI_INT, MPI_PROD, MPI_COMM_WORLD );
             
             if ( completed_reduction == 1 )
                 simulation_incomplete = false;
+            else
+                simulation_incomplete = true;
+            
+            ++iteration_counter;
+            sweep_counter = 0;
         }
     }
 
+    printf("\nDid ID %d get outside the loop?\n", my_world_rank);
 #if COLLECT_TIMINGS
             timer = std::chrono::high_resolution_clock::now();
             std::chrono::duration<float> simulation_time = timer - start;
