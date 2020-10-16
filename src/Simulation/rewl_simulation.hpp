@@ -309,6 +309,7 @@ void REWL_simulation::simulate(
         if ( sweep_counter % REWL_Parameters::sweeps_per_exchange == 0 )
         {
             replica_exchange_update( exchange_direction, iteration_counter, my_ids_per_comm, my_comm_ids, local_communicators );
+            //exchange_direction = ( exchange_direction == Communicators::even_comm ? Communicators::odd_comm : Communicators::even_comm );
         }
         
         printf("\nID %d got here which is after an exchange update\n", my_world_rank);
