@@ -179,7 +179,6 @@ void REWL_simulation::simulate(
 void REWL_simulation::replica_exchange_update( int & exchange_direction, const size_t iteration_counter, const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const
 {
     int comm_id = my_comm_ids[ exchange_direction ];
-    printf("\n\nID %d on iteration %ld has comm_id = %d\n", my_world_rank, iteration_counter, comm_id);
     if ( comm_id != Communicators::NONE )
     {
         // TODO: Generalize this for multiple walkers
@@ -202,7 +201,6 @@ void REWL_simulation::replica_exchange_update( int & exchange_direction, const s
 
         // Wait for everyone to get their partners
         MPI_Barrier( local_communicators[ comm_id ] );
-        printf("\nID %d on iteration %ld got partner index %d\n", my_world_rank, iteration_counter, partner_index);
 
         // Now proceed with the exchange
         if ( partner_index != Communicators::NONE )
@@ -218,7 +216,7 @@ void REWL_simulation::replica_exchange_update( int & exchange_direction, const s
             float pexchange = 0.;
             if ( my_walker -> energy_in_range( new_energy ) )
             {
-                pexchange = static_cast<float>( exp( my_walker -> get_logdos( current_energy ) - my_walker -> get_logdos( new_energy ) ) );
+                pexchange = static_cast<float>( exp( std::min(0., my_walker -> get_logdos( current_energy ) - my_walker -> get_logdos( new_energy )) ) );
             }
 
             bool we_do_exchange = false;
@@ -236,6 +234,7 @@ void REWL_simulation::replica_exchange_update( int & exchange_direction, const s
 
                 // Send the whether the result is made to the partner
                 MPI_Send( &we_do_exchange, 1, MPI_CXX_BOOL, partner_index, 3, local_communicators[ comm_id ] );
+                MPI_Send( &pexchange, 1, MPI_FLOAT, partner_index, 4, local_communicators[ comm_id ] );
             }
             else
             {
@@ -243,10 +242,12 @@ void REWL_simulation::replica_exchange_update( int & exchange_direction, const s
                 // and await a response
                 MPI_Send( &pexchange, 1, MPI_FLOAT, partner_index, 2, local_communicators[ comm_id ] );
                 MPI_Recv( &we_do_exchange, 1, MPI_CXX_BOOL, partner_index, 3, local_communicators[ comm_id ], &status );
+                MPI_Recv( &pexchange, 1, MPI_FLOAT, partner_index, 4, local_communicators[ comm_id ], &status );
             }
 
             if ( we_do_exchange )
             {
+                printf("\n\nID %d EXCHANGED!!\n\n", my_world_rank);
                 // Perform a MPI_Sendrecv_replace on the state and the degrees of freedom
                 mpi_exchange_state<State_t<OBS_TYPE> >( my_walker -> current_state(), partner_index, comm_id, local_communicators, &status );
                 mpi_exchange_DoFs<OBS_TYPE>( my_walker -> DoFs(), System_Parameters::num_DoF, partner_index, comm_id, local_communicators, &status );
@@ -294,30 +295,31 @@ void REWL_simulation::simulate(
     bool sample_observables = false;
 #endif
     int i_am_done = 0;           // Integer to store whether this processor is finished
+    constexpr size_t rewl_updates_per_check = REWL_Parameters::sweeps_per_check / REWL_Parameters::sweeps_per_exchange;
     
     while (simulation_incomplete)
     {
-        // First update the walker up until the 
-        // sweeps_per_check
-#if SAMPLE_AFTER
-        my_walker -> wang_landau_walk(REWL_Parameters::sweeps_per_check, sample_observables); 
-#else
-        my_walker -> wang_landau_walk(REWL_Parameters::sweeps_per_check); 
-#endif
-        sweep_counter += REWL_Parameters::sweeps_per_check;
-
-        if ( sweep_counter % REWL_Parameters::sweeps_per_exchange == 0 )
+        for ( size_t rewl_update = 0; rewl_update != rewl_updates_per_check; ++rewl_update )
         {
+            // First update the walker up until the sweeps_per_exchange
+#if SAMPLE_AFTER
+            my_walker -> wang_landau_walk(REWL_Parameters::sweeps_per_exchange, sample_observables); 
+#else
+            my_walker -> wang_landau_walk(REWL_Parameters::sweeps_per_exchange); 
+#endif
+            sweep_counter += REWL_Parameters::sweeps_per_exchange;
+    
+            // Then undergo the exchange update
             replica_exchange_update( exchange_direction, iteration_counter, my_ids_per_comm, my_comm_ids, local_communicators );
-            //exchange_direction = ( exchange_direction == Communicators::even_comm ? Communicators::odd_comm : Communicators::even_comm );
-        }
-        
-        printf("\nID %d got here which is after an exchange update\n", my_world_rank);
+            //exchange_direction = ( exchange_direction == Communicators::even_comm ? Communicators::odd_comm : Communicators::even_comm ); 
 
+        }
+ 
 #if PRINT_HISTOGRAM
         if ( sweep_counter % (REWL_Parameters::sweeps_per_check) == 0 )
             my_walker -> wl_walker.wl_histograms.print_histogram_counts(iteration_counter, histogram_path);
 #endif
+        MPI_Barrier(MPI_COMM_WORLD);
 
         // Now check to see if the histogram is flat
         // TODO: Generalize this for multiple walkers per window.
@@ -377,23 +379,22 @@ void REWL_simulation::simulate(
             iteration_start = std::chrono::high_resolution_clock::now();
 #endif
 
-            // Throw up a barrier to check if the simulation is over
-            int completed_reduction = 0;
-            MPI_Barrier(MPI_COMM_WORLD);
-            printf("\nID %d says completed_reduction = %d on iteration %ld\n", my_world_rank, completed_reduction, iteration_counter);
-            MPI_Allreduce( &i_am_done, &completed_reduction, 1, MPI_INT, MPI_PROD, MPI_COMM_WORLD );
-            
-            if ( completed_reduction == 1 )
-                simulation_incomplete = false;
-            else
-                simulation_incomplete = true;
-            
             ++iteration_counter;
             sweep_counter = 0;
         }
+        
+        // Throw up a barrier to check if the simulation is over
+        int completed_reduction = 0;
+        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Allreduce( &i_am_done, &completed_reduction, 1, MPI_INT, MPI_PROD, MPI_COMM_WORLD );
+        
+        if ( completed_reduction == 1 )
+            simulation_incomplete = false;
+        else
+            simulation_incomplete = true;
+
     }
 
-    printf("\nDid ID %d get outside the loop?\n", my_world_rank);
 #if COLLECT_TIMINGS
             timer = std::chrono::high_resolution_clock::now();
             std::chrono::duration<float> simulation_time = timer - start;

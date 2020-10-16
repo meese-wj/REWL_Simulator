@@ -25,7 +25,7 @@ namespace REWL_Parameters
     float window_overlap = 0.5;
 
     constexpr size_t sweeps_per_check = 1000;
-    constexpr size_t sweeps_per_exchange = 100;
+    constexpr size_t sweeps_per_exchange = 10;
     constexpr LOGDOS_TYPE final_increment = 1e-7;
     constexpr float flatness_criterion = 0.3;
 }
