@@ -212,7 +212,7 @@ void REWL_simulation::simulate(
             if ( comm_id != Communicators::NONE )
             {
                 // TODO: Generalize this for multiple walkers
-                int partners [ 2 * REWL_Parameters::replicas_per_window ];
+                int * partners = new int [ 2 * REWL_Parameters::replicas_per_window ];
 
                 // Only have the communicator master assign partners
                 if ( my_ids_per_comm[ exchange_direction ] == 0 )
@@ -224,7 +224,10 @@ void REWL_simulation::simulate(
                  
                 // Scatter the partner indices to everyone
                 int partner_index = Communicators::NONE; 
-                MPI_Scatter( partners, 1, MPI_INT, &partner_index, MPI_INT, 0, local_communicators[ comm_id ] );
+                MPI_Scatter( partners, 1, MPI_INT, &partner_index, 1, MPI_INT, 0, local_communicators[ comm_id ] );
+
+                // Delete the partners array because it is no longer needed
+                delete [] partners;
 
                 // Wait for everyone to get their partners
                 MPI_Barrier( local_communicators[ comm_id ] );
@@ -247,7 +250,7 @@ void REWL_simulation::simulate(
                     }
 
                     bool we_do_exchange = false;
-                    if ( my_ids_per_comm[ exchange_direction ] < replicas_per_window )
+                    if ( my_ids_per_comm[ exchange_direction ] < static_cast<int>(REWL_Parameters::replicas_per_window) )
                     {
                         // Have the lower ids be the calculator
                         float other_pexchange = 0.;
@@ -273,8 +276,8 @@ void REWL_simulation::simulate(
                     if ( we_do_exchange )
                     {
                         // Perform a MPI_Sendrecv_replace on the state and the degrees of freedom
-                        mpi_exchange_state<State_t<OBS_TYPE> >( my_walker -> current_state(), partner_index, comm_id, local_communicators, status );
-                        mpi_exchange_DoFs<OBS_TYPE>( my_walker -> DoFs(), System_Parameters::num_dof, partner_index, comm_id, local_communicators, status );
+                        mpi_exchange_state<State_t<OBS_TYPE> >( my_walker -> current_state(), partner_index, comm_id, local_communicators, &status );
+                        mpi_exchange_DoFs<OBS_TYPE>( my_walker -> DoFs(), System_Parameters::num_DoF, partner_index, comm_id, local_communicators, &status );
                     }
 
                     // Finally, update the histograms after the exchanges
@@ -287,7 +290,7 @@ void REWL_simulation::simulate(
                     
                 }
                 // Wait for all walkers in the window to get here.
-                MPI_Barrier( *local_communicators[comm_id] );
+                MPI_Barrier( local_communicators[comm_id] );
             }
             // Change the exchange direction
             exchange_direction = ( exchange_direction == Communicators::even_comm ? Communicators::odd_comm : Communicators::even_comm );

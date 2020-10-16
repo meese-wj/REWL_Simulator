@@ -61,10 +61,10 @@ int main(int argc, char * argv[])
                                            local_groups, local_comms );
 
     // Populate the IDs for the walkers and communicators
-    determine_my_local_IDs( my_world_rank, world_size, REWL_Parameters::replicas_per_window, 
+    determine_my_local_IDs( world_rank, world_size, REWL_Parameters::replicas_per_window, 
                             my_ids_per_comm, local_comms, window_comms ); 
 
-    determine_my_communicators( my_world_rank, world_size, REWL_Parameters::replicas_per_window, my_comm_ids );
+    determine_my_communicators( world_rank, world_size, REWL_Parameters::replicas_per_window, my_comm_ids );
 
     MPI_Barrier(MPI_COMM_WORLD);
     /* **************************************************************************** */
@@ -83,6 +83,8 @@ int main(int argc, char * argv[])
 #else
     simulation -> simulate();
 #endif
+#endif 
+
     MPI_Barrier(MPI_COMM_WORLD);
     if ( world_rank == REWL_MASTER_PROC )
         printf("\nEnd of simulation. Exiting.\n\n");

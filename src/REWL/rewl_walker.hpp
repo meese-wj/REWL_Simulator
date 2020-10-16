@@ -42,7 +42,8 @@ struct REWL_Walker
     bool energy_in_range( const energy_t energy ) const;
     float get_rand(); 
     logdos_t get_logdos( const energy_t energy ) const;
-    State_t<obs_t> * current_state() const;
+    energy_t current_energy() const;
+    State_t<obs_t> * current_state();
     obs_t * DoFs() const;
 
     void update_histograms();
@@ -156,11 +157,18 @@ logdos_t REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::get_lo
     return wl_walker.wl_histograms.get_logdos( hist_idx(energy) );
 }
 
+// Wrapper for the current energy
+template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
+energy_t REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::current_energy() const
+{
+    return system.current_state.energy;
+}
+
 // Get the pointer to the current state
 template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
-State_t<obs_t> * REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::current_state() const
+State_t<obs_t> * REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::current_state() 
 {
-    return &( system.current_state() );
+    return &( system.current_state );
 }
 
 // Get the pointer to the front of the degrees of freedom
