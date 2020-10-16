@@ -5,6 +5,7 @@
  * and contain all the relevant types. */
 #include <string>
 #include <chrono>
+#include <algorithm> // For std::shuffle
 
 #include <histogram_index.hpp>
 #include <glazier.hpp>
@@ -200,8 +201,22 @@ void REWL_simulation::replica_exchange_update( int & exchange_direction, const s
         if ( my_ids_per_comm[ exchange_direction ] == 0 )
         {
             // Get the partner indices
-            partners[0] = REWL_Parameters::replicas_per_window;
-            partners[2 * REWL_Parameters::replicas_per_window - 1] = 0;
+            std::vector<int> shuffled_partners ( REWL_Parameters::replicas_per_window );
+            for ( int partner = 0; partner != static_cast<int>(REWL_Parameters::replicas_per_window); ++partner )
+                shuffled_partners[ partner ] = static_cast<int>(REWL_Parameters::replicas_per_window) + partner;
+            
+            // Now shuffle the partners and pair by index
+            std::shuffle( shuffled_partners.begin(), shuffled_partners.end(), my_walker -> random.generator );
+            for ( size_t replica = 0; replica != REWL_Parameters::replicas_per_window; ++replica )
+            {
+                // Assign the replica in the lower window the shuffled_partner at replica
+                partners[ replica ] = shuffled_partners[ replica ];
+                // Assign the shuffled_partner at replica the replica in the lower window
+                partners[ shuffled_partners[ replica ] ] = replica;
+            }
+
+            //partners[0] = REWL_Parameters::replicas_per_window;
+            //partners[2 * REWL_Parameters::replicas_per_window - 1] = 0;
         }
          
         // Scatter the partner indices to everyone
