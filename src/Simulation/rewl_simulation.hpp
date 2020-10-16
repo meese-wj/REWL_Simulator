@@ -194,6 +194,7 @@ void REWL_simulation::simulate(
 #if SAMPLE_AFTER
     bool sample_observables = false;
 #endif
+    int i_am_done = 0;           // Integer to store whether this processor is finished
     
     while (simulation_incomplete)
     {
@@ -295,7 +296,8 @@ void REWL_simulation::simulate(
             // Change the exchange direction
             exchange_direction = ( exchange_direction == Communicators::even_comm ? Communicators::odd_comm : Communicators::even_comm );
         }
-
+        
+        printf("\nID %d got here\n", my_world_rank);
 
 #if PRINT_HISTOGRAM
         if ( sweep_counter % (REWL_Parameters::sweeps_per_check) == 0 )
@@ -331,11 +333,22 @@ void REWL_simulation::simulate(
                     my_walker -> incrementer = 1.;   // Reset the incrementer and walk again
                     simulation_incomplete = true;
                 }
-                else simulation_incomplete = false;  // Kill the simulation if it is complete after sampling
+                else
+                {
+#ifndef INDEPENDENT_WALKERS
+                    i_am_done = 1;                  // This walker has finised complete
+#else
+                    simulation_incomplete = false;  // Kill the simulation if it is complete after sampling
+#endif
+                }
             }
             else simulation_incomplete = true;
 #else
+#ifndef INDEPENDENT_WALKERS
+            i_am_done = ( my_walker -> incrementer >= REWL_Parameters::final_increment ? 0 : 1 );
+#else
             simulation_incomplete = ( my_walker -> incrementer >= REWL_Parameters::final_increment );
+#endif
 #endif
 
 #if COLLECT_TIMINGS
@@ -350,6 +363,14 @@ void REWL_simulation::simulate(
 #endif
             ++iteration_counter;
             sweep_counter = 0;
+
+            // Throw up a barrier to check if the simulation is over
+            int completed_reduction = 0;
+            MPI_Barrier(MPI_COMM_WORLD);
+            MPI_Allreduce( &i_am_done, &completed_reduction, 1, MPI_INT, MPI_PROD, MPI_COMM_WORLD );
+            
+            if ( completed_reduction == 1 )
+                simulation_incomplete = false;
         }
     }
 
