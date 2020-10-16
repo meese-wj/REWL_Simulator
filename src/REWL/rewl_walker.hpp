@@ -42,7 +42,7 @@ struct REWL_Walker
     bool energy_in_range( const energy_t energy ) const;
     float get_rand(); 
     logdos_t get_logdos( const energy_t energy ) const;
-    State_t * current_state() const;
+    State_t<obs_t> * current_state() const;
     obs_t * DoFs() const;
 
     void update_histograms();
@@ -138,12 +138,12 @@ void REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::wang_landa
 template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
 bool REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::energy_in_range( const energy_t energy ) const
 {
-    return hist_idx.energy_in_range( energy_t );
+    return hist_idx.energy_in_range( energy );
 }
 
 // Wrapper around the rng
 template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
-float REWL_WALKER<energy_t, logdos_t, obs_t, histogram_index_functor>::get_rand()
+float REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::get_rand()
 {
     return random();
 }

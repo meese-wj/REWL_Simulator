@@ -11,6 +11,16 @@ enum Communicators
     NONE = -1, window_comm, odd_comm, even_comm, NUM_COMMS
 };
 
+int operator + ( const int idx, const Communicators enum_value )
+{
+    return idx + static_cast<int>(enum_value);
+}
+
+size_t operator + ( const size_t idx, const Communicators enum_value )
+{
+    return idx + static_cast<size_t>(enum_value);
+}
+
 // Get the communicator id for each ID.
 // These will then go into an array
 int get_local_comm_ID( const int my_world_rank, const int which_comm, const int num_procs, const int replicas_per_window )
@@ -70,7 +80,7 @@ int get_local_comm_ID( const int my_world_rank, const int which_comm, const int 
 void define_window_communicators( const int num_procs, const int replicas_per_window, const MPI_Group & World,
                                   MPI_Group * window_groups, MPI_Comm * window_communicators )
 {
-    int ranks [ replicas_per_window ];
+    int * ranks = new int [ replicas_per_window ];
     const int num_window_comms = num_procs / replicas_per_window;
 
     for ( int comm = 0; comm != num_window_comms; ++comm )
@@ -83,6 +93,7 @@ void define_window_communicators( const int num_procs, const int replicas_per_wi
         MPI_Group_incl( World, replicas_per_window, ranks, &window_groups[ comm ] );
         MPI_Comm_create( MPI_COMM_WORLD, window_groups[ comm ], &window_communicators[ comm ] );
     }
+    delete [] ranks;
 }
 
 // Set up the inter-window groups and communicators
@@ -129,7 +140,7 @@ void determine_my_local_IDs( const int my_world_rank, const int num_procs, const
     //                                            the highest energy window if the window number is even
     //                                            and for the lowest energy window
 
-    for ( int which_comm = Communicators::window_comm + 1; which_comm != Communicators::NUM_COMMS; ++window_comm )
+    for ( int which_comm = Communicators::window_comm + 1; which_comm != Communicators::NUM_COMMS; ++which_comm )
     {
         comm_id = get_local_comm_ID( my_world_rank, which_comm, num_procs, replicas_per_window );
         if ( comm_id != Communicators::NONE )

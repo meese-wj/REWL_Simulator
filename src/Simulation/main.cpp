@@ -78,6 +78,9 @@ int main(int argc, char * argv[])
 #if PRINT_HISTOGRAM
     simulation -> simulate( data_path / "Histograms" / sys_strings.size_string );
 #else
+#ifndef INDEPENDENT_WALKERS
+    simulation -> simulate( my_ids_per_comm, my_comm_ids, local_comms );
+#else
     simulation -> simulate();
 #endif
     MPI_Barrier(MPI_COMM_WORLD);

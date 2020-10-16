@@ -39,7 +39,7 @@ struct REWL_simulation
                   const std::filesystem::path & histogram_path
 #endif
 #ifndef INDEPENDENT_WALKERS
-                  , const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators
+                  const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators
 #endif
             ) const;
 };
@@ -177,7 +177,7 @@ void REWL_simulation::simulate(
                                 const std::filesystem::path & histogram_path
 #endif
 #ifndef INDEPENDENT_WALKERS
-                                , const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators
+                                const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators
 #endif
                                ) const
 {
@@ -273,7 +273,7 @@ void REWL_simulation::simulate(
                     if ( we_do_exchange )
                     {
                         // Perform a MPI_Sendrecv_replace on the state and the degrees of freedom
-                        mpi_exchange_state<ENERGY_TYPE, OBS_TYPE>( my_walker -> current_state(), partner_index, comm_id, local_communicators, status );
+                        mpi_exchange_state<State_t<OBS_TYPE> >( my_walker -> current_state(), partner_index, comm_id, local_communicators, status );
                         mpi_exchange_DoFs<OBS_TYPE>( my_walker -> DoFs(), System_Parameters::num_dof, partner_index, comm_id, local_communicators, status );
                     }
 
