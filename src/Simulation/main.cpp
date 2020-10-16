@@ -46,25 +46,25 @@ int main(int argc, char * argv[])
     MPI_Comm_group( MPI_COMM_WORLD, &world_group );         
 
     // Define the local communicators
-    int num_local_comms = ( world_size / replicas_per_window ) - 1;
+    int num_local_comms = ( world_size / REWL_Parameters::replicas_per_window ) - 1;
     MPI_Group * local_groups  = new MPI_Group [ num_local_comms ];
     MPI_Comm  * local_comms   = new MPI_Comm  [ num_local_comms ];
-    MPI_Group * window_groups = new MPI_Group [ world_size / replicas_per_window ];
-    MPI_Comm  * window_comms  = new MPI_Comm  [ world_size / replicas_per_window ];
+    MPI_Group * window_groups = new MPI_Group [ world_size / REWL_Parameters::replicas_per_window ];
+    MPI_Comm  * window_comms  = new MPI_Comm  [ world_size / REWL_Parameters::replicas_per_window ];
 
     // Create the local groups and communicators for a single window
-    define_window_communicators( world_size, replicas_per_window, world_group,
+    define_window_communicators( world_size, REWL_Parameters::replicas_per_window, world_group,
                                  window_groups, window_comms ); 
 
     // Create the local groups and communicators between windows
-    create_local_groups_and_communicators( world_size, replicas_per_window, world_group,
+    create_local_groups_and_communicators( world_size, REWL_Parameters::replicas_per_window, world_group,
                                            local_groups, local_comms );
 
     // Populate the IDs for the walkers and communicators
-    determine_my_local_IDs( my_world_rank, world_size, replicas_per_window, 
+    determine_my_local_IDs( my_world_rank, world_size, REWL_Parameters::replicas_per_window, 
                             my_ids_per_comm, local_comms, window_comms ); 
 
-    determine_my_communicators( my_world_rank, world_size, replicas_per_window, my_comm_ids );
+    determine_my_communicators( my_world_rank, world_size, REWL_Parameters::replicas_per_window, my_comm_ids );
 
     MPI_Barrier(MPI_COMM_WORLD);
     /* **************************************************************************** */

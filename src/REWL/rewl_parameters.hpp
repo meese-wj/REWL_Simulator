@@ -2,6 +2,8 @@
 #define REWL_PARAMETERS
 /* Header file for the REWL parameters. */
 
+#include <cmath>
+
 // Create an alias for the observable
 // data type. 
 using ENERGY_TYPE = float;
@@ -23,6 +25,7 @@ namespace REWL_Parameters
     float window_overlap = 0.5;
 
     constexpr size_t sweeps_per_check = 1000;
+    constexpr size_t sweeps_per_exchange = 100;
     constexpr LOGDOS_TYPE final_increment = 1e-7;
     constexpr float flatness_criterion = 0.3;
 }

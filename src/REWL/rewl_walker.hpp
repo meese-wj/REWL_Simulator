@@ -36,6 +36,24 @@ struct REWL_Walker
     void wang_landau_walk(const size_t num_sweeps);
 #endif
 
+    /* ************************************** */
+    /* Include necessary REWL functions here  */
+
+    bool energy_in_range( const energy_t energy ) const;
+    float get_rand(); 
+    logdos_t get_logdos( const energy_t energy ) const;
+    State_t * current_state() const;
+    obs_t * DoFs() const;
+
+    void update_histograms();
+#if SAMPLE_AFTER
+    void update_observables( const bool sample_observables );
+#else
+    void update_observables();
+#endif
+
+    /* ************************************** */
+
     void export_energy_bins( energy_t *& data_arr )
     {
         size_t nbins = wl_walker.wl_histograms.num_bins;
@@ -111,5 +129,74 @@ void REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::wang_landa
                 incrementer, &system, &system_obs, random, hist_idx);    
     }
 }
+
+/* ******************************************************** */
+/* Required REWL functions go here                          */
+/* ******************************************************** */
+
+// Wrapper around the histogram indexing functor
+template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
+bool REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::energy_in_range( const energy_t energy ) const
+{
+    return hist_idx.energy_in_range( energy_t );
+}
+
+// Wrapper around the rng
+template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
+float REWL_WALKER<energy_t, logdos_t, obs_t, histogram_index_functor>::get_rand()
+{
+    return random();
+}
+
+// Wrapper around the rewl histograms. Get the value of the
+// logDoS at a particular energy
+template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
+logdos_t REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::get_logdos( const energy_t energy ) const
+{
+    return wl_walker.wl_histograms.get_logdos( hist_idx(energy) );
+}
+
+// Get the pointer to the current state
+template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
+State_t<obs_t> * REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::current_state() const
+{
+    return &( system.current_state() );
+}
+
+// Get the pointer to the front of the degrees of freedom
+template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
+obs_t * REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::DoFs() const
+{
+    return system.get_front_DoFs();
+}
+
+// Wrapper around the update histograms functionality
+template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
+void REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::update_histograms()
+{
+    size_t bin = hist_idx(system.current_state.energy);
+    wl_walker.wl_histograms.increment_count( bin );
+    wl_walker.wl_histograms.increment_logdos( bin, incrementer );
+}
+
+// Wrapper around the update observables
+template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
+#if SAMPLE_AFTER
+void REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::update_observables( const bool sample_observables )
+{
+    if ( sample_observables )
+    {
+        size_t bin = hist_idx(system.current_state.energy);
+        system.update_observables( bin, &system_obs );
+    }
+}
+#else
+void REWL_Walker<energy_t, logdos_t, obs_t, histogram_index_functor>::update_observables()
+{
+    size_t bin = hist_idx(system.current_state.energy);
+    system.update_observables( bin, &system_obs );
+}
+#endif
+
 
 #endif

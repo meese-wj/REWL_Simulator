@@ -73,6 +73,8 @@ struct Ising2d
     }
 
     void print_lattice() const;
+    
+    data_t * get_front_DoFs() const { return spin_array; }
 };
 
 template<typename data_t>
@@ -159,6 +161,36 @@ void Ising2d<data_t>::print_lattice() const
         }
     }
 }
+
+#if MPI_ON
+#ifndef INDEPENDENT_WALKERS
+#include <rewl_parameters.hpp>   // Include this for my MPI datatype macros
+
+template<typename energy_t, typename obs_t>
+void mpi_exchange_state( State<obs_t> * const state, const int partner_index, const int comm_id, const MPI_Comm * const local_communicators, MPI_Status * const status );
+
+template<typename obs_t>
+void mpi_exchange_DoFs( obs_t * const front_dofs, const size_t num_dof, const int partner_index, const int comm_id, const MPI_Comm * const local_communicators, MPI_Status * const status );
+
+// Specialize these templated functions
+template<>
+void mpi_exchange_state<ENERGY_TYPE, OBS_TYPE>( State<OBS_TYPE> * const, const int comm_id, const MPI_Comm * const local_communicators, MPI_Status * const status )
+{
+    MPI_Sendrecv_replace( &( state -> energy ), 1, MPI_ENERGY_TYPE, partner_index, 444, partner_index, 444, local_communicators[ comm_id ], status );
+    
+    MPI_Sendrecv_replace( &( state -> magnetization ), 1, MPI_OBS_TYPE, partner_index, 555, partner_index, 555, local_communicators[ comm_id ], status );
+
+    MPI_Sendrecv_replace( &( state -> DoF ), 1, MPI_OBS_TYPE, partner_index, 666, partner_index, 666, local_communicators[ comm_id ], status );
+}
+
+template<>
+void mpi_exchange_DoFs<OBS_TYPE>( OBS_TYPE * const front_dofs, const size_t num_dof, const int partner_index, const int comm_id, const MPI_Comm * const local_communicators, MPI_Status * const status )
+{
+    MPI_Sendrecv_replace( front_dofs, static_cast<int>(num_dof), MPI_OBS_TYPE, partner_index, 777, partner_index, 777 local_communicators[ comm_id ], status );
+}
+
+#endif
+#endif
 
 #endif
 
