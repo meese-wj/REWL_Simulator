@@ -79,7 +79,7 @@ int main(int argc, char * argv[])
     simulation -> simulate( data_path / "Histograms" / sys_strings.size_string );
 #else
 #ifndef INDEPENDENT_WALKERS
-    simulation -> simulate( my_ids_per_comm, my_comm_ids, local_comms );
+    simulation -> simulate( my_ids_per_comm, my_comm_ids, local_comms, window_comms );
 #else
     simulation -> simulate();
 #endif
@@ -110,6 +110,10 @@ int main(int argc, char * argv[])
 
     printf("\nBefore thermodynamics with process %d\n", world_rank);
     MPI_Barrier(MPI_COMM_WORLD);
+
+    // Find out which ranks are 0-processors
+    int * window_ids = new int [ world_size ];
+    MPI_Gather( &( my_ids_per_comm[ Communicators::window_comm ] ), 1, MPI_INT, window_ids, 1, MPI_INT, REWL_MASTER_PROC, MPI_COMM_WORLD );
     
     if ( world_rank == REWL_MASTER_PROC )
     {
@@ -136,7 +140,8 @@ int main(int argc, char * argv[])
 
         for ( int proc = 0; proc != world_size; ++proc )
         {
-            if ( proc != world_rank )
+            // Only communicate with 0-processors per window
+            if ( proc != world_rank && window_ids[proc] == 0 )
             {
                 MPI_Status status; 
                 mpi_recv_array_to_vector<ENERGY_TYPE>( proc, energy_table[proc], MPI_FLOAT, final_energy_tag, MPI_COMM_WORLD, &status );
@@ -144,7 +149,7 @@ int main(int argc, char * argv[])
                 mpi_recv_array_to_vector<OBS_TYPE>( proc, observable_table[proc], MPI_OBS_TYPE, final_obs_tag, MPI_COMM_WORLD, &status );
             }
         }
-        
+ 
         std::vector<ENERGY_TYPE> final_energy_vector;
         std::vector<LOGDOS_TYPE> final_logdos_vector;
         std::vector<OBS_TYPE>    final_observable_vector;
@@ -203,13 +208,14 @@ int main(int argc, char * argv[])
         delete thermo;
         delete [] nonlinear_obs_array;
     }
-    else
+    else if ( my_ids_per_comm[ Communicators::window_comm ] == 0 ) 
     {
         // Send arrays to the master process for analysis.
         mpi_send_array<ENERGY_TYPE>( REWL_MASTER_PROC, final_num_bins, final_energy_array, MPI_FLOAT, final_energy_tag, MPI_COMM_WORLD );  
         mpi_send_array<LOGDOS_TYPE>( REWL_MASTER_PROC, final_num_bins, final_logdos_array, MPI_LOGDOS_TYPE, final_logdos_tag, MPI_COMM_WORLD );  
         mpi_send_array<OBS_TYPE>( REWL_MASTER_PROC, final_num_obs_values, final_observable_array, MPI_OBS_TYPE, final_obs_tag, MPI_COMM_WORLD );  
     }
+    // else { I'm a processor that's now bored... }
     MPI_Barrier(MPI_COMM_WORLD);
 
     printf("\nCleaning up the heap with process %d\n", world_rank);
@@ -221,6 +227,7 @@ int main(int argc, char * argv[])
 
     delete simulation;
    
+    delete [] window_ids;
     delete [] final_energy_array;
     delete [] final_logdos_array;
     delete [] final_observable_array;

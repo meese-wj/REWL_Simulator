@@ -42,6 +42,8 @@ struct REWL_simulation
     void replica_exchange_update( int & exchange_direction, const size_t iteration_counter, 
                                   const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const;
 #endif
+    void average_and_redistribute_window( const int * my_comm_ids, MPI_Comm * const window_communicators ) const;
+    bool check_if_window_is_flat( const int * my_comm_ids, MPI_Comm * const window_communicators ) const;
 #endif
 
     void simulate(
@@ -49,7 +51,7 @@ struct REWL_simulation
                   const std::filesystem::path & histogram_path
 #endif
 #ifndef INDEPENDENT_WALKERS
-                  const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators
+                  const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators, MPI_Comm * const window_communicators
 #endif
             ) const;
 };
@@ -276,9 +278,77 @@ void REWL_simulation::replica_exchange_update( int & exchange_direction, const s
 
     // Change the exchange direction
     exchange_direction = ( exchange_direction == Communicators::even_comm ? Communicators::odd_comm : Communicators::even_comm );
+}
 
-    // Wait for all walkers in the window to get here.
-    //MPI_Barrier( local_communicators[comm_id] );
+// Compute the weighted average in a window and redistribute
+void REWL_simulation::average_and_redistribute_window( const int * const my_comm_ids, MPI_Comm * const window_communicators ) const
+{
+    if ( REWL_Parameters::replicas_per_window == 1 )
+        return;
+
+    int comm_id = my_comm_ids[ Communicators::window_comm ];
+
+    // Store the sum of each walker's energy histogram in an array
+    size_t num_bins = my_walker -> wl_walker.wl_histograms.num_bins;
+    size_t * total_energy_histogram = new size_t [ num_bins ];
+
+    MPI_Barrier( window_communicators[ comm_id ] );
+
+    for ( size_t bin = 0; bin != num_bins; ++bin )
+        MPI_Allreduce( &( my_walker -> wl_walker.wl_histograms.histograms[bin].count ), &( total_energy_histogram[bin] ), 1, MPI_UNSIGNED, MPI_SUM, window_communicators[ comm_id ] );
+
+    // Use this to compute this walker's weights
+    LOGDOS_TYPE * logdos_weights = new LOGDOS_TYPE [ num_bins ];
+    OBS_TYPE    * obs_weights    = new OBS_TYPE    [ num_bins * convert(System_Obs_enum_t::NUM_OBS) ];
+    for ( size_t bin = 0; bin != num_bins; ++bin )
+    {
+        LOGDOS_TYPE weight = static_cast<LOGDOS_TYPE>( my_walker -> wl_walker.wl_histograms.histograms[bin].count ) / static_cast<LOGDOS_TYPE>( total_energy_histogram[bin] );
+        logdos_weights[bin] = weight * ( my_walker -> wl_walker.wl_histograms.histograms[bin].logdos );
+
+        for ( size_t ob = 0; ob != convert(System_Obs_enum_t::NUM_OBS); ++ob )
+        {
+            obs_weights[ bin * convert(System_Obs_enum_t::NUM_OBS) + ob ] = my_walker -> system_obs.obs_array[ bin * convert(System_Obs_enum_t::NUM_OBS) + ob ];
+            // Just sum the counts like normal
+            if ( ob != convert(System_Obs_enum_t::counts_per_bin) )
+               obs_weights[ bin * convert(System_Obs_enum_t::NUM_OBS) + ob ] *= static_cast<OBS_TYPE>(weight); 
+        } 
+    }
+
+    // Break up the reductions for better memory management
+    // Now use a reduction to sum the logdos and deposit it accordingly
+    for ( size_t bin = 0; bin != num_bins; ++bin )
+    {
+        MPI_Allreduce( &( logdos_weights[bin] ), &( my_walker -> wl_walker.wl_histograms.histograms[bin].logdos ), 1, MPI_LOGDOS_TYPE, MPI_SUM, window_communicators[ comm_id ] );
+    }
+    // Now use a reduction to sum the observables and deposit them accordingly
+    for ( size_t bin = 0; bin != num_bins; ++bin )
+    {
+        for ( size_t ob = 0; ob != convert(System_Obs_enum_t::NUM_OBS); ++ob )
+        {
+            const size_t ob_index = bin * convert(System_Obs_enum_t::NUM_OBS) + ob;
+            MPI_Allreduce( &( obs_weights[ob_index] ), &( my_walker -> system_obs.obs_array[ob_index] ), 1, MPI_OBS_TYPE, MPI_SUM, window_communicators[ comm_id ] );
+        }
+    }
+
+    delete [] total_energy_histogram;
+    delete [] logdos_weights;
+    delete [] obs_weights;
+}
+
+// Check for flatness within a window
+// The window is only flat if every replica is flat.
+bool REWL_simulation::check_if_window_is_flat( const int * const my_comm_ids, MPI_Comm * const window_communicators ) const
+{
+    int window_is_flat = false;
+    int replica_is_flat = static_cast<int>( my_walker -> wl_walker.is_flat( REWL_Parameters::flatness_criterion ) );
+
+    int comm_id = my_comm_ids[ Communicators::window_comm ];
+    MPI_Barrier( window_communicators[comm_id] );
+
+    // Reduce whether each replica is flat
+    MPI_Allreduce( &replica_is_flat, &window_is_flat, 1, MPI_INT, MPI_PROD, window_communicators[ comm_id ] );
+    
+    return static_cast<bool>( window_is_flat );
 }
 
 // Main function for the simulation.
@@ -287,7 +357,8 @@ void REWL_simulation::simulate(
                                 const std::filesystem::path & histogram_path
 #endif
 #ifndef INDEPENDENT_WALKERS
-                                const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators
+                                const int * const my_ids_per_comm, const int * const my_comm_ids, 
+                                MPI_Comm * const local_communicators, MPI_Comm * const window_communicators
 #endif
                                ) const
 {
@@ -338,17 +409,17 @@ void REWL_simulation::simulate(
 #endif
         MPI_Barrier(MPI_COMM_WORLD);
 
-        // Now check to see if the histogram is flat
-        // TODO: Generalize this for multiple walkers per window.
-        if ( my_walker -> wl_walker.is_flat( REWL_Parameters::flatness_criterion ) )
+        // Now check to see if the window is flat
+        if ( check_if_window_is_flat( my_comm_ids, window_communicators ) )
         {
-            // Reset only the energy histogram and leave
-            // the logdos alone.
 #if PRINT_HISTOGRAM
             my_walker -> wl_walker.wl_histograms.print_histogram_counts(iteration_counter, histogram_path);
 #endif
+            // If the window is flat, average the logdos and observables
+            average_and_redistribute_window( my_comm_ids, window_communicators );
 
-            // TODO: Generalize for multiple walkers per window. Specifically average data here.
+            // Reset only the energy histogram and leave
+            // the logdos alone.
 
             my_walker -> wl_walker.reset_histogram();
 
@@ -431,6 +502,11 @@ void REWL_simulation::simulate(
             std::chrono::duration<float> simulation_time = timer - start;
             printf("\n\nID %d: Total Simulation Time: %e seconds.", my_world_rank, simulation_time.count());
 #endif
+
+    // Finally average the results within a single window
+    // Only the 0-processor in each window will communicate 
+    // with the master processor at the end
+    average_and_redistribute_window( my_comm_ids, window_communicators ); 
 }
 #endif
 
