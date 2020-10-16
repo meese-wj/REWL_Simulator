@@ -247,7 +247,7 @@ void REWL_simulation::replica_exchange_update( int & exchange_direction, const s
 
             if ( we_do_exchange )
             {
-                printf("\n\nID %d EXCHANGED!!\n\n", my_world_rank);
+                //printf("\n\nID %d EXCHANGED!!\n\n", my_world_rank);
                 // Perform a MPI_Sendrecv_replace on the state and the degrees of freedom
                 mpi_exchange_state<State_t<OBS_TYPE> >( my_walker -> current_state(), partner_index, comm_id, local_communicators, &status );
                 mpi_exchange_DoFs<OBS_TYPE>( my_walker -> DoFs(), System_Parameters::num_DoF, partner_index, comm_id, local_communicators, &status );
