@@ -303,6 +303,9 @@ void REWL_simulation::simulate(
     int exchange_direction = Communicators::even_comm;
 #if SAMPLE_AFTER
     bool sample_observables = false;
+    int i_sample_observables = 0;
+    //int we_all_sample_observables = 0;
+    bool reset_incrementer = true;
 #endif
     int i_am_done = 0;           // Integer to store whether this processor is finished
     constexpr size_t rewl_updates_per_check = REWL_Parameters::sweeps_per_check / REWL_Parameters::sweeps_per_exchange;
@@ -358,10 +361,10 @@ void REWL_simulation::simulate(
 #if SAMPLE_AFTER
             if ( my_walker -> incrementer < REWL_Parameters::final_increment )
             {
-                if (sample_observables == false) 
+                if (i_sample_observables == false) 
                 {
-                    sample_observables = true;
-                    my_walker -> incrementer = 1.;   // Reset the incrementer and walk again
+                    i_sample_observables = 1;
+                    //my_walker -> incrementer = 1.;   // Reset the incrementer and walk again
                     simulation_incomplete = true;
                 }
                 else
@@ -396,6 +399,20 @@ void REWL_simulation::simulate(
             ++iteration_counter;
             sweep_counter = 0;
         }
+
+#if SAMPLE_AFTER
+        // Throw up a barrier to check if we sample observables
+        //MPI_Barrier(MPI_COMM_WORLD);
+        //MPI_Allreduce( &i_sample_observables, &we_all_sample_observables, 1, MPI_INT, MPI_PROD, MPI_COMM_WORLD );
+        
+        //if ( we_all_sample_observables == 1 && reset_incrementer )
+        if ( i_sample_observables == 1 && reset_incrementer )
+        {
+            sample_observables = true;
+            my_walker -> incrementer = 1.;
+            reset_incrementer = false;
+        }        
+#endif
         
         // Throw up a barrier to check if the simulation is over
         int completed_reduction = 0;

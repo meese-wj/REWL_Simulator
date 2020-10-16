@@ -16,7 +16,10 @@ using table = std::vector<std::vector<data_t> >;
 template<typename data_t>
 inline data_t average_two_windows( const data_t obs1, const data_t obs2, const size_t num1, const size_t num2 )
 {
-    return ( static_cast<data_t>(num1) * obs1 + static_cast<data_t>(num2) * obs2 ) / static_cast<data_t>( num1 + num2 );
+    // TODO: Weighting by counts seems to systematically favor the lower
+    // energy windows...
+    return 0.5 * ( obs1 + obs2 );
+    //return ( static_cast<data_t>(num1) * obs1 + static_cast<data_t>(num2) * obs2 ) / static_cast<data_t>( num1 + num2 );
 }
 
 // Push back the final values simply
