@@ -12,7 +12,7 @@ option(MPI_ON "Turn on MPI. This engages parallelized a Wang Landau simulation."
 option(COLLECT_TIMINGS "Print timings collected by STL Chrono." ON)
 option(PRINT_HISTOGRAM "Print the energy histogram to a file periodically." OFF)
 option(REDUCE_LOGDOS "Truncate the logDoS after each iteration to heighten numerical sensitivity." ON)
-option(SAMPLE_AFTER "Sample observables after one round of WL updates" ON)
+option(SAMPLE_AFTER "Sample observables after one round of WL updates" OFF)
 option(TRAPEZOIDAL_RULE "Use trapezoidal rule to evaluate the thermodynamical integrals" ON)
 option(INDEPENDENT_WALKERS "Do not allow for exchange or for intra-window walkers to average" OFF)
 
