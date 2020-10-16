@@ -35,7 +35,13 @@ struct REWL_simulation
     }
 
 #ifndef INDEPENDENT_WALKERS
-    void replica_exchange_update( int & exchange_direction, const size_t iteration_counter, const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const;
+#if SAMPLE_AFTER
+    void replica_exchange_update( int & exchange_direction, const size_t iteration_counter, const bool sample_observables, 
+                                  const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const;
+#else
+    void replica_exchange_update( int & exchange_direction, const size_t iteration_counter, 
+                                  const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const;
+#endif
 #endif
 
     void simulate(
@@ -176,7 +182,11 @@ void REWL_simulation::simulate(
 #else /* This will turn on replica exchange. */
 
 // Single replica exchange update
-void REWL_simulation::replica_exchange_update( int & exchange_direction, const size_t iteration_counter, const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const
+void REWL_simulation::replica_exchange_update( int & exchange_direction, const size_t iteration_counter, 
+#if SAMPLE_AFTER
+                                               const bool sample_observables,
+#endif
+                                               const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const
 {
     int comm_id = my_comm_ids[ exchange_direction ];
     if ( comm_id != Communicators::NONE )
@@ -310,7 +320,11 @@ void REWL_simulation::simulate(
             sweep_counter += REWL_Parameters::sweeps_per_exchange;
     
             // Then undergo the exchange update
+#if SAMPLE_AFTER
+            replica_exchange_update( exchange_direction, iteration_counter, sample_observables, my_ids_per_comm, my_comm_ids, local_communicators );
+#else
             replica_exchange_update( exchange_direction, iteration_counter, my_ids_per_comm, my_comm_ids, local_communicators );
+#endif
             //exchange_direction = ( exchange_direction == Communicators::even_comm ? Communicators::odd_comm : Communicators::even_comm ); 
 
         }
