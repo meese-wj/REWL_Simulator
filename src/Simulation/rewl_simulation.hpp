@@ -34,6 +34,10 @@ struct REWL_simulation
         if (my_walker != nullptr) delete my_walker;
     }
 
+#ifndef INDEPENDENT_WALKERS
+    void replica_exchange_update( int & exchange_direction, const size_t iteration_counter, const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const;
+#endif
+
     void simulate(
 #if PRINT_HISTOGRAM
                   const std::filesystem::path & histogram_path
@@ -171,6 +175,101 @@ void REWL_simulation::simulate(
 
 #else /* This will turn on replica exchange. */
 
+// Single replica exchange update
+void REWL_simulation::replica_exchange_update( int & exchange_direction, const size_t iteration_counter, const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const
+{
+    int comm_id = my_comm_ids[ exchange_direction ];
+    printf("\n\nID %d on iteration %ld has comm_id = %d\n", my_world_rank, iteration_counter, comm_id);
+    if ( comm_id != Communicators::NONE )
+    {
+        // TODO: Generalize this for multiple walkers
+        int * partners = new int [ 2 * REWL_Parameters::replicas_per_window ];
+
+        // Only have the communicator master assign partners
+        if ( my_ids_per_comm[ exchange_direction ] == 0 )
+        {
+            // Get the partner indices
+            partners[0] = REWL_Parameters::replicas_per_window;
+            partners[2 * REWL_Parameters::replicas_per_window - 1] = 0;
+        }
+         
+        // Scatter the partner indices to everyone
+        int partner_index = Communicators::NONE; 
+        MPI_Scatter( partners, 1, MPI_INT, &partner_index, 1, MPI_INT, 0, local_communicators[ comm_id ] );
+
+        // Delete the partners array because it is no longer needed
+        delete [] partners;
+
+        // Wait for everyone to get their partners
+        MPI_Barrier( local_communicators[ comm_id ] );
+        printf("\nID %d on iteration %ld got partner index %d\n", my_world_rank, iteration_counter, partner_index);
+
+        // Now proceed with the exchange
+        if ( partner_index != Communicators::NONE )
+        {
+            MPI_Status status;
+
+            ENERGY_TYPE current_energy = my_walker -> current_energy();
+            ENERGY_TYPE new_energy = current_energy;      
+
+            // Send the new energy to the partner index to use in the exchange
+            MPI_Sendrecv_replace( &new_energy, 1, MPI_ENERGY_TYPE, partner_index, 1, partner_index, 1, local_communicators[ comm_id ], &status );
+
+            float pexchange = 0.;
+            if ( my_walker -> energy_in_range( new_energy ) )
+            {
+                pexchange = static_cast<float>( exp( my_walker -> get_logdos( current_energy ) - my_walker -> get_logdos( new_energy ) ) );
+            }
+
+            bool we_do_exchange = false;
+            if ( my_ids_per_comm[ exchange_direction ] < static_cast<int>(REWL_Parameters::replicas_per_window) )
+            {
+                // Have the lower ids be the calculator
+                float other_pexchange = 0.;
+                MPI_Recv( &other_pexchange, 1, MPI_FLOAT, partner_index, 2, local_communicators[ comm_id ], &status );
+
+                // The exchange probability comes from the product of both
+                // energy moves
+                pexchange *= other_pexchange;
+
+                we_do_exchange = ( pexchange != 0. && ( my_walker -> get_rand() < pexchange ) );
+
+                // Send the whether the result is made to the partner
+                MPI_Send( &we_do_exchange, 1, MPI_CXX_BOOL, partner_index, 3, local_communicators[ comm_id ] );
+            }
+            else
+            {
+                // Send the exchange probability to the calculator
+                // and await a response
+                MPI_Send( &pexchange, 1, MPI_FLOAT, partner_index, 2, local_communicators[ comm_id ] );
+                MPI_Recv( &we_do_exchange, 1, MPI_CXX_BOOL, partner_index, 3, local_communicators[ comm_id ], &status );
+            }
+
+            if ( we_do_exchange )
+            {
+                // Perform a MPI_Sendrecv_replace on the state and the degrees of freedom
+                mpi_exchange_state<State_t<OBS_TYPE> >( my_walker -> current_state(), partner_index, comm_id, local_communicators, &status );
+                mpi_exchange_DoFs<OBS_TYPE>( my_walker -> DoFs(), System_Parameters::num_DoF, partner_index, comm_id, local_communicators, &status );
+            }
+
+            // Finally, update the histograms after the exchanges
+            my_walker -> update_histograms();
+#if SAMPLE_AFTER
+            my_walker -> update_observables( sample_observables ); 
+#else
+            my_walker -> update_observables();
+#endif
+            
+        }
+    }
+
+    // Change the exchange direction
+    exchange_direction = ( exchange_direction == Communicators::even_comm ? Communicators::odd_comm : Communicators::even_comm );
+
+    // Wait for all walkers in the window to get here.
+    //MPI_Barrier( local_communicators[comm_id] );
+}
+
 // Main function for the simulation.
 void REWL_simulation::simulate(
 #if PRINT_HISTOGRAM
@@ -209,95 +308,7 @@ void REWL_simulation::simulate(
 
         if ( sweep_counter % REWL_Parameters::sweeps_per_exchange == 0 )
         {
-            int comm_id = my_comm_ids[ exchange_direction ];
-            printf("\n\nID %d on iteration %ld has comm_id = %d\n", my_world_rank, iteration_counter, comm_id);
-            if ( comm_id != Communicators::NONE )
-            {
-                // TODO: Generalize this for multiple walkers
-                int * partners = new int [ 2 * REWL_Parameters::replicas_per_window ];
-
-                // Only have the communicator master assign partners
-                if ( my_ids_per_comm[ exchange_direction ] == 0 )
-                {
-                    // Get the partner indices
-                    partners[0] = REWL_Parameters::replicas_per_window;
-                    partners[2 * REWL_Parameters::replicas_per_window - 1] = 0;
-                }
-                 
-                // Scatter the partner indices to everyone
-                int partner_index = Communicators::NONE; 
-                MPI_Scatter( partners, 1, MPI_INT, &partner_index, 1, MPI_INT, 0, local_communicators[ comm_id ] );
-
-                // Delete the partners array because it is no longer needed
-                delete [] partners;
-
-                // Wait for everyone to get their partners
-                MPI_Barrier( local_communicators[ comm_id ] );
-                printf("\nID %d on iteration %ld got partner index %d\n", my_world_rank, iteration_counter, partner_index);
-
-                // Now proceed with the exchange
-                if ( partner_index != Communicators::NONE )
-                {
-                    MPI_Status status;
-
-                    ENERGY_TYPE current_energy = my_walker -> current_energy();
-                    ENERGY_TYPE new_energy = current_energy;      
-
-                    // Send the new energy to the partner index to use in the exchange
-                    MPI_Sendrecv_replace( &new_energy, 1, MPI_ENERGY_TYPE, partner_index, 1, partner_index, 1, local_communicators[ comm_id ], &status );
-            
-                    float pexchange = 0.;
-                    if ( my_walker -> energy_in_range( new_energy ) )
-                    {
-                        pexchange = static_cast<float>( exp( my_walker -> get_logdos( current_energy ) - my_walker -> get_logdos( new_energy ) ) );
-                    }
-
-                    bool we_do_exchange = false;
-                    if ( my_ids_per_comm[ exchange_direction ] < static_cast<int>(REWL_Parameters::replicas_per_window) )
-                    {
-                        // Have the lower ids be the calculator
-                        float other_pexchange = 0.;
-                        MPI_Recv( &other_pexchange, 1, MPI_FLOAT, partner_index, 2, local_communicators[ comm_id ], &status );
-
-                        // The exchange probability comes from the product of both
-                        // energy moves
-                        pexchange *= other_pexchange;
-
-                        we_do_exchange = ( pexchange != 0. && ( my_walker -> get_rand() < pexchange ) );
-
-                        // Send the whether the result is made to the partner
-                        MPI_Send( &we_do_exchange, 1, MPI_CXX_BOOL, partner_index, 3, local_communicators[ comm_id ] );
-                    }
-                    else
-                    {
-                        // Send the exchange probability to the calculator
-                        // and await a response
-                        MPI_Send( &pexchange, 1, MPI_FLOAT, partner_index, 2, local_communicators[ comm_id ] );
-                        MPI_Recv( &we_do_exchange, 1, MPI_CXX_BOOL, partner_index, 3, local_communicators[ comm_id ], &status );
-                    }
-
-                    if ( we_do_exchange )
-                    {
-                        // Perform a MPI_Sendrecv_replace on the state and the degrees of freedom
-                        mpi_exchange_state<State_t<OBS_TYPE> >( my_walker -> current_state(), partner_index, comm_id, local_communicators, &status );
-                        mpi_exchange_DoFs<OBS_TYPE>( my_walker -> DoFs(), System_Parameters::num_DoF, partner_index, comm_id, local_communicators, &status );
-                    }
-
-                    // Finally, update the histograms after the exchanges
-                    my_walker -> update_histograms();
-#if SAMPLE_AFTER
-                    my_walker -> update_observables( sample_observables ); 
-#else
-                    my_walker -> update_observables();
-#endif
-                    
-                }
-            }
-            // Change the exchange direction
-            exchange_direction = ( exchange_direction == Communicators::even_comm ? Communicators::odd_comm : Communicators::even_comm );
-            
-            // Wait for all walkers in the window to get here.
-            //MPI_Barrier( local_communicators[comm_id] );
+            replica_exchange_update( exchange_direction, iteration_counter, my_ids_per_comm, my_comm_ids, local_communicators );
         }
         
         printf("\nID %d got here which is after an exchange update\n", my_world_rank);
