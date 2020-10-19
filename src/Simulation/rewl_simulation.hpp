@@ -43,7 +43,7 @@ struct REWL_simulation
     void replica_exchange_update( int & exchange_direction, const size_t iteration_counter, 
                                   const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const;
 #endif
-    void average_and_redistribute_window( const int * my_comm_ids, MPI_Comm * const window_communicators ) const;
+    void average_and_redistribute_window( const bool simulation_incomplete, const int * my_comm_ids, MPI_Comm * const window_communicators ) const;
     bool check_if_window_is_flat( const int * my_comm_ids, MPI_Comm * const window_communicators ) const;
 #endif
 
@@ -70,7 +70,7 @@ REWL_simulation::REWL_simulation()
     window_maker = new glazier<ENERGY_TYPE, histogram_index<ENERGY_TYPE> >
                         (System_Parameters::energy_min, System_Parameters::energy_max,
                          System_Parameters::energy_bin_size, 
-                         static_cast<size_t>(REWL_Parameters::num_walkers),
+                         static_cast<size_t>(REWL_Parameters::num_walkers) / REWL_Parameters::replicas_per_window,
                          REWL_Parameters::replicas_per_window, 
                          static_cast<ENERGY_TYPE>(REWL_Parameters::window_overlap));
 
@@ -207,13 +207,16 @@ void REWL_simulation::replica_exchange_update( int & exchange_direction, const s
             
             // Now shuffle the partners and pair by index
             std::shuffle( shuffled_partners.begin(), shuffled_partners.end(), my_walker -> random.generator );
+            //printf("\n");
             for ( size_t replica = 0; replica != REWL_Parameters::replicas_per_window; ++replica )
             {
                 // Assign the replica in the lower window the shuffled_partner at replica
                 partners[ replica ] = shuffled_partners[ replica ];
                 // Assign the shuffled_partner at replica the replica in the lower window
                 partners[ shuffled_partners[ replica ] ] = replica;
+                //printf("\nreplica = %ld, partners[%ld] = %d, partners[%d] = %d", replica, replica, partners[replica], shuffled_partners[replica], partners[shuffled_partners[replica]]);
             }
+            //printf("\n");
 
             //partners[0] = REWL_Parameters::replicas_per_window;
             //partners[2 * REWL_Parameters::replicas_per_window - 1] = 0;
@@ -245,6 +248,7 @@ void REWL_simulation::replica_exchange_update( int & exchange_direction, const s
             {
                 pexchange = static_cast<float>( exp( std::min(0., my_walker -> get_logdos( current_energy ) - my_walker -> get_logdos( new_energy )) ) );
             }
+            //printf("\nID %d = %d: pexchange before = %e", my_world_rank, my_ids_per_comm[exchange_direction], pexchange);
 
             bool we_do_exchange = false;
             if ( my_ids_per_comm[ exchange_direction ] < static_cast<int>(REWL_Parameters::replicas_per_window) )
@@ -271,10 +275,11 @@ void REWL_simulation::replica_exchange_update( int & exchange_direction, const s
                 MPI_Recv( &we_do_exchange, 1, MPI_CXX_BOOL, partner_index, 3, local_communicators[ comm_id ], &status );
                 MPI_Recv( &pexchange, 1, MPI_FLOAT, partner_index, 4, local_communicators[ comm_id ], &status );
             }
+            //printf("\nID %d = %d: pexchange after = %e\n", my_world_rank, my_ids_per_comm[exchange_direction], pexchange);
 
             if ( we_do_exchange )
             {
-                //printf("\n\nID %d EXCHANGED!!\n\n", my_world_rank);
+                //printf("\n\nID %d = %d EXCHANGED!!\n\n", my_world_rank, my_ids_per_comm[exchange_direction]);
                 // Perform a MPI_Sendrecv_replace on the state and the degrees of freedom
                 mpi_exchange_state<State_t<OBS_TYPE> >( my_walker -> current_state(), partner_index, comm_id, local_communicators, &status );
                 mpi_exchange_DoFs<OBS_TYPE>( my_walker -> DoFs(), System_Parameters::num_DoF, partner_index, comm_id, local_communicators, &status );
@@ -296,7 +301,7 @@ void REWL_simulation::replica_exchange_update( int & exchange_direction, const s
 }
 
 // Compute the weighted average in a window and redistribute
-void REWL_simulation::average_and_redistribute_window( const int * const my_comm_ids, MPI_Comm * const window_communicators ) const
+void REWL_simulation::average_and_redistribute_window( const bool simulation_incomplete, const int * const my_comm_ids, MPI_Comm * const window_communicators ) const
 {
     if ( REWL_Parameters::replicas_per_window == 1 )
         return;
@@ -305,20 +310,43 @@ void REWL_simulation::average_and_redistribute_window( const int * const my_comm
 
     // Store the sum of each walker's energy histogram in an array
     size_t num_bins = my_walker -> wl_walker.wl_histograms.num_bins;
-    size_t * total_energy_histogram = new size_t [ num_bins ];
+    size_t * total_energy_histogram = new size_t [ num_bins ] ();
+    OBS_TYPE * total_energy_histogram_obs_t = new OBS_TYPE [ num_bins ] ();
 
     MPI_Barrier( window_communicators[ comm_id ] );
 
     for ( size_t bin = 0; bin != num_bins; ++bin )
-        MPI_Allreduce( &( my_walker -> wl_walker.wl_histograms.histograms[bin].count ), &( total_energy_histogram[bin] ), 1, MPI_UNSIGNED, MPI_SUM, window_communicators[ comm_id ] );
+    {
+        //printf("\nID %d: counts[%ld] = %ld, total_counts[%ld] = %ld", my_world_rank, bin, my_walker -> wl_walker.wl_histograms.histograms[bin].count, bin, total_energy_histogram[bin]);
+        if ( simulation_incomplete )
+            MPI_Allreduce( &( my_walker -> wl_walker.wl_histograms.histograms[bin].count ), &( total_energy_histogram[bin] ), 1, MPI_UNSIGNED, MPI_SUM, window_communicators[ comm_id ] );
+        else
+            MPI_Allreduce( &( my_walker -> system_obs.obs_array[ bin * convert(System_Obs_enum_t::NUM_OBS) + convert(System_Obs_enum_t::counts_per_bin) ] ), &( total_energy_histogram_obs_t[bin] ), 1, MPI_OBS_TYPE, MPI_SUM, window_communicators[ comm_id ] );
+        if ( my_world_rank == 2 || my_world_rank == 3 )
+            printf("\nID %d: counts[%ld] = %ld, total_counts[%ld] = %e", my_world_rank, bin, my_walker -> wl_walker.wl_histograms.histograms[bin].count, bin, total_energy_histogram_obs_t[bin]);
+    }
+    printf("\n");
 
     // Use this to compute this walker's weights
-    LOGDOS_TYPE * logdos_weights = new LOGDOS_TYPE [ num_bins ];
-    OBS_TYPE    * obs_weights    = new OBS_TYPE    [ num_bins * convert(System_Obs_enum_t::NUM_OBS) ];
+    LOGDOS_TYPE * logdos_weights = new LOGDOS_TYPE [ num_bins ] ();
+    OBS_TYPE    * obs_weights    = new OBS_TYPE    [ num_bins * convert(System_Obs_enum_t::NUM_OBS) ] ();
     for ( size_t bin = 0; bin != num_bins; ++bin )
     {
-        LOGDOS_TYPE weight = static_cast<LOGDOS_TYPE>( my_walker -> wl_walker.wl_histograms.histograms[bin].count ) / static_cast<LOGDOS_TYPE>( total_energy_histogram[bin] );
+        LOGDOS_TYPE weight = 0.;
+        if (simulation_incomplete)
+            weight = static_cast<LOGDOS_TYPE>( my_walker -> wl_walker.wl_histograms.histograms[bin].count ) / static_cast<LOGDOS_TYPE>( total_energy_histogram[bin] );
+        else
+        {
+            weight = static_cast<LOGDOS_TYPE>( my_walker -> system_obs.obs_array[bin * convert(System_Obs_enum_t::NUM_OBS) + convert(System_Obs_enum_t::counts_per_bin)] ) / static_cast<LOGDOS_TYPE>( total_energy_histogram_obs_t[bin] );
+            printf("\nID %d: my counts[%ld] = %e, total counts[%ld] = %e, weight = %e", my_world_rank, bin, 
+                                                                my_walker -> system_obs.obs_array[bin * convert(System_Obs_enum_t::NUM_OBS) + convert(System_Obs_enum_t::counts_per_bin)],
+                                                                bin, total_energy_histogram_obs_t[bin], weight );
+        }
+        
+        printf("\nID = %d: bin %ld weight = %e", my_world_rank, bin, weight);
         logdos_weights[bin] = weight * ( my_walker -> wl_walker.wl_histograms.histograms[bin].logdos );
+        if ( my_world_rank == 2 || my_world_rank == 3 )
+            printf("\nID = %d: logdos_weights[%ld] = %e", my_world_rank, bin, logdos_weights[bin]);
 
         for ( size_t ob = 0; ob != convert(System_Obs_enum_t::NUM_OBS); ++ob )
         {
@@ -346,6 +374,7 @@ void REWL_simulation::average_and_redistribute_window( const int * const my_comm
     }
 
     delete [] total_energy_histogram;
+    delete [] total_energy_histogram_obs_t;
     delete [] logdos_weights;
     delete [] obs_weights;
 }
@@ -431,7 +460,7 @@ void REWL_simulation::simulate(
             my_walker -> wl_walker.wl_histograms.print_histogram_counts(iteration_counter, histogram_path);
 #endif
             // If the window is flat, average the logdos and observables
-            average_and_redistribute_window( my_comm_ids, window_communicators );
+            average_and_redistribute_window( simulation_incomplete, my_comm_ids, window_communicators );
 
             // Reset only the energy histogram and leave
             // the logdos alone.
@@ -521,7 +550,7 @@ void REWL_simulation::simulate(
     // Finally average the results within a single window
     // Only the 0-processor in each window will communicate 
     // with the master processor at the end
-    average_and_redistribute_window( my_comm_ids, window_communicators ); 
+    average_and_redistribute_window( simulation_incomplete, my_comm_ids, window_communicators ); 
 }
 #endif
 

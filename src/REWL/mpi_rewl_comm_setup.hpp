@@ -80,7 +80,7 @@ int get_local_comm_ID( const int my_world_rank, const int which_comm, const int 
 void define_window_communicators( const int num_procs, const int replicas_per_window, const MPI_Group & World,
                                   MPI_Group * window_groups, MPI_Comm * window_communicators )
 {
-    int * ranks = new int [ replicas_per_window ];
+    int * ranks = new int [ replicas_per_window ] ();
     const int num_window_comms = num_procs / replicas_per_window;
 
     for ( int comm = 0; comm != num_window_comms; ++comm )
@@ -100,7 +100,7 @@ void define_window_communicators( const int num_procs, const int replicas_per_wi
 void create_local_groups_and_communicators( const int num_procs, const int replicas_per_window, const MPI_Group & World,
                                             MPI_Group * local_group, MPI_Comm * local_communicators )
 {
-    int * ranks = new int [ 2 * replicas_per_window ];
+    int * ranks = new int [ 2 * replicas_per_window ] ();
     int num_local_comms = ( num_procs / replicas_per_window ) - 1;
 
     for ( int comm = 0; comm != num_local_comms; ++comm )

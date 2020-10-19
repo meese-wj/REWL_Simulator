@@ -112,8 +112,17 @@ int main(int argc, char * argv[])
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Find out which ranks are 0-processors
-    int * window_ids = new int [ world_size ];
+    int * window_ids      = new int [ world_size ] ();
+    int * window_comm_ids = new int [ world_size ] ();
     MPI_Gather( &( my_ids_per_comm[ Communicators::window_comm ] ), 1, MPI_INT, window_ids, 1, MPI_INT, REWL_MASTER_PROC, MPI_COMM_WORLD );
+    MPI_Gather( &( my_comm_ids[ Communicators::window_comm ] ), 1, MPI_INT, window_comm_ids, 1, MPI_INT, REWL_MASTER_PROC, MPI_COMM_WORLD );
+    for ( size_t replica = 0; replica != static_cast<size_t>(world_size); ++replica )
+        printf("\nwindow_ids[%ld] = %d", replica, window_ids[replica]);
+
+    printf("\nID %d LogDoS:\n", world_rank);
+    for ( size_t bin = 0; bin != final_num_bins; ++bin )
+        printf("%e  ", final_logdos_array[bin]);
+    printf("\n");
     
     if ( world_rank == REWL_MASTER_PROC )
     {
@@ -130,9 +139,9 @@ int main(int argc, char * argv[])
         /* ****************************************************************************** */
 
         // Send arrays to master for concatenation
-        table<ENERGY_TYPE> energy_table  ( world_size );
-        table<LOGDOS_TYPE> logdos_table  ( world_size );
-        table<OBS_TYPE> observable_table ( world_size );
+        table<ENERGY_TYPE> energy_table  ( world_size / REWL_Parameters::replicas_per_window );
+        table<LOGDOS_TYPE> logdos_table  ( world_size / REWL_Parameters::replicas_per_window );
+        table<OBS_TYPE> observable_table ( world_size / REWL_Parameters::replicas_per_window );
 
         energy_table[ world_rank ] = std::vector<ENERGY_TYPE> ( final_energy_array, final_energy_array + final_num_bins ); 
         logdos_table[ world_rank ] = std::vector<LOGDOS_TYPE> ( final_logdos_array, final_logdos_array + final_num_bins );
@@ -143,13 +152,20 @@ int main(int argc, char * argv[])
             // Only communicate with 0-processors per window
             if ( proc != world_rank && window_ids[proc] == 0 )
             {
+                int window_idx = window_comm_ids[ proc ];
+                printf("\nproc = %d, window id = %d", proc, window_idx);
                 MPI_Status status; 
-                mpi_recv_array_to_vector<ENERGY_TYPE>( proc, energy_table[proc], MPI_FLOAT, final_energy_tag, MPI_COMM_WORLD, &status );
-                mpi_recv_array_to_vector<LOGDOS_TYPE>( proc, logdos_table[proc], MPI_LOGDOS_TYPE, final_logdos_tag, MPI_COMM_WORLD, &status );
-                mpi_recv_array_to_vector<OBS_TYPE>( proc, observable_table[proc], MPI_OBS_TYPE, final_obs_tag, MPI_COMM_WORLD, &status );
+                mpi_recv_array_to_vector<ENERGY_TYPE>( proc,  energy_table[window_idx], MPI_FLOAT, final_energy_tag, MPI_COMM_WORLD, &status );
+                mpi_recv_array_to_vector<LOGDOS_TYPE>( proc,  logdos_table[window_idx], MPI_LOGDOS_TYPE, final_logdos_tag, MPI_COMM_WORLD, &status );
+                mpi_recv_array_to_vector<OBS_TYPE>( proc, observable_table[window_idx], MPI_OBS_TYPE, final_obs_tag, MPI_COMM_WORLD, &status );
+
+                for ( size_t bin = 0, num_bins = energy_table[ proc / REWL_Parameters::replicas_per_window ].size(); bin != num_bins; ++bin )
+                {
+                    printf("\nenergy[%ld] = %e, logdos[%ld] = %e", bin, energy_table[proc / REWL_Parameters::replicas_per_window][bin], bin, logdos_table[proc / REWL_Parameters::replicas_per_window][bin]);
+                }
             }
         }
- 
+
         std::vector<ENERGY_TYPE> final_energy_vector;
         std::vector<LOGDOS_TYPE> final_logdos_vector;
         std::vector<OBS_TYPE>    final_observable_vector;
