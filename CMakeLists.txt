@@ -15,6 +15,7 @@ option(REDUCE_LOGDOS "Truncate the logDoS after each iteration to heighten numer
 option(SAMPLE_AFTER "Sample observables after one round of WL updates" OFF)
 option(TRAPEZOIDAL_RULE "Use trapezoidal rule to evaluate the thermodynamical integrals" ON)
 option(INDEPENDENT_WALKERS "Do not allow for exchange or for intra-window walkers to average" OFF)
+option(DIFFERENT_SEEDS "Use timings to set the seeds for the walkers." ON)
 
 # Add compile-time options to specify the Hamiltonian
 option(ISING2D "Run a 2d Ising model on a periodic square lattice." ON)
