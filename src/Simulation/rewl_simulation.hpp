@@ -27,12 +27,15 @@ struct REWL_simulation
     
     REWL_Walker<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE, histogram_index<ENERGY_TYPE> > * my_walker = nullptr;
 
+    OBS_TYPE * old_counts = nullptr;
+
     REWL_simulation();
 
     ~REWL_simulation()
-    { 
-        if (window_maker != nullptr) delete window_maker;
-        if (my_walker != nullptr) delete my_walker;
+    {
+        delete window_maker;
+        delete my_walker;
+        delete [] old_counts;
     }
 
 #ifndef INDEPENDENT_WALKERS
@@ -87,6 +90,8 @@ REWL_simulation::REWL_simulation()
 
     my_walker = new REWL_Walker<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE, histogram_index<ENERGY_TYPE> >
                 (walker_min, walker_max, walker_bin_size, walker_num_bins, walker_seed);
+
+    old_counts = new OBS_TYPE [ walker_num_bins ] ();
 }
 
 #if INDEPENDENT_WALKERS /* This will not turn on replica exchange */
@@ -300,6 +305,12 @@ void REWL_simulation::replica_exchange_update( int & exchange_direction, const s
     exchange_direction = ( exchange_direction == Communicators::even_comm ? Communicators::odd_comm : Communicators::even_comm );
 }
 
+// Get the counts per bin index
+inline size_t counts_index( const size_t bin )
+{
+    return bin * convert(System_Obs_enum_t::NUM_OBS) + convert(System_Obs_enum_t::counts_per_bin);
+}
+
 // Compute the weighted average in a window and redistribute
 void REWL_simulation::average_and_redistribute_window( const bool simulation_incomplete, const int * const my_comm_ids, MPI_Comm * const window_communicators ) const
 {
@@ -317,15 +328,11 @@ void REWL_simulation::average_and_redistribute_window( const bool simulation_inc
 
     for ( size_t bin = 0; bin != num_bins; ++bin )
     {
-        //printf("\nID %d: counts[%ld] = %ld, total_counts[%ld] = %ld", my_world_rank, bin, my_walker -> wl_walker.wl_histograms.histograms[bin].count, bin, total_energy_histogram[bin]);
         if ( simulation_incomplete )
             MPI_Allreduce( &( my_walker -> wl_walker.wl_histograms.histograms[bin].count ), &( total_energy_histogram[bin] ), 1, MPI_UNSIGNED, MPI_SUM, window_communicators[ comm_id ] );
         else
-            MPI_Allreduce( &( my_walker -> system_obs.obs_array[ bin * convert(System_Obs_enum_t::NUM_OBS) + convert(System_Obs_enum_t::counts_per_bin) ] ), &( total_energy_histogram_obs_t[bin] ), 1, MPI_OBS_TYPE, MPI_SUM, window_communicators[ comm_id ] );
-        if ( my_world_rank == 2 || my_world_rank == 3 )
-            printf("\nID %d: counts[%ld] = %ld, total_counts[%ld] = %e", my_world_rank, bin, my_walker -> wl_walker.wl_histograms.histograms[bin].count, bin, total_energy_histogram_obs_t[bin]);
+            MPI_Allreduce( &( my_walker -> system_obs.obs_array[ counts_index(bin) ] ), &( total_energy_histogram_obs_t[bin] ), 1, MPI_OBS_TYPE, MPI_SUM, window_communicators[ comm_id ] ); 
     }
-    printf("\n");
 
     // Use this to compute this walker's weights
     LOGDOS_TYPE * logdos_weights = new LOGDOS_TYPE [ num_bins ] ();
@@ -336,25 +343,23 @@ void REWL_simulation::average_and_redistribute_window( const bool simulation_inc
         if (simulation_incomplete)
             weight = static_cast<LOGDOS_TYPE>( my_walker -> wl_walker.wl_histograms.histograms[bin].count ) / static_cast<LOGDOS_TYPE>( total_energy_histogram[bin] );
         else
-        {
-            weight = static_cast<LOGDOS_TYPE>( my_walker -> system_obs.obs_array[bin * convert(System_Obs_enum_t::NUM_OBS) + convert(System_Obs_enum_t::counts_per_bin)] ) / static_cast<LOGDOS_TYPE>( total_energy_histogram_obs_t[bin] );
-            printf("\nID %d: my counts[%ld] = %e, total counts[%ld] = %e, weight = %e", my_world_rank, bin, 
-                                                                my_walker -> system_obs.obs_array[bin * convert(System_Obs_enum_t::NUM_OBS) + convert(System_Obs_enum_t::counts_per_bin)],
-                                                                bin, total_energy_histogram_obs_t[bin], weight );
-        }
-        
-        printf("\nID = %d: bin %ld weight = %e", my_world_rank, bin, weight);
+            weight = static_cast<LOGDOS_TYPE>( my_walker -> system_obs.obs_array[ counts_index(bin) ] ) / static_cast<LOGDOS_TYPE>( total_energy_histogram_obs_t[bin] );
+         
         logdos_weights[bin] = weight * ( my_walker -> wl_walker.wl_histograms.histograms[bin].logdos );
-        if ( my_world_rank == 2 || my_world_rank == 3 )
-            printf("\nID = %d: logdos_weights[%ld] = %e", my_world_rank, bin, logdos_weights[bin]);
 
         for ( size_t ob = 0; ob != convert(System_Obs_enum_t::NUM_OBS); ++ob )
         {
             obs_weights[ bin * convert(System_Obs_enum_t::NUM_OBS) + ob ] = my_walker -> system_obs.obs_array[ bin * convert(System_Obs_enum_t::NUM_OBS) + ob ];
             // Just sum the counts like normal
-            if ( ob != convert(System_Obs_enum_t::counts_per_bin) )
+            if ( ob != convert(System_Obs_enum_t::counts_per_bin ) )
                obs_weights[ bin * convert(System_Obs_enum_t::NUM_OBS) + ob ] *= static_cast<OBS_TYPE>(weight); 
-        } 
+            else
+            {
+                // Subtract out the old counts so only the new counts 
+                // from the last iteration are counted
+                obs_weights[ counts_index(bin) ] -= old_counts[bin]; 
+            }
+        }  
     }
 
     // Break up the reductions for better memory management
@@ -370,6 +375,13 @@ void REWL_simulation::average_and_redistribute_window( const bool simulation_inc
         {
             const size_t ob_index = bin * convert(System_Obs_enum_t::NUM_OBS) + ob;
             MPI_Allreduce( &( obs_weights[ob_index] ), &( my_walker -> system_obs.obs_array[ob_index] ), 1, MPI_OBS_TYPE, MPI_SUM, window_communicators[ comm_id ] );
+            if ( ob == convert(System_Obs_enum_t::counts_per_bin) )
+            {
+                // Add back the old counts
+                my_walker -> system_obs.obs_array[ob_index] += old_counts[bin];
+                // Record the current counts in the old counts now
+                old_counts[bin] = my_walker -> system_obs.obs_array[ob_index];
+            }
         }
     }
 
