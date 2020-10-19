@@ -72,6 +72,10 @@ if (TRAPEZOIDAL_RULE)
     add_definitions(-DTRAPEZOIDAL_RULE)
 endif()
 
+if (DIFFERENT_SEEDS)
+    add_definitions(-DDIFFERENT_SEEDS)
+endif()
+
 add_subdirectory(src)
 
 if (MPI_ON AND MPI_CXX_FOUND)

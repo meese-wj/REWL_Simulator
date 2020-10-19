@@ -85,8 +85,12 @@ REWL_simulation::REWL_simulation()
     ENERGY_TYPE walker_bin_size = window_maker -> all_windows[my_world_rank].bin_size;
     size_t walker_num_bins = window_maker -> all_windows[my_world_rank].num_bins;
 
-    // TODO: Set up the timer as the seed.
-    std::uint32_t walker_seed = static_cast<std::uint32_t> (1);
+#if DIFFERENT_SEEDS
+    std::uint64_t walker_seed = static_cast<std::uint64_t>( std::chrono::high_resolution_clock::now().time_since_epoch().count() );
+    printf("\nID %d: time %lu", my_world_rank, walker_seed);
+#else
+    std::uint64_t walker_seed = static_cast<std::uint64_t> (1);
+#endif
 
     my_walker = new REWL_Walker<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE, histogram_index<ENERGY_TYPE> >
                 (walker_min, walker_max, walker_bin_size, walker_num_bins, walker_seed);
