@@ -234,6 +234,44 @@ void Ashkin_Teller2d<data_t>::print_lattice() const
     }
 }
 
+#if MPI_ON
+#ifndef INDEPENDENT_WALKERS
+#include <rewl_parameters.hpp>   // Include this for my MPI datatype macros
+
+enum State_SendRecv
+{
+    energy = 444, sigma_mag, tau_mag, nem, state_dof, all_dof
+};
+
+// TODO: This should be specialized because it will break probably
+template<class state_t>
+void mpi_exchange_state( state_t * const state, const int partner_index, const int comm_id, const MPI_Comm * const local_communicators, MPI_Status * const status  )
+{
+    MPI_Sendrecv_replace( &( state -> energy  ), 1, MPI_ENERGY_TYPE, partner_index, State_SendRecv::energy, partner_index, State_SendRecv::energy, local_communicators[ comm_id  ], status  );
+
+    MPI_Sendrecv_replace( &( state -> sigma_magnetization  ), 1, MPI_OBS_TYPE, partner_index, State_SendRecv::sigma_mag, partner_index, State_SendRecv::sigma_mag, local_communicators[ comm_id  ], status  );
+
+    MPI_Sendrecv_replace( &( state -> tau_magnetization  ), 1, MPI_OBS_TYPE, partner_index, State_SendRecv::tau_mag, partner_index, State_SendRecv::tau_mag, local_communicators[ comm_id  ], status  );
+    
+    MPI_Sendrecv_replace( &( state -> nematicity  ), 1, MPI_OBS_TYPE, partner_index, State_SendRecv::nem, partner_index, State_SendRecv::nem, local_communicators[ comm_id  ], status  );
+    
+    MPI_Sendrecv_replace( &( state -> DoF ), static_cast<int>(spin_type::NUM_SPIN_TYPES), MPI_OBS_TYPE, partner_index, State_SendRecv::state_dof, partner_index, State_SendRecv::state_dof, local_communicators[ comm_id  ], status  );
+
+}
+
+template<typename obs_t>
+void mpi_exchange_DoFs( obs_t * const front_dofs, const size_t num_dof, const int partner_index, const int comm_id, const MPI_Comm * const local_communicators, MPI_Status * const status  );
+
+// Specialize this templated functions
+template<>
+void mpi_exchange_DoFs<OBS_TYPE>( OBS_TYPE * const front_dofs, const size_t num_dof, const int partner_index, const int comm_id, const MPI_Comm * const local_communicators, MPI_Status * const status  )
+{
+    MPI_Sendrecv_replace( front_dofs, static_cast<int>(num_dof), MPI_OBS_TYPE, partner_index, State_SendRecv::all_dof, partner_index, State_SendRecv::all_dof, local_communicators[ comm_id  ], status  );
+}
+
+#endif
+#endif
+
 #endif
 
 
