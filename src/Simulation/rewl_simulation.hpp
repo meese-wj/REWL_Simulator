@@ -438,7 +438,12 @@ void REWL_simulation::simulate(
     //int we_all_sample_observables = 0;
     bool reset_incrementer = true;
 #endif
-    int i_am_done = 0;           // Integer to store whether this processor is finished
+    int i_am_done = 0;                         // Integer to store whether this processor is finished
+    int * individuals_done = nullptr;          // Array to house which processes are done before broadcasting
+    if ( my_world_rank == REWL_MASTER_PROC )  
+        individuals_done = new int [REWL_Parameters::num_walkers];
+    bool print_slowpokes = false;
+
     constexpr size_t rewl_updates_per_check = REWL_Parameters::sweeps_per_check / REWL_Parameters::sweeps_per_exchange;
     
     while (simulation_incomplete)
@@ -482,12 +487,14 @@ void REWL_simulation::simulate(
             // the logdos alone.
 
             my_walker -> wl_walker.reset_histogram();
-
-            printf("\nID %d: incrementer before = %e", my_world_rank, my_walker -> incrementer);
+            
+            if ( my_world_rank == REWL_MASTER_PROC )
+                printf("\nID %d: incrementer before = %e", my_world_rank, my_walker -> incrementer);
             // TODO: Generalize to 1/t algorithm.
             my_walker -> incrementer *= 0.5;
 
-            printf("\nID %d: incrementer after = %e", my_world_rank, my_walker -> incrementer);
+            if ( my_world_rank == REWL_MASTER_PROC )
+                printf("\nID %d: incrementer after = %e", my_world_rank, my_walker -> incrementer);
             
 #if SAMPLE_AFTER
             if ( my_walker -> incrementer < REWL_Parameters::final_increment )
@@ -517,13 +524,17 @@ void REWL_simulation::simulate(
 #endif
 
 #if COLLECT_TIMINGS
+            print_slowpokes = true;
             timer = std::chrono::high_resolution_clock::now();
             std::chrono::duration<float> time_elapsed = timer - iteration_start;
-            printf("\n\n\nID %d: Iteration %ld complete after %e seconds.", my_world_rank, iteration_counter, time_elapsed.count());
-            printf("\nID %d: Total Sweeps = %ld = %e Wang Landau Updates.", my_world_rank, sweep_counter, static_cast<float>(sweep_counter * System_Parameters::N) );
-            printf("\nID %d: Sweep rate  = %e sweeps per second", my_world_rank, static_cast<float>(sweep_counter)/time_elapsed.count());
-            printf("\nID %d: Update rate = %e updates per second", my_world_rank, static_cast<float>(sweep_counter * System_Parameters::N)/time_elapsed.count());
-            fflush(stdout);
+            if ( my_world_rank == REWL_MASTER_PROC )
+            {
+                printf("\n\n\nID %d: Iteration %ld complete after %e seconds.", my_world_rank, iteration_counter, time_elapsed.count());
+                printf("\nID %d: Total Sweeps = %ld = %e Wang Landau Updates.", my_world_rank, sweep_counter, static_cast<float>(sweep_counter * System_Parameters::N) );
+                printf("\nID %d: Sweep rate  = %e sweeps per second", my_world_rank, static_cast<float>(sweep_counter)/time_elapsed.count());
+                printf("\nID %d: Update rate = %e updates per second", my_world_rank, static_cast<float>(sweep_counter * System_Parameters::N)/time_elapsed.count());
+                fflush(stdout);
+            }
             iteration_start = std::chrono::high_resolution_clock::now();
 #endif
 
@@ -546,10 +557,34 @@ void REWL_simulation::simulate(
 #endif
         
         // Throw up a barrier to check if the simulation is over
-        int completed_reduction = 0;
+        int completed_reduction = 1;
         MPI_Barrier(MPI_COMM_WORLD);
-        MPI_Allreduce( &i_am_done, &completed_reduction, 1, MPI_INT, MPI_PROD, MPI_COMM_WORLD );
-        
+        //MPI_Allreduce( &i_am_done, &completed_reduction, 1, MPI_INT, MPI_PROD, MPI_COMM_WORLD );
+
+        // Gather all the i am dones from everyone
+        MPI_Gather( &i_am_done, 1, MPI_INT, individuals_done, 1, MPI_INT, REWL_MASTER_PROC, MPI_COMM_WORLD );
+
+        if ( my_world_rank == REWL_MASTER_PROC )
+        {
+            if ( print_slowpokes )
+                printf("\n\nWaiting on walkers:\n\t");
+            for ( int wdx = 0; wdx != REWL_Parameters::num_walkers; ++wdx )
+            {
+                completed_reduction *= individuals_done[wdx];
+                if ( print_slowpokes && individuals_done[wdx] == 0 )
+                    printf("%d%s", wdx, wdx == REWL_Parameters::num_walkers - 1 ? "\n" : ", ");
+            }
+            if ( print_slowpokes )
+            {
+                printf("\n");
+                print_slowpokes = false;    
+            }
+        }
+
+        // Distribute the result
+        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Bcast( &completed_reduction, 1, MPI_INT, REWL_MASTER_PROC, MPI_COMM_WORLD );
+ 
         if ( completed_reduction == 1 )
             simulation_incomplete = false;
         else
@@ -557,10 +592,13 @@ void REWL_simulation::simulate(
 
     }
 
+    delete [] individuals_done;
+
 #if COLLECT_TIMINGS
             timer = std::chrono::high_resolution_clock::now();
             std::chrono::duration<float> simulation_time = timer - start;
-            printf("\n\nID %d: Total Simulation Time: %e seconds.", my_world_rank, simulation_time.count());
+            if ( my_world_rank == REWL_MASTER_PROC )
+                printf("\n\nID %d: Total Simulation Time: %e seconds.", my_world_rank, simulation_time.count());
 #endif
 
     // Finally average the results within a single window
