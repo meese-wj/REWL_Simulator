@@ -26,8 +26,28 @@ int main(int argc, char * argv[])
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
+    /* ****************************************************************************** */
+    /* Set up the file system for this simulation.                                    */
+    /* ****************************************************************************** */
+    
     // Grab today's date at the start of the simulation
     std::string todays_date = get_todays_date();
+    
+    System_Strings sys_strings = System_Strings();
+    REWL_Parameter_String rewl_strings = REWL_Parameter_String();
+    std::filesystem::path data_path;
+    std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
+    if ( world_rank == REWL_MASTER_PROC )
+    {
+        std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
+        std::cout << "\n**************************************************************************************\n";
+        std::cout << "\n" << todays_date << "\n\n" << data_file_header; 
+        std::cout << "\n**************************************************************************************\n";
+        data_path = create_output_path( sys_strings.model_name, todays_date, sys_strings.size_string ); 
+    }
+
+    /* ****************************************************************************** */
+    MPI_Barrier(MPI_COMM_WORLD);
 
 #ifndef INDEPENDENT_WALKERS
     /* **************************************************************************** */
@@ -124,18 +144,7 @@ int main(int argc, char * argv[])
     if ( world_rank == REWL_MASTER_PROC )
     {
 
-        /* ****************************************************************************** */
-        /* Set up the file system for this simulation.                                    */
-        /* ****************************************************************************** */
-        
-        System_Strings sys_strings = System_Strings();
-        REWL_Parameter_String rewl_strings = REWL_Parameter_String();
-        std::filesystem::path data_path = create_output_path( sys_strings.model_name, todays_date, sys_strings.size_string ); 
-        std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
- 
-        /* ****************************************************************************** */
-
-        // Send arrays to master for concatenation
+                // Send arrays to master for concatenation
         table<ENERGY_TYPE> energy_table  ( world_size / REWL_Parameters::replicas_per_window );
         table<LOGDOS_TYPE> logdos_table  ( world_size / REWL_Parameters::replicas_per_window );
         table<OBS_TYPE> observable_table ( world_size / REWL_Parameters::replicas_per_window );

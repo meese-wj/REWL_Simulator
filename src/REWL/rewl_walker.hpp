@@ -91,7 +91,6 @@ REWL_Walker<energy_t,
 #endif 
 
     bool in_range = hist_idx.energy_in_range(system.current_state.energy);
-    printf("\nID %d: current energy = %e, in_range = %s\n", walker_world_rank, system.current_state.energy, ( in_range ? "true" : "false" ));
     while ( !in_range )
     {
         size_t site = static_cast<size_t>( random() * System_Parameters::N );
@@ -106,7 +105,6 @@ REWL_Walker<energy_t,
         in_range = hist_idx.energy_in_range(system.current_state.energy);
         //printf("\nID %d: current energy = %e, in_range = %s\n", walker_world_rank, system.current_state.energy, ( in_range ? "true" : "false" ));
     }
-    printf("\nID %d: current energy = %e, in_range = %s\n", walker_world_rank, system.current_state.energy, ( in_range ? "true" : "false" ));
 #if MPI_ON
     MPI_Barrier(MPI_COMM_WORLD);
 #endif

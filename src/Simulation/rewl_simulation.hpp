@@ -86,8 +86,8 @@ REWL_simulation::REWL_simulation()
     size_t walker_num_bins = window_maker -> all_windows[my_world_rank].num_bins;
 
 #if DIFFERENT_SEEDS
+    // TODO: How can I guarantee that the seeds are different?
     std::uint64_t walker_seed = static_cast<std::uint64_t>( std::chrono::high_resolution_clock::now().time_since_epoch().count() );
-    printf("\nID %d: time %lu", my_world_rank, walker_seed);
 #else
     std::uint64_t walker_seed = static_cast<std::uint64_t> (1);
 #endif
