@@ -17,6 +17,6 @@ std::string get_todays_date();
 void create_directory( const std::string & path_to_dir );
 
 // Build the output file path and return it
-std::filesystem::path create_output_path( const std::string & model_name, const std::string & size_string );
+std::filesystem::path create_output_path( const std::string & model_name, const std::string & todays_date, const std::string & size_string );
 
 #endif

@@ -21,9 +21,13 @@ int main(int argc, char * argv[])
             printf("\nThis simulation %s takes no command line arguments.", argv[0]);
             printf("\nReturning error value.\n\n");
         }
+        MPI_Finalize();
         return 1;
     }
     MPI_Barrier(MPI_COMM_WORLD);
+
+    // Grab today's date at the start of the simulation
+    std::string todays_date = get_todays_date();
 
 #ifndef INDEPENDENT_WALKERS
     /* **************************************************************************** */
@@ -126,7 +130,7 @@ int main(int argc, char * argv[])
         
         System_Strings sys_strings = System_Strings();
         REWL_Parameter_String rewl_strings = REWL_Parameter_String();
-        std::filesystem::path data_path = create_output_path( sys_strings.model_name, sys_strings.size_string ); 
+        std::filesystem::path data_path = create_output_path( sys_strings.model_name, todays_date, sys_strings.size_string ); 
         std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
  
         /* ****************************************************************************** */
