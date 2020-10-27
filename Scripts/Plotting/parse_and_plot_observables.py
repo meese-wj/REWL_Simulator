@@ -110,7 +110,7 @@ def plot_probability_density( model_name, data_file_stem, coupling_string, coupl
         ax.plot( data_tuples[Ldx][1][:,0], Nfloat * density, label = r"$L = %s$" % Lvalue )
 
     # Set xlim
-    ax.set_xlim([-1.55,-1.25])
+    # ax.set_xlim([-1.55,-1.25])
 
     ax.set_xlabel(r"Energy per Site $[E/N]$", fontsize = 12)
     ax.set_ylabel(r"Probability Density $[N\cdot E^{-1}]$", fontsize = 12)

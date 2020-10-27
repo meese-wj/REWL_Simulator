@@ -87,6 +87,8 @@ struct Ashkin_Teller2d
     }
 
     void print_lattice() const;
+
+    data_t * get_front_DoFs() const { return spin_array; }
 };
 
 template<typename data_t>

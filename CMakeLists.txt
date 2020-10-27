@@ -18,8 +18,8 @@ option(INDEPENDENT_WALKERS "Do not allow for exchange or for intra-window walker
 option(DIFFERENT_SEEDS "Use timings to set the seeds for the walkers." ON)
 
 # Add compile-time options to specify the Hamiltonian
-option(ISING2D "Run a 2d Ising model on a periodic square lattice." ON)
-option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice." OFF)
+option(ISING2D "Run a 2d Ising model on a periodic square lattice." OFF)
+option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice." ON)
 
 # *********************************************************************
 # Add consequences of the options below.
