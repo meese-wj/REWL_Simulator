@@ -72,6 +72,58 @@ def collect_observables_and_data( data_file_stem, observable_marker, coupling_sy
 
     return labels, data_tuples
 
+# Plot the probability density as functions of energy at a fixed temperature
+def plot_probability_density( model_name, data_file_stem, coupling_string, coupling_value, labels, data_tuples, plot_directory, Tc_val = None ):
+
+    xlabel = labels[0]
+    key_string = coupling_string + " = " + "%.3f" % float(coupling_value)
+
+    fig, ax = plt.subplots(1,1)
+
+    for Ldx in range(0, len(data_tuples)):
+
+        Lvalue = data_tuples[Ldx][0]
+        Lfloat = float(Lvalue)
+
+        # TODO: This will break in higher dimensions
+        Nfloat = Lfloat ** 2
+
+        extensive_energy = Nfloat * data_tuples[Ldx][1][:,0]
+        extensive_logdos = Nfloat * data_tuples[Ldx][1][:,1]
+
+        # Find the exponent of the probability density
+        exponent = extensive_logdos - extensive_energy / float(Tc_val)
+
+        # Normalize it by its maximum
+        exponent -= np.max(exponent)
+
+        # Find the partition function
+        partition = np.sum( np.exp( exponent ) )
+
+        # Find the probability density as a function
+        # of the extensive energy
+        density = np.exp( exponent ) / partition
+
+
+        # Rescale it by N to plot the normalized
+        # density along the intensive energy axis
+        ax.plot( data_tuples[Ldx][1][:,0], Nfloat * density, label = r"$L = %s$" % Lvalue )
+
+    # Set xlim
+    ax.set_xlim([-1.55,-1.25])
+
+    ax.set_xlabel(r"Energy per Site $[E/N]$", fontsize = 12)
+    ax.set_ylabel(r"Probability Density $[N\cdot E^{-1}]$", fontsize = 12)
+    ax.legend(fontsize = 10)
+
+    ax.set_title(model_name + " at $T_c = %s$: " % (Tc_val) + key_string, fontsize = 12)
+
+    plotname = "%s" % ("probability density vs energy.png")
+    plt.savefig(plot_directory + "/" + plotname)
+
+    plt.close()
+
+
 def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_value, labels, data_tuples, plot_directory, Tc_val = None ):
 
     xlabel = labels[0]
@@ -94,6 +146,8 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
                 #epsilon_range = 0.025
                 #ax.set_xlim([(1 - epsilon_range) * float(Tc_val), (1 + epsilon_range) * float(Tc_val)])
                 ax.plot( float(Tc_val) + 0. * np.linspace(0,1,10), ymin + (ymax - ymin) * np.linspace(0,1,10), color = "gray", lw = 1, ls = "dashed", label = r"$T_c = %s$" % Tc_val )
+            elif "microcanonical" in data_file_stem and lbl == 1:
+                plot_probability_density( model_name, data_file_stem, coupling_string, coupling_value, labels, data_tuples, plot_directory, Tc_val )
 
         ax.set_ylim([ymin, ymax])
 
