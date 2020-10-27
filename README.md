@@ -8,6 +8,9 @@ actual algorithm itself.
 ## Code Basics
 The goal for this code base is for it to be written in `C++` and built with `cmake` across different platforms. Currently it has only been tested on Linux systems. This section will be updated as more of the code is developed.
 
+## System Requirements
+The code base requires the `std::filesystem` which was officially adopted in the `C++17` standard. It is recommended that a recent enough compiler is used, or else pieces of the `filesystem` will be scattered through the standard library in `iomanip` and `std::experimental::filesystem`, and so the compilation with `make` will fail. On Intel 64-bit systems, successful compilation is achieved with `GNU 9.x` and `OpenMPI 4.x` or newer.
+
 ### Code Installation
 First, clone this repo directly. Suppose the relative path to the clone is then `repo_path`. Then `cd` into that directory as `cd repo_path`. Next create a build directory within the cloned source. _It is not recommended to build in-source!_ From the Unix terminal, execute the following
 ```bash 
