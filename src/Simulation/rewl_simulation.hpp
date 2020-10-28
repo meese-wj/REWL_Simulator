@@ -78,12 +78,16 @@ REWL_simulation::REWL_simulation()
                          static_cast<ENERGY_TYPE>(REWL_Parameters::window_overlap));
 
     window_maker -> construct_windows();
+    printf("\nhere\n");
 
     // Construct the walker
     ENERGY_TYPE walker_min = window_maker -> all_windows[my_world_rank].minimum;
     ENERGY_TYPE walker_max = window_maker -> all_windows[my_world_rank].maximum;
     ENERGY_TYPE walker_bin_size = window_maker -> all_windows[my_world_rank].bin_size;
     size_t walker_num_bins = window_maker -> all_windows[my_world_rank].num_bins;
+
+    printf("\nID %d: min, max, bin size, num bins = %e, %e, %e, %ld", my_world_rank, walker_min, walker_max, walker_bin_size, walker_num_bins);
+    printf("\n");
 
 #if DIFFERENT_SEEDS
     // TODO: How can I guarantee that the seeds are different?

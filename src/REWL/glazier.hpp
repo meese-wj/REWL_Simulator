@@ -73,24 +73,23 @@ void glazier<data_t, histogram_index_functor>::construct_windows()
     const data_t denom = 1 + (num_windows - 1) * (1 - window_overlap);
     const data_t window_size = (global_max - global_min) / denom;
 
-    data_t window_min = global_min;
-    data_t window_max = global_min + ;
-    size_t window_bins = static_cast<size_t> ( (window_max - window_min) / global_bin_size );
-
     for ( size_t wdx = 0; wdx != num_windows; ++wdx )
     {
         data_t window_min  = global_min + static_cast<data_t>(wdx) * (1 - window_overlap) * window_size;
-        data_t window_max  = window_min + static_cast<data_t>(wdx + 1) * window_size;
+        data_t window_max  = window_min + window_size;
         size_t window_bins = static_cast<size_t> ( (window_max - window_min) / global_bin_size );
+
+        printf("\nwindow = %ld: min = %e, max = %e, num bins = %ld, binsize = %e", wdx, window_min, window_max, window_bins, global_bin_size);
 
         for ( size_t replica = 0; replica != replicas_per_window; ++replica )
         { 
-            all_windows[ replica ].minimum = window_min;
-            all_windows[ replica ].maximum = window_max;
-            all_windows[ replica ].bin_size = global_bin_size;
-            all_windows[ replica ].num_bins = window_bins;
+            all_windows[ wdx * replicas_per_window + replica ].minimum = window_min;
+            all_windows[ wdx * replicas_per_window + replica ].maximum = window_max;
+            all_windows[ wdx * replicas_per_window + replica ].bin_size = global_bin_size;
+            all_windows[ wdx * replicas_per_window + replica ].num_bins = window_bins;
         }
     }
+    printf("\n");
 }
 #else
 template<typename data_t, class histogram_index_functor>

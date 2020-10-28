@@ -19,8 +19,8 @@ option(DIFFERENT_SEEDS "Use timings to set the seeds for the walkers." ON)
 option(EQUAL_WINDOWS "Construct equally-sized windows in REWL." ON)
 
 # Add compile-time options to specify the Hamiltonian
-option(ISING2D "Run a 2d Ising model on a periodic square lattice." OFF)
-option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice." ON)
+option(ISING2D "Run a 2d Ising model on a periodic square lattice." ON)
+option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice." OFF)
 
 # *********************************************************************
 # Add consequences of the options below.
