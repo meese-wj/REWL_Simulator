@@ -91,16 +91,20 @@ REWL_Walker<energy_t,
 #endif 
 
     bool in_range = hist_idx.energy_in_range(system.current_state.energy);
+    size_t site = static_cast<size_t>( random() * System_Parameters::N );
     while ( !in_range )
     {
-        size_t site = static_cast<size_t>( random() * System_Parameters::N );
+	site = ( site == System_Parameters::N - 1 ? 0 : site + 1 );
+
         State_t<obs_t> temporary_state;
         system.change_state(site, temporary_state);
 
+	//printf("\nID %d: current energy = %e, temporary energy = %e", walker_world_rank, system.current_state.energy, temporary_state.energy);
+
         if ( hist_idx.energy_too_low(system.current_state.energy) && temporary_state.energy > system.current_state.energy )
-        system.set_state(site, temporary_state);
+		system.set_state(site, temporary_state);
         else if ( hist_idx.energy_too_high(system.current_state.energy) && temporary_state.energy <= system.current_state.energy )
-        system.set_state(site, temporary_state);
+		system.set_state(site, temporary_state);
 
         in_range = hist_idx.energy_in_range(system.current_state.energy);
         //printf("\nID %d: current energy = %e, in_range = %s\n", walker_world_rank, system.current_state.energy, ( in_range ? "true" : "false" ));
