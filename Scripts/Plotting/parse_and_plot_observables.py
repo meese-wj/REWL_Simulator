@@ -110,7 +110,7 @@ def plot_probability_density( model_name, data_file_stem, coupling_string, coupl
         ax.plot( data_tuples[Ldx][1][:,0], Nfloat * density, label = r"$L = %s$" % Lvalue )
 
     # Set xlim
-    # ax.set_xlim([-1.55,-1.25])
+    ax.set_xlim([-5,-3])
 
     ax.set_xlabel(r"Energy per Site $[E/N]$", fontsize = 12)
     ax.set_ylabel(r"Probability Density $[N\cdot E^{-1}]$", fontsize = 12)
@@ -139,17 +139,18 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
             Lvalue = data_tuples[Ldx][0]
             ax.plot(data_tuples[Ldx][1][:,0], data_tuples[Ldx][1][:,lbl], label = r"$L = %s$" % Lvalue)
 
-        ymin, ymax = ax.get_ylim()
         if Tc_val != None and Tc_val != "":
             if "microcanonical" not in data_file_stem:
                 ax.set_xlim([0, 2 * float(Tc_val)])
-                #epsilon_range = 0.025
-                #ax.set_xlim([(1 - epsilon_range) * float(Tc_val), (1 + epsilon_range) * float(Tc_val)])
+                epsilon_range = 0.025
+                ax.set_xlim([(1 - epsilon_range) * float(Tc_val), (1 + epsilon_range) * float(Tc_val)])
+
+                ymin, ymax = ax.get_ylim()
                 ax.plot( float(Tc_val) + 0. * np.linspace(0,1,10), ymin + (ymax - ymin) * np.linspace(0,1,10), color = "gray", lw = 1, ls = "dashed", label = r"$T_c = %s$" % Tc_val )
+                ax.set_ylim([ymin, ymax])
             elif "microcanonical" in data_file_stem and lbl == 1:
                 plot_probability_density( model_name, data_file_stem, coupling_string, coupling_value, labels, data_tuples, plot_directory, Tc_val )
 
-        ax.set_ylim([ymin, ymax])
 
         ax.set_xlabel(xlabel, fontsize = 12)
         ax.set_ylabel(labels[lbl], fontsize = 12)

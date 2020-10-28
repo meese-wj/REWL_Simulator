@@ -102,11 +102,11 @@ def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_valu
 
     label_string = ""
     if fss_observable == "Specific Heat":
-        label_string = "$c_V \sim t^{-\\alpha},\; \\alpha = %.3f \pm %.3f$" % (fit_scaling[0], errors[0])
-        print("\nSpecific Heat alpha = %.3f +/- %.3f\n" % (fit_scaling[0], errors[0]) )
+        label_string = "$c_V \sim L^{\\alpha/\\nu},\; \\alpha/\\nu = %.3f \pm %.3f$" % (fit_scaling[0], errors[0])
+        print("\nSpecific Heat alpha/nu = %.3f +/- %.3f\n" % (fit_scaling[0], errors[0]) )
     elif fss_observable == "Susceptibility":
-        label_string = "$\chi \sim t^{-\gamma},\; \gamma = %.3f \pm %.3f$" % (fit_scaling[0], errors[0])
-        print("\nSusceptibility gamma = %.3f +/- %.3f\n" % (fit_scaling[0], errors[0]) )
+        label_string = "$\chi \sim L^{\gamma/\\nu},\; \gamma/\\nu = %.3f \pm %.3f$" % (fit_scaling[0], errors[0])
+        print("\nSusceptibility gamma/nu = %.3f +/- %.3f\n" % (fit_scaling[0], errors[0]) )
 
     # Finally Plot the results
     ax.scatter( Lvalues, max_obs, label = None )
