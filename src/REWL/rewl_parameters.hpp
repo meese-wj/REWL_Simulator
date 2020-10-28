@@ -28,7 +28,7 @@ namespace REWL_Parameters
     constexpr size_t sweeps_per_exchange = 10;
     constexpr LOGDOS_TYPE final_increment = 1e-7;
     //constexpr LOGDOS_TYPE final_increment = 0.25;
-    constexpr float flatness_criterion = 0.1;
+    constexpr float flatness_criterion = 0.3;
 }
 
 #endif

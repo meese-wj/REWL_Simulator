@@ -248,7 +248,7 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
                                                                 obs_table[window    ][left_obs_bin + counts_index],
                                                                 obs_table[window + 1][right_obs_bin + counts_index]);
                     else  // Save the total number of measurements in the overlap. Not sure if this is better or worse than averaging?
-                        obs_value = obs_table[window][left_obs_bin + counts_index] + obs_table[window + 1][right_obs_bin + counts_index];
+                        obs_value = 0.5 * ( obs_table[window][left_obs_bin + counts_index] + obs_table[window + 1][right_obs_bin + counts_index] );
 
                     final_obs_values.push_back( obs_value );
                 } 

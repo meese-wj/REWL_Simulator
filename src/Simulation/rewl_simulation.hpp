@@ -40,11 +40,11 @@ struct REWL_simulation
 
 #ifndef INDEPENDENT_WALKERS
 #if SAMPLE_AFTER
-    void replica_exchange_update( int & exchange_direction, const size_t iteration_counter, const bool sample_observables, 
-                                  const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const;
+    size_t replica_exchange_update( int & exchange_direction, const size_t iteration_counter, const bool sample_observables, 
+                                    const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const;
 #else
-    void replica_exchange_update( int & exchange_direction, const size_t iteration_counter, 
-                                  const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const;
+    size_t replica_exchange_update( int & exchange_direction, const size_t iteration_counter, 
+                                    const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const;
 #endif
     void average_and_redistribute_window( const bool simulation_incomplete, const int * my_comm_ids, MPI_Comm * const window_communicators ) const;
     bool check_if_window_is_flat( const int * my_comm_ids, MPI_Comm * const window_communicators ) const;
@@ -198,12 +198,13 @@ void REWL_simulation::simulate(
 #else /* This will turn on replica exchange. */
 
 // Single replica exchange update
-void REWL_simulation::replica_exchange_update( int & exchange_direction, const size_t iteration_counter, 
+size_t REWL_simulation::replica_exchange_update( int & exchange_direction, const size_t iteration_counter, 
 #if SAMPLE_AFTER
                                                const bool sample_observables,
 #endif
                                                const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const
 {
+    size_t ret_val = 0;
     int comm_id = my_comm_ids[ exchange_direction ];
     if ( comm_id != Communicators::NONE )
     {
@@ -292,6 +293,7 @@ void REWL_simulation::replica_exchange_update( int & exchange_direction, const s
 
             if ( we_do_exchange )
             {
+                ret_val = 1;
                 //printf("\n\nID %d = %d EXCHANGED!!\n\n", my_world_rank, my_ids_per_comm[exchange_direction]);
                 // Perform a MPI_Sendrecv_replace on the state and the degrees of freedom
                 mpi_exchange_state<State_t<OBS_TYPE> >( my_walker -> current_state(), partner_index, comm_id, local_communicators, &status );
@@ -311,6 +313,7 @@ void REWL_simulation::replica_exchange_update( int & exchange_direction, const s
 
     // Change the exchange direction
     exchange_direction = ( exchange_direction == Communicators::even_comm ? Communicators::odd_comm : Communicators::even_comm );
+    return ret_val;
 }
 
 // Get the counts per bin index
@@ -434,6 +437,7 @@ void REWL_simulation::simulate(
 
     size_t iteration_counter = 1;
     size_t sweep_counter = 0;
+    size_t exchange_counter = 0;
     bool simulation_incomplete = true;
     int exchange_direction = Communicators::even_comm;
 #if SAMPLE_AFTER
@@ -445,7 +449,7 @@ void REWL_simulation::simulate(
     int i_am_done = 0;                         // Integer to store whether this processor is finished
     int * individuals_done = nullptr;          // Array to house which processes are done before broadcasting
     if ( my_world_rank == REWL_MASTER_PROC )  
-        individuals_done = new int [REWL_Parameters::num_walkers];
+        individuals_done = new int [REWL_Parameters::num_walkers] ();
     bool print_slowpokes = false;
 
     constexpr size_t rewl_updates_per_check = REWL_Parameters::sweeps_per_check / REWL_Parameters::sweeps_per_exchange;
@@ -464,9 +468,9 @@ void REWL_simulation::simulate(
     
             // Then undergo the exchange update
 #if SAMPLE_AFTER
-            replica_exchange_update( exchange_direction, iteration_counter, sample_observables, my_ids_per_comm, my_comm_ids, local_communicators );
+            exchange_counter += replica_exchange_update( exchange_direction, iteration_counter, sample_observables, my_ids_per_comm, my_comm_ids, local_communicators );
 #else
-            replica_exchange_update( exchange_direction, iteration_counter, my_ids_per_comm, my_comm_ids, local_communicators );
+            exchange_counter += replica_exchange_update( exchange_direction, iteration_counter, my_ids_per_comm, my_comm_ids, local_communicators );
 #endif
             //exchange_direction = ( exchange_direction == Communicators::even_comm ? Communicators::odd_comm : Communicators::even_comm ); 
 
@@ -537,6 +541,7 @@ void REWL_simulation::simulate(
                 printf("\nID %d: Total Sweeps = %ld = %e Wang Landau Updates.", my_world_rank, sweep_counter, static_cast<float>(sweep_counter * System_Parameters::N) );
                 printf("\nID %d: Sweep rate  = %e sweeps per second", my_world_rank, static_cast<float>(sweep_counter)/time_elapsed.count());
                 printf("\nID %d: Update rate = %e updates per second", my_world_rank, static_cast<float>(sweep_counter * System_Parameters::N)/time_elapsed.count());
+                printf("\nID %d: Successful exchanges %ld", my_world_rank, exchange_counter);
                 fflush(stdout);
             }
             iteration_start = std::chrono::high_resolution_clock::now();
@@ -544,6 +549,7 @@ void REWL_simulation::simulate(
 
             ++iteration_counter;
             sweep_counter = 0;
+            exchange_counter = 0;
         }
 
 #if SAMPLE_AFTER
@@ -571,17 +577,21 @@ void REWL_simulation::simulate(
         if ( my_world_rank == REWL_MASTER_PROC )
         {
             if ( print_slowpokes )
+            {
                 printf("\n\nWaiting on walkers:\n\t");
-            for ( int wdx = 0; wdx != REWL_Parameters::num_walkers; ++wdx )
-            {
-                completed_reduction *= individuals_done[wdx];
-                if ( print_slowpokes && individuals_done[wdx] == 0 )
-                    printf("%d%s", wdx, wdx == REWL_Parameters::num_walkers - 1 ? "\n" : ", ");
-            }
-            if ( print_slowpokes )
-            {
+                for ( int wdx = 0; wdx != REWL_Parameters::num_walkers; ++wdx )
+                {
+                    completed_reduction *= individuals_done[wdx];
+                    if ( individuals_done[wdx] == 0 )
+                        printf("%d%s", wdx, wdx == REWL_Parameters::num_walkers - 1 ? "\n" : ", ");
+                }
                 printf("\n");
-                print_slowpokes = false;    
+                print_slowpokes = false;
+            }
+            else
+            {
+                for ( int wdx = 0; wdx != REWL_Parameters::num_walkers; ++wdx )
+                    completed_reduction *= individuals_done[wdx];
             }
         }
 

@@ -3,7 +3,7 @@
 using thermo_t = Thermodynamics<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE, System_Obs_enum_t>;
 constexpr ENERGY_TYPE Tmin = 0.01;
 constexpr ENERGY_TYPE Tmax = 6.71;
-constexpr size_t num_T = 3000;
+constexpr size_t num_T = 20000;
 
 #if MPI_ON
 int main(int argc, char * argv[])
