@@ -59,6 +59,9 @@ Some `cmake` options to be aware of are as follows:
     * If engaged, there will be no replica exchange, nor will there be any intra-window walker averaging.
 * `DIFFERENT_SEEDS`
     * Use different seeds for each walkers based on high-speed clock. If not engaged, then all seeds are identical.
+* `EQUAL_WINDOWS`
+    * This will make all the windows equally-sized with a well defined window size.
+    * One must be careful to make sure that each window is an integer number of bins or this simulation will break.
 
 #### Supported Hamiltonians
 If multiple Hamiltonians are selected at build time, then `cmake` will throw a `FATAL_ERROR`.

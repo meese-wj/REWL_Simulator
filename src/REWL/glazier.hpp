@@ -49,15 +49,50 @@ struct glazier
     {
         delete [] all_windows; 
     }
-    
+   
+#if EQUAL_WINDOWS
+    // Construct equally-sized windows. This is model
+    // dependent. Be careful with it.
+    void construct_windows();
+#else
     // TODO: This by default will only increase the
     // size of windows from smallest to largest. It
     // would be better to include a "symmetric" 
     // version which increases in size and then 
     // decreases.
     void construct_windows(); 
+#endif
+
 };
 
+#if EQUAL_WINDOWS
+template<typename data_t, class histogram_index_functor>
+void glazier<data_t, histogram_index_functor>::construct_windows()
+{
+    // Divide global windows into a constant window size
+    const data_t denom = 1 + (num_windows - 1) * (1 - window_overlap);
+    const data_t window_size = (global_max - global_min) / denom;
+
+    data_t window_min = global_min;
+    data_t window_max = global_min + ;
+    size_t window_bins = static_cast<size_t> ( (window_max - window_min) / global_bin_size );
+
+    for ( size_t wdx = 0; wdx != num_windows; ++wdx )
+    {
+        data_t window_min  = global_min + static_cast<data_t>(wdx) * (1 - window_overlap) * window_size;
+        data_t window_max  = window_min + static_cast<data_t>(wdx + 1) * window_size;
+        size_t window_bins = static_cast<size_t> ( (window_max - window_min) / global_bin_size );
+
+        for ( size_t replica = 0; replica != replicas_per_window; ++replica )
+        { 
+            all_windows[ replica ].minimum = window_min;
+            all_windows[ replica ].maximum = window_max;
+            all_windows[ replica ].bin_size = global_bin_size;
+            all_windows[ replica ].num_bins = window_bins;
+        }
+    }
+}
+#else
 template<typename data_t, class histogram_index_functor>
 void glazier<data_t, histogram_index_functor>::construct_windows()
 {
@@ -112,5 +147,7 @@ void glazier<data_t, histogram_index_functor>::construct_windows()
         }
     }
 }
+#endif
+
 
 #endif 

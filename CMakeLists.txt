@@ -16,6 +16,7 @@ option(SAMPLE_AFTER "Sample observables after one round of WL updates" OFF)
 option(TRAPEZOIDAL_RULE "Use trapezoidal rule to evaluate the thermodynamical integrals" ON)
 option(INDEPENDENT_WALKERS "Do not allow for exchange or for intra-window walkers to average" OFF)
 option(DIFFERENT_SEEDS "Use timings to set the seeds for the walkers." ON)
+option(EQUAL_WINDOWS "Construct equally-sized windows in REWL." ON)
 
 # Add compile-time options to specify the Hamiltonian
 option(ISING2D "Run a 2d Ising model on a periodic square lattice." OFF)
@@ -74,6 +75,10 @@ endif()
 
 if (DIFFERENT_SEEDS)
     add_definitions(-DDIFFERENT_SEEDS)
+endif()
+
+if (EQUAL_WINDOWS)
+    add_definitions(-DEQUAL_WINDOWS)
 endif()
 
 add_subdirectory(src)
