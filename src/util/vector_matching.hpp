@@ -49,16 +49,26 @@ void find_left_concatenation_indices( index_pair * const concatenate_indices,
     energy_t right_energy_val = energy_right.front();
     size_t left_start_index = INT32_MAX;
     for ( int ldx = energy_left.size() - 1; ldx != -1; --ldx )
-        left_start_index = ( energy_left[ static_cast<size_t>(ldx) ] == right_energy_val ? static_cast<size_t>(ldx) : INT32_MAX );
+    {
+        printf("\nright energy = %e, left energy bin = %e", right_energy_val, energy_left[ ldx ]);
+        if ( energy_left[ldx] == right_energy_val )
+        {
+            left_start_index = static_cast<size_t>(ldx);
+            break;
+        }
+    }
+    fflush(stdout);
 
     if ( left_start_index == INT32_MAX )
     {
         printf("\nThere is no overlap. This is a huge problem, so I'm gonna exit in a leaky way.\n");
         exit(1);
     }
-
+    
     start_indices -> left  = left_start_index;
     start_indices -> right = 0; 
+
+    printf("\nstart indices: left = %ld, right = %ld\n", start_indices -> left, start_indices -> right);
     
     // Now find the index representing the lowest
     // difference in derivative
@@ -67,7 +77,7 @@ void find_left_concatenation_indices( index_pair * const concatenate_indices,
     logdos_t beta_diff  = abs(left_beta - right_beta);
     concatenate_indices -> left  = start_indices -> left; 
     concatenate_indices -> right = start_indices -> right; 
-    for ( size_t idx = 1; idx != num_bins; ++idx )
+    for ( size_t idx = 1; idx != num_bins - start_indices -> left; ++idx )
     {
         left_beta  = derivative_of_vector( start_indices -> left  + idx,  logdos_left,  energy_left );
         right_beta = derivative_of_vector( start_indices -> right + idx, logdos_right, energy_right );
@@ -76,8 +86,11 @@ void find_left_concatenation_indices( index_pair * const concatenate_indices,
             beta_diff = abs(left_beta - right_beta);
             concatenate_indices -> left  = start_indices -> left  + idx;
             concatenate_indices -> right = start_indices -> right + idx; 
+            printf("\nidx = %ld", idx);
         }
     }
+    
+    printf("\nconcat indices: left = %ld, right = %ld\n", concatenate_indices -> left, concatenate_indices -> right);
 
 }
 
