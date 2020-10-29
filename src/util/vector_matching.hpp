@@ -39,8 +39,8 @@ template<typename energy_t, typename logdos_t>
 void find_left_concatenation_indices( index_pair * const concatenate_indices,
                                       index_pair * const start_indices, 
                                       const std::vector<logdos_t> & logdos_left,
-                                      const std::vector<logdos_t> & logdos_right,
                                       const std::vector<energy_t> & energy_left,
+                                      const std::vector<logdos_t> & logdos_right,
                                       const std::vector<energy_t> & energy_right )
 {
     size_t num_bins = logdos_left.size();
