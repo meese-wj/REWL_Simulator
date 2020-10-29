@@ -27,7 +27,7 @@ void find_left_indices( std::vector<size_t> & left_indices, const std::vector<st
     }
 }
 
-struct index_pairs
+struct index_pair
 {
     size_t left = 0;
     size_t right = 0;
