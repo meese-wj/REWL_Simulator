@@ -86,6 +86,13 @@ struct Ashkin_Teller2d
         delete [] neighbor_array;
     }
 
+    void switch_flavor_to_update() 
+    {
+        if ( current_state.which_to_update == spin_type::sigma )
+            current_state.which_to_update = spin_type::tau;
+        else
+            current_state.which_to_update = spin_type::sigma;
+    }
     void print_lattice() const;
 
     data_t * get_front_DoFs() const { return spin_array; }

@@ -72,6 +72,8 @@ struct Ising2d
         delete [] neighbor_array;
     }
 
+    void switch_flavor_to_update() { return; };
+
     void print_lattice() const;
     
     data_t * get_front_DoFs() const { return spin_array; }
