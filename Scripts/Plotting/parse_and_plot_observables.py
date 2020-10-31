@@ -78,52 +78,102 @@ def plot_probability_density( model_name, data_file_stem, coupling_string, coupl
     xlabel = labels[0]
     key_string = coupling_string + " = " + "%.3f" % float(coupling_value)
 
-    fig, ax = plt.subplots(1,2, sharey=True)
+    auxiliary_microcanonical = "Order Parameter2"
 
-    for Ldx in range(0, len(data_tuples)):
+    if auxiliary_microcanonical in labels:
 
-        Lvalue = data_tuples[Ldx][0]
-        Lfloat = float(Lvalue)
+        fig, ax = plt.subplots(1,2, sharey=True)
 
-        # TODO: This will break in higher dimensions
-        Nfloat = Lfloat ** 2
+        for Ldx in range(0, len(data_tuples)):
 
-        extensive_energy = Nfloat * data_tuples[Ldx][1][:,0]
-        extensive_logdos = Nfloat * data_tuples[Ldx][1][:,1]
+            Lvalue = data_tuples[Ldx][0]
+            Lfloat = float(Lvalue)
 
-        # Find the exponent of the probability density
-        exponent = extensive_logdos - extensive_energy / float(Tc_val)
+            # TODO: This will break in higher dimensions
+            Nfloat = Lfloat ** 2
 
-        # Normalize it by its maximum
-        exponent -= np.max(exponent)
+            extensive_energy = Nfloat * data_tuples[Ldx][1][:,0]
+            extensive_logdos = Nfloat * data_tuples[Ldx][1][:,1]
 
-        # Find the partition function
-        partition = np.sum( np.exp( exponent ) )
+            # Find the exponent of the probability density
+            exponent = extensive_logdos - extensive_energy / float(Tc_val)
 
-        # Find the probability density as a function
-        # of the extensive energy
-        density = np.exp( exponent ) / partition
+            # Normalize it by its maximum
+            exponent -= np.max(exponent)
+
+            # Find the partition function
+            partition = np.sum( np.exp( exponent ) )
+
+            # Find the probability density as a function
+            # of the extensive energy
+            density = np.exp( exponent ) / partition
 
 
-        # Rescale it by N to plot the normalized
-        # density along the intensive energy axis
-        ax[1].plot( data_tuples[Ldx][1][:,0], Nfloat * density, label = r"$L = %s$" % Lvalue )
+            # Rescale it by N to plot the normalized
+            # density along the intensive energy axis
+            ax[1].plot( data_tuples[Ldx][1][:,0], Nfloat * density, label = r"$L = %s$" % Lvalue )
 
-        order2_col = labels.index("Order Parameter2")
-        ax[0].plot( data_tuples[Ldx][1][:,order2_col]/Nfloat, Nfloat * density, label = r"$L = %s$" % Lvalue )
+            order2_col = labels.index("Order Parameter2")
+            ax[0].plot( data_tuples[Ldx][1][:,order2_col]/Nfloat, Nfloat * density, label = r"$L = %s$" % Lvalue )
 
-    # Set xlim
-    ax[1].set_xlim([-5,-3])
+        # Set xlim
+        ax[1].set_xlim([-5,-3])
 
-    ax[1].set_xlabel(r"Energy per Site $[E/N]$", fontsize = 12)
-    ax[0].set_xlabel(r"%s" % labels[order2_col], fontsize = 12)
-    ax[0].set_ylabel(r"Probability Density $[N\cdot E^{-1}]$", fontsize = 12)
-    ax[0].legend(fontsize = 10)
+        ax[1].set_xlabel(r"Energy per Site $[E/N]$", fontsize = 12)
+        ax[0].set_xlabel(r"%s" % labels[order2_col], fontsize = 12)
+        ax[0].set_ylabel(r"Probability Density $[N\cdot E^{-1}]$", fontsize = 12)
+        ax[0].legend(fontsize = 10)
 
-    fig.suptitle(model_name + " at $T_c = %s$: " % (Tc_val) + key_string, fontsize = 12)
+        fig.suptitle(model_name + " at $T_c = %s$: " % (Tc_val) + key_string, fontsize = 12)
 
-    plotname = "%s" % ("probability density vs energy.png")
-    plt.savefig(plot_directory + "/" + plotname)
+        plotname = "%s" % ("probability density vs energy.png")
+        plt.savefig(plot_directory + "/" + plotname)
+
+    else:
+        fig, ax = plt.subplots(1,1)
+
+        for Ldx in range(0, len(data_tuples)):
+
+            Lvalue = data_tuples[Ldx][0]
+            Lfloat = float(Lvalue)
+
+            # TODO: This will break in higher dimensions
+            Nfloat = Lfloat ** 2
+
+            extensive_energy = Nfloat * data_tuples[Ldx][1][:,0]
+            extensive_logdos = Nfloat * data_tuples[Ldx][1][:,1]
+
+            # Find the exponent of the probability density
+            exponent = extensive_logdos - extensive_energy / float(Tc_val)
+
+            # Normalize it by its maximum
+            exponent -= np.max(exponent)
+
+            # Find the partition function
+            partition = np.sum( np.exp( exponent ) )
+
+            # Find the probability density as a function
+            # of the extensive energy
+            density = np.exp( exponent ) / partition
+
+
+            # Rescale it by N to plot the normalized
+            # density along the intensive energy axis
+            ax.plot( data_tuples[Ldx][1][:,0], Nfloat * density, label = r"$L = %s$" % Lvalue )
+
+        # Set xlim
+        ax.set_xlim([-5,-3])
+
+        ax.set_xlabel(r"Energy per Site $[E/N]$", fontsize = 12)
+        ax.set_ylabel(r"Probability Density $[N\cdot E^{-1}]$", fontsize = 12)
+        ax.legend(fontsize = 10)
+
+        ax.set_title(model_name + " at $T_c = %s$: " % (Tc_val) + key_string, fontsize = 12)
+
+        plotname = "%s" % ("probability density vs energy.png")
+        plt.savefig(plot_directory + "/" + plotname)
+
+
 
     plt.close()
 
@@ -146,8 +196,8 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
         if Tc_val != None and Tc_val != "":
             if "microcanonical" not in data_file_stem:
                 ax.set_xlim([0, 2 * float(Tc_val)])
-                epsilon_range = 0.025
-                ax.set_xlim([(1 - epsilon_range) * float(Tc_val), (1 + epsilon_range) * float(Tc_val)])
+                #epsilon_range = 0.025
+                #ax.set_xlim([(1 - epsilon_range) * float(Tc_val), (1 + epsilon_range) * float(Tc_val)])
 
                 ymin, ymax = ax.get_ylim()
                 if "Binder" in labels[lbl]:
