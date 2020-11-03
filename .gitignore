@@ -3,3 +3,5 @@ tags
 Simulation_Data
 __pycache__
 hostfile
+logs
+*.out
