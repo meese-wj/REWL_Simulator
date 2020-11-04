@@ -48,6 +48,7 @@ int main(int argc, char * argv[])
     std::string todays_date = get_todays_date();
 
 #if JOB_ARRAYS
+    std::string job_id_string ( argv[job_id_index] );
     System_Strings sys_strings = System_Strings( job_id_string );
 #else
     System_Strings sys_strings = System_Strings();
@@ -61,7 +62,6 @@ int main(int argc, char * argv[])
         std::cout << "\n" << todays_date << "\n\n" << data_file_header; 
         std::cout << "\n**************************************************************************************\n";
 #if JOB_ARRAYS
-        std::string job_id_string ( argv[job_id_string] );
         data_path = create_output_path( sys_strings.model_name, todays_date, sys_strings.size_string, job_id_string );
 #else
         data_path = create_output_path( sys_strings.model_name, todays_date, sys_strings.size_string ); 

@@ -7,7 +7,7 @@ Ising2d_Parameter_String::Ising2d_Parameter_String()
 #endif
 {
 #if JOB_ARRAYS
-    file_name_base = "JOBID-" + job_id_string + "REWL_L-" + L + "_J-" + J + "_h-" + h + ".dat";
+    file_name_base = "JOBID-" + job_id_string + "_REWL_L-" + L + "_J-" + J + "_h-" + h + ".dat";
 #else
     file_name_base = "REWL_L-" + L + "_J-" + J + "_h-" + h + ".dat";
 #endif
