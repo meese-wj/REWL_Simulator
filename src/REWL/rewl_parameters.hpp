@@ -22,10 +22,10 @@ namespace REWL_Parameters
     int num_walkers = 1;
     size_t replicas_per_window = 1;
     //float window_overlap = static_cast<float>( single_bin_overlap ); 
-    float window_overlap = 0.8;
+    float window_overlap = 0.75;
 
     constexpr size_t sweeps_per_check = 1000;
-    constexpr size_t sweeps_per_exchange = 10;
+    constexpr size_t sweeps_per_exchange = 1;
     constexpr LOGDOS_TYPE final_increment = 1e-7;
     //constexpr LOGDOS_TYPE final_increment = 0.25;
     constexpr float flatness_criterion = 0.1;
