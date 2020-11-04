@@ -62,6 +62,9 @@ Some `cmake` options to be aware of are as follows:
 * `EQUAL_WINDOWS`
     * This will make all the windows equally-sized with a well defined window size.
     * One must be careful to make sure that each window is an integer number of bins or this simulation will break.
+* `JOB_ARRAYS`
+    * If engaged, the path-construction system will be changed to allow for many jobs. 
+    * This will eliminate potential data over-write and allow for further averaging over the independent jobs to benefit the statistics.
 
 #### Supported Hamiltonians
 If multiple Hamiltonians are selected at build time, then `cmake` will throw a `FATAL_ERROR`.
