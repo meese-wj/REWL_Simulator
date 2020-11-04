@@ -24,7 +24,11 @@ struct Ising2d_Parameter_String
     std::string file_name_base;
     std::string file_header;
 
+#if JOB_ARRAYS
+    Ising2d_Parameter_String( const std::string & job_id_string );
+#else
     Ising2d_Parameter_String();
+#endif
 
     ~Ising2d_Parameter_String(){}
 };

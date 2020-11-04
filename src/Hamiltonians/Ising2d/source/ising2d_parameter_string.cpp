@@ -1,8 +1,16 @@
 #include "../ising2d_parameter_string.hpp"
 
+#if JOB_ARRAYS
+Ising2d_Parameter_String::Ising2d_Parameter_String( const std::string & job_id_string )
+#else
 Ising2d_Parameter_String::Ising2d_Parameter_String()
+#endif
 {
+#if JOB_ARRAYS
+    file_name_base = "JOBID-" + job_id_string + "REWL_L-" + L + "_J-" + J + "_h-" + h + ".dat";
+#else
     file_name_base = "REWL_L-" + L + "_J-" + J + "_h-" + h + ".dat";
+#endif
 
     file_header = "# REWL " + model_name + " on a Periodic Square Lattice\n#";
     file_header += "\n# Hamiltonian Parameters";

@@ -1,5 +1,14 @@
 #include "main_headers.hpp"
 
+// TODO: This probably will break
+// the histograms.
+#if JOB_ARRAYS
+constexpr int num_args = 2;
+constexpr int job_id_index = 1;
+#else
+constexpr int num_args = 1;
+#endif
+
 using thermo_t = Thermodynamics<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE, System_Obs_enum_t>;
 constexpr ENERGY_TYPE Tmin = 0.01;
 constexpr ENERGY_TYPE Tmax = 6.71;
@@ -14,12 +23,17 @@ int main(int argc, char * argv[])
     MPI_Comm_rank( MPI_COMM_WORLD, &world_rank );
     MPI_Comm_size( MPI_COMM_WORLD, &world_size );
 
-    if (argc > 1)
+    if ( argc != num_args )
     {
         if ( world_rank == REWL_MASTER_PROC )
         {
+#if JOB_ARRAYS
+            printf("\nThis simulation %s takes 1 command line argument as the Job ID.", argv[0]);
+            printf("\nReturning error value.\n\n");
+#else
             printf("\nThis simulation %s takes no command line arguments.", argv[0]);
             printf("\nReturning error value.\n\n");
+#endif
         }
         MPI_Finalize();
         return 1;
@@ -32,18 +46,26 @@ int main(int argc, char * argv[])
     
     // Grab today's date at the start of the simulation
     std::string todays_date = get_todays_date();
-    
+
+#if JOB_ARRAYS
+    System_Strings sys_strings = System_Strings( job_id_string );
+#else
     System_Strings sys_strings = System_Strings();
+#endif
     REWL_Parameter_String rewl_strings = REWL_Parameter_String();
     std::filesystem::path data_path;
     std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
     if ( world_rank == REWL_MASTER_PROC )
     {
-        std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
         std::cout << "\n**************************************************************************************\n";
         std::cout << "\n" << todays_date << "\n\n" << data_file_header; 
         std::cout << "\n**************************************************************************************\n";
+#if JOB_ARRAYS
+        std::string job_id_string ( argv[job_id_string] );
+        data_path = create_output_path( sys_strings.model_name, todays_date, sys_strings.size_string, job_id_string );
+#else
         data_path = create_output_path( sys_strings.model_name, todays_date, sys_strings.size_string ); 
+#endif
     }
 
     /* ****************************************************************************** */
@@ -100,6 +122,7 @@ int main(int argc, char * argv[])
         printf("\nStarting simulation...\n");
     MPI_Barrier(MPI_COMM_WORLD);
 #if PRINT_HISTOGRAM
+    // TODO: This won't work for job arrays
     simulation -> simulate( data_path / "Histograms" / sys_strings.size_string );
 #else
 #ifndef INDEPENDENT_WALKERS
@@ -268,10 +291,15 @@ int main(int argc, char * argv[])
 {
     int world_rank = 0;
 
-    if (argc > 1)
+    if ( argc != num_args )
     {
-        printf("\nThis simulation %s takes no command line arguments.", argv[0]);
-        printf("\nReturning error value.\n\n");
+#if JOB_ARRAYS
+            printf("\nThis simulation %s takes 1 command line argument as the Job ID.", argv[0]);
+            printf("\nReturning error value.\n\n");
+#else
+            printf("\nThis simulation %s takes no command line arguments.", argv[0]);
+            printf("\nReturning error value.\n\n");
+#endif
         return 1;
     }
 
@@ -281,7 +309,14 @@ int main(int argc, char * argv[])
     
     System_Strings sys_strings = System_Strings();
     REWL_Parameter_String rewl_strings = REWL_Parameter_String();
+#if JOB_ARRAYS
+    System_Strings sys_strings = System_Strings( job_id_string );
+    std::string job_id_string ( argv[job_id_index] );
+    std::filesystem::path data_path = create_output_path( sys_strings.model_name, sys_strings.size_string, job_id_string ); 
+#else
+    System_Strings sys_strings = System_Strings();
     std::filesystem::path data_path = create_output_path( sys_strings.model_name, sys_strings.size_string ); 
+#endif
     std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
 
     /* ****************************************************************************** */

@@ -1,8 +1,16 @@
 #include "../ashkin_teller2d_parameter_string.hpp"
 
+#if JOB_ARRAYS
+Ashkin_Teller2d_Parameter_String::Ashkin_Teller2d_Parameter_String( const std::string & job_id_string )
+#else
 Ashkin_Teller2d_Parameter_String::Ashkin_Teller2d_Parameter_String()
+#endif
 {
+#if JOB_ARRAYS
+    file_name_base = "JOBID-" + job_id_string + "_REWL_L-" + L + "_J-" + J + "_K-" + K + ".dat";
+#else
     file_name_base = "REWL_L-" + L + "_J-" + J + "_K-" + K + ".dat";
+#endif
 
     file_header = "# REWL " + model_name + " on a Periodic Square Lattice\n#";
     file_header += "\n# Hamiltonian Parameters";

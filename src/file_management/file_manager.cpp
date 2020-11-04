@@ -35,7 +35,11 @@ void create_directory( const std::string & path_to_dir )
 }
 
 // Build the output file path and return it
+#if JOB_ARRAYS
+FS::path create_output_path( const std::string & model_name, const std::string & todays_date, const std::string & size_string, std::string & job_id_string );
+#else
 FS::path create_output_path( const std::string & model_name, const std::string & todays_date, const std::string & size_string )
+#endif
 {
     FS::path output_path = FS::current_path();
     
@@ -57,11 +61,19 @@ FS::path create_output_path( const std::string & model_name, const std::string &
     output_path /= todays_date; 
     create_directory( output_path.string() );
 
+#if JOB_ARRAYS
+    // Add a subdirectory for the Job Arrays
+    output_path /= std::string("Job_Arrays");
+#endif
+
     // Finally create a folder for the histograms
     // for a given system size.
     // Path = build parent / OUTPUT_DATA_PATH / model_name / today's date 
     // Subpath = build parent / OUTPUT_DATA_PATH / model_name / today's date / HISTOGRAM_SUBFOLDER
     FS::path sub_path = output_path / HISTOGRAM_SUBFOLDER;
+#if JOB_ARRAYS
+    sub_path /= std::string("ID_") + job_id_string;
+#endif
     create_directory( sub_path.string() );
 
     // Path = build parent / OUTPUT_DATA_PATH / model_name / today's date 
