@@ -1,6 +1,6 @@
 /*  This is the main code for 
  *  the statistics routine that will 
- *  average the microcanonical observables
+ *  average the canonical observables
  *  from an ensemble of independent jobs */
 #include <iostream>
 #include <string>
@@ -11,7 +11,7 @@
 
 namespace fs = std::filesystem;
 
-struct IO_Strings
+struct CL_Parser
 {
     enum CLA
     {
@@ -21,7 +21,7 @@ struct IO_Strings
     const fs::path input_path;
     const fs::path output_path;
 
-    IO_Strings( const char * argv [] ) : input_path( argv[ CLA::input ] ), output_path( argv[ CLA::output ] )
+    CL_Parser( const char * argv [] ) : input_path( argv[ CLA::input ] ), output_path( argv[ CLA::output ] )
     {}
 };
 
