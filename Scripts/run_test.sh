@@ -31,7 +31,7 @@ then
     echo "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} \
           ./bin/REWL_Simulator ${MPIEXEC_POSTFLAGS}"
     time ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} \
-         ./bin/REWL_Simulator ${MPIEXEC_POSTFLAGS}
+         ./bin/REWL_Simulator ${MPIEXEC_POSTFLAGS} 0
 else
     echo
     echo "Error in compilation. Exiting."

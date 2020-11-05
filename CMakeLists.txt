@@ -17,7 +17,7 @@ option(TRAPEZOIDAL_RULE "Use trapezoidal rule to evaluate the thermodynamical in
 option(INDEPENDENT_WALKERS "Do not allow for exchange or for intra-window walkers to average" OFF)
 option(DIFFERENT_SEEDS "Use timings to set the seeds for the walkers." ON)
 option(EQUAL_WINDOWS "Construct equally-sized windows in REWL." ON)
-option(JOB_ARRAYS "Allow for job arrays to run without data over-write." OFF)
+option(JOB_ARRAYS "Allow for job arrays to run without data over-write." ON)
 
 # Add compile-time options to specify the Hamiltonian
 option(ISING2D "Run a 2d Ising model on a periodic square lattice." ON)
