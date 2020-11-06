@@ -42,7 +42,11 @@ void write_microcanonical_observables( const size_t system_size,
 
     for ( size_t bin = 0; bin != num_bins; ++bin )
     {
-        output_file << energy_array[ bin ] / system_size << DELIMITER << logdos_array[ bin ] / system_size << DELIMITER;
+        output_file << std::setprecision(std::numeric_limits<energy_t>::digits10) << std::fixed;
+        output_file << energy_array[ bin ] / system_size << DELIMITER;
+        output_file << std::setprecision(std::numeric_limits<logdos_t>::digits10) << std::fixed;
+        output_file << logdos_array[ bin ] / system_size << DELIMITER;
+        output_file << std::setprecision(std::numeric_limits<obs_t>::digits10) << std::fixed;
 
         for ( size_t ob = 0; ob != num_obs; ++ob )
         {

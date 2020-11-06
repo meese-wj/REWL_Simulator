@@ -9,6 +9,7 @@ import matplotlib as mpl
 mpl.use('Agg')  # THIS IS REQUIRED FOR WSL2
 import matplotlib.pyplot as plt
 import os
+from bisect import bisect_left
 
 #data_file_stem = "self_averaged_observables"
 #observable_marker = "Intensive Observable"
@@ -163,7 +164,7 @@ def plot_probability_density( model_name, data_file_stem, coupling_string, coupl
 
         # Set xlim
         #ax.set_xlim([-5,-3])
-        ax.set_xlim([-1.6,-1.15])
+        #ax.set_xlim([-1.6,-1.15])
 
         ax.set_xlabel(r"Energy per Site $[E/N]$", fontsize = 12)
         ax.set_ylabel(r"Probability Density $[N\cdot E^{-1}]$", fontsize = 12)
@@ -179,6 +180,22 @@ def plot_probability_density( model_name, data_file_stem, coupling_string, coupl
     plt.close()
 
 
+def get_y_range( yvalues, xvalues, xmin, xmax, extension=0.05 ):
+
+    # Find the values of x that are closest to xmin and xmax
+    # xvalues must be sorted!
+    xindex_min = bisect_left( xvalues, xmin )
+    xindex_max = bisect_left( xvalues, xmax )
+
+    # Now find the min and max of y on this range
+    ymin = np.min( yvalues[xindex_min:xindex_max] )
+    ymax = np.max( yvalues[xindex_min:xindex_max] )
+
+    # Set the ylimits to be some fractional extension of
+    # the yrange
+    yrange = ymax - ymin
+    return ymin - extension * yrange, ymax + extension * yrange
+
 def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_value, labels, data_tuples, plot_directory, Tc_val = None ):
 
     xlabel = labels[0]
@@ -189,20 +206,34 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
         print("\nPlotting %s vs %s" % (labels[lbl], xlabel))
         fig, ax = plt.subplots(1,1)
 
+        epsilon_range = None
+        xmin, xmax, plt_ymin, plt_ymax = 0, 0, 0, 0
+        if epsilon_range != None and Tc_val != None and Tc_val != "":
+            xmin, xmax = (1 - epsilon_range) * float(Tc_val), (1 + epsilon_range) * float(Tc_val)
+
         for Ldx in range(0, len(data_tuples)):
 
             Lvalue = data_tuples[Ldx][0]
             ax.plot(data_tuples[Ldx][1][:,0], data_tuples[Ldx][1][:,lbl], label = r"$L = %s$" % Lvalue)
+            if epsilon_range != None and Tc_val != None and Tc_val != "":
+                if "microcanonical" not in data_file_stem and "Counts" not in labels[lbl]:
+                    test_ymin, test_ymax = get_y_range( data_tuples[Ldx][1][:,lbl], data_tuples[Ldx][1][:,0], xmin, xmax )
+                    if abs(test_ymin) > abs(plt_ymin):
+                        plt_ymin = test_ymin
+                    if abs(test_ymax) > abs(plt_ymax):
+                        plt_ymax = test_ymax
+
+        if epsilon_range != None and Tc_val != None and Tc_val != "":
+            if "microcanonical" not in data_file_stem and "Counts" not in labels[lbl]:
+                ax.set_ylim([plt_ymin, plt_ymax])
 
         if Tc_val != None and Tc_val != "":
             if "microcanonical" not in data_file_stem:
                 ax.set_xlim([0, 2 * float(Tc_val)])
-                epsilon_range = 0.025
-                ax.set_xlim([(1 - epsilon_range) * float(Tc_val), (1 + epsilon_range) * float(Tc_val)])
+                if epsilon_range != None:
+                    ax.set_xlim([xmin, xmax])
 
                 ymin, ymax = ax.get_ylim()
-                if "Binder" in labels[lbl]:
-                    ymin, ymax = -0.25, 1.25
                 ax.plot( float(Tc_val) + 0. * np.linspace(0,1,10), ymin + (ymax - ymin) * np.linspace(0,1,10), color = "gray", lw = 1, ls = "dashed", label = r"$T_c = %s$" % Tc_val )
                 ax.set_ylim([ymin, ymax])
             elif "microcanonical" in data_file_stem and lbl == 1:
