@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Lsize=312
+Lsize=96
 MODEL="Ising2d"
 SEARCHSTR="constexpr size_t SYSTEM_SIZE_L = "
 
