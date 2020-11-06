@@ -90,7 +90,7 @@ def read_in_data( input_path, Lsize, coupling_symbol, coupling_value, comment = 
 # and energy2.
 def specific_heat( energy2, energy, size, temp ):
 
-    return ( energy2 - size * energy * energy ) / ( temp * temp )
+    return ( energy2 - size * energy * energy ) / ( temp ** 2. )
 
 # Calculate error for specific heat from
 # intensive energy
@@ -120,7 +120,7 @@ def average_job_data( Lsize, labels, data_tuples ):
     en2_idx = labels.index("Energy2")
     cv_idx = labels.index("Specific Heat")
 
-    final_data[:, cv_idx] = specific_heat( final_data[:, en_idx], final_data[:, en2_idx], Nfloat, final_data[:, 0] )
+    final_data[:, cv_idx] = specific_heat( final_data[:, en2_idx], final_data[:, en_idx], Nfloat, final_data[:, 0] )
 
     return final_data
 
@@ -130,13 +130,19 @@ def stderr_job_data( Lsize, labels, data_tuples, final_averages ):
 
     num_jobs = len(data_tuples)
 
+    divisor = num_jobs
+    if num_jobs == 1:
+        divisor *= num_jobs
+    else:
+        divisor *= (num_jobs - 1)
+
     final_stderr = np.zeros(final_averages.shape)
 
     # Get Standard Error along columns
     for col in range(0, len(labels)):
         for job in range(0, num_jobs):
             final_stderr[:,col] += ( data_tuples[job][1][:,col] - final_averages[:,col] ) ** 2.
-        final_stderr[:,col] = np.sqrt( final_stderr[:,col] / (num_jobs * (num_jobs)) )
+        final_stderr[:,col] = np.sqrt( final_stderr[:,col] / divisor )
 
     # Recompute the specific heat error
     # TODO: This will break for higher dimensions
@@ -161,9 +167,12 @@ def write_out_data( output_file, input_path, num_jobs, header_lines, final_avera
 
     header = ""
     for ldx in range(0, len(header_lines)):
-        header += header_lines[ldx]
+        header += header_lines[ldx].rstrip()
+        if ldx != len(header_lines)-1:
+            header += "\n"
 
-    print(header)
+    np.savetxt(output + ".job_mean", final_averages, delimiter="  ", newline="\n", header=header, comments="")
+    np.savetxt(output + ".job_stderr", final_stderr, delimiter="  ", newline="\n", header=header, comments="")
 
     return None
 
@@ -182,7 +191,7 @@ def main():
 
     final_stderr = stderr_job_data( cl_args.Lsize, labels, data_tuples, final_averages )
 
-    write_out_data( output_file, cl_args.input_path, len(data_tuples), header_lines, final_averages, final_averages )
+    write_out_data( output_file, cl_args.input_path, len(data_tuples), header_lines, final_averages, final_stderr )
 
     return 0
 
