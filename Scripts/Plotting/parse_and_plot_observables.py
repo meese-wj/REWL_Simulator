@@ -205,7 +205,7 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
         print("\nPlotting %s vs %s" % (labels[lbl], xlabel))
         fig, ax = plt.subplots(1,1)
 
-        epsilon_range = 0.01
+        epsilon_range = None
         xmin, xmax, plt_ymin, plt_ymax = 0, 0, 0, 0
         if epsilon_range != None and Tc_val != None and Tc_val != "":
             xmin, xmax = (1 - epsilon_range) * float(Tc_val), (1 + epsilon_range) * float(Tc_val)
