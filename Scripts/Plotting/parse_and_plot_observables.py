@@ -151,12 +151,11 @@ def plot_probability_density( model_name, data_file_stem, coupling_string, coupl
             exponent -= np.max(exponent)
 
             # Find the partition function
-            partition = np.sum( np.exp( exponent ) )
+            partition = np.sum( np.exp( exponent ), dtype="float64" )
 
             # Find the probability density as a function
             # of the extensive energy
             density = np.exp( exponent ) / partition
-
 
             # Rescale it by N to plot the normalized
             # density along the intensive energy axis
@@ -205,7 +204,7 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
         print("\nPlotting %s vs %s" % (labels[lbl], xlabel))
         fig, ax = plt.subplots(1,1)
 
-        epsilon_range = 0.03
+        epsilon_range = None
         xmin, xmax, plt_ymin, plt_ymax = 0, 0, 0, 0
         if epsilon_range != None and Tc_val != None and Tc_val != "":
             xmin, xmax = (1 - epsilon_range) * float(Tc_val), (1 + epsilon_range) * float(Tc_val)
