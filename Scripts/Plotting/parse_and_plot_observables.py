@@ -52,7 +52,7 @@ def collect_observables_and_data( data_file_stem, observable_marker, coupling_sy
     print("\nKey String:", key_string)
 
     for fl in os.listdir( os.getcwd() ):
-        if not os.path.isdir( fl ) and ( data_file_stem in fl and key_string in fl ):
+        if not os.path.isdir( fl ) and ( data_file_stem in fl and key_string in fl and "stderr" not in fl ):
 
             if len(labels) == 0:
                 labels = collect_labels( fl, observable_marker, comment )
@@ -205,7 +205,7 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
         print("\nPlotting %s vs %s" % (labels[lbl], xlabel))
         fig, ax = plt.subplots(1,1)
 
-        epsilon_range = None
+        epsilon_range = 0.03
         xmin, xmax, plt_ymin, plt_ymax = 0, 0, 0, 0
         if epsilon_range != None and Tc_val != None and Tc_val != "":
             xmin, xmax = (1 - epsilon_range) * float(Tc_val), (1 + epsilon_range) * float(Tc_val)

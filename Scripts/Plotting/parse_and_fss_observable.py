@@ -49,7 +49,7 @@ def collect_observables_and_data( data_file_stem, fss_observable, observable_mar
     print("\nKey String:", key_string)
 
     for fl in os.listdir( os.getcwd() ):
-        if not os.path.isdir( fl ) and ( data_file_stem in fl and key_string in fl ):
+        if not os.path.isdir( fl ) and ( data_file_stem in fl and key_string in fl and "stderr" not in fl ):
 
             if len(labels) == 0:
                 labels = collect_labels( fl, observable_marker, comment )
