@@ -155,17 +155,20 @@ def plot_probability_density( model_name, data_file_stem, coupling_string, coupl
 
             # Find the probability density as a function
             # of the extensive energy
-            density = np.exp( exponent ) / partition
+            # density = np.exp( exponent ) / partition
+            density = np.exp( exponent )
 
             # Rescale it by N to plot the normalized
             # density along the intensive energy axis
-            ax.plot( data_tuples[Ldx][1][:,0], Nfloat * density, label = r"$L = %s$" % Lvalue )
+            # ax.plot( data_tuples[Ldx][1][:,0], Nfloat * density, label = r"$L = %s$" % Lvalue )
+            ax.plot( data_tuples[Ldx][1][:,0], density, label = r"$L = %s$" % Lvalue )
 
         # Set xlim
-        #ax.set_xlim([-1.6,-1.15])
+        ax.set_xlim([-1.6,-1.15])
 
         ax.set_xlabel(r"Energy per Site $[E/N]$", fontsize = 12)
-        ax.set_ylabel(r"Probability Density $[N\cdot E^{-1}]$", fontsize = 12)
+        #ax.set_ylabel(r"Probability Density $[N\cdot E^{-1}]$", fontsize = 12)
+        ax.set_ylabel(r"Scaled Probability Density $[E^{-1}]$", fontsize = 12)
         ax.legend(fontsize = 10)
 
         ax.set_title(model_name + " at $T_c = %s$: " % (Tc_val) + key_string, fontsize = 12)
@@ -204,7 +207,7 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
         print("\nPlotting %s vs %s" % (labels[lbl], xlabel))
         fig, ax = plt.subplots(1,1)
 
-        epsilon_range = None
+        epsilon_range = 0.025
         xmin, xmax, plt_ymin, plt_ymax = 0, 0, 0, 0
         if epsilon_range != None and Tc_val != None and Tc_val != "":
             xmin, xmax = (1 - epsilon_range) * float(Tc_val), (1 + epsilon_range) * float(Tc_val)
