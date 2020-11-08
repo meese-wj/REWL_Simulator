@@ -52,7 +52,7 @@ def collect_observables_and_data( data_file_stem, observable_marker, coupling_sy
     print("\nKey String:", key_string)
 
     for fl in os.listdir( os.getcwd() ):
-        if not os.path.isdir( fl ) and ( data_file_stem in fl and key_string in fl ):
+        if not os.path.isdir( fl ) and ( data_file_stem in fl and key_string in fl and "stderr" not in fl ):
 
             if len(labels) == 0:
                 labels = collect_labels( fl, observable_marker, comment )
@@ -151,12 +151,11 @@ def plot_probability_density( model_name, data_file_stem, coupling_string, coupl
             exponent -= np.max(exponent)
 
             # Find the partition function
-            partition = np.sum( np.exp( exponent ) )
+            partition = np.sum( np.exp( exponent ), dtype="float64" )
 
             # Find the probability density as a function
             # of the extensive energy
             density = np.exp( exponent ) / partition
-
 
             # Rescale it by N to plot the normalized
             # density along the intensive energy axis

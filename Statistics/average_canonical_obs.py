@@ -15,6 +15,8 @@ from pathlib import Path
 
 job_id_string = "JOBID"
 filename_base = "self_averaged_observables"
+microname_base = "microcanonical_observables"
+micro_dilutor = 0.1 # fraction by which to dilute the self-averaged observables for the microcanonical ones
 observable_marker = "Intensive Observable Names by Column"
 
 def setup_args():
@@ -155,8 +157,58 @@ def stderr_job_data( Lsize, labels, data_tuples, final_averages ):
 
     return final_stderr
 
+# Get the microcanonical data
+def microcanonical_observable_data( labels, final_averages, final_stderr ):
+
+    num_rows = final_averages.shape[0]
+    num_cols = final_averages.shape[1] -2 # Don't include the specific heat or temperature
+
+    #micro_rows = int( np.floor( (1 - micro_dilutor) * num_rows )  )
+    micro_rows=20000
+    micro_increment = num_rows // micro_rows
+    print(micro_rows, micro_increment)
+    micro_avgs = np.zeros((micro_rows, num_cols))
+    micro_stderr = np.zeros(micro_avgs.shape)
+
+    energy_idx = labels.index("Energy")
+    entropy_idx = labels.index("Entropy")
+    cv_idx = labels.index("Specific Heat")
+    obs1_idx = cv_idx + 1
+
+    micro_labels = [ "1: Energy", "2: logDoS" ]
+    micro_avgs[:,0] = final_averages[::micro_increment, energy_idx]
+    micro_stderr[:,0] = final_stderr[::micro_increment, energy_idx]
+    micro_avgs[:,1] = final_averages[::micro_increment, entropy_idx]
+    micro_stderr[:,1] = final_stderr[::micro_increment, entropy_idx]
+
+    for idx in range(obs1_idx, len(labels)):
+        micro_idx = idx - obs1_idx + 2
+        label_idx = micro_idx + 1
+        micro_avgs[:,micro_idx] = final_averages[::micro_increment, idx]
+        micro_stderr[:,micro_idx] = final_stderr[::micro_increment, idx]
+        micro_labels.append("%d: %s" % (label_idx, labels[idx]))
+
+    return micro_labels, micro_avgs, micro_stderr
+
+# Get the microcanonical observable header
+def microcanonical_header( micro_labels, header_lines ):
+
+    full_line_obs_marker = "# " + observable_marker + "\n"
+    micro_header_string = ""
+    for ldx in range(0, header_lines.index(full_line_obs_marker) + 1):
+        micro_header_string += header_lines[ldx].rstrip()
+        if ldx != header_lines.index(full_line_obs_marker):
+            micro_header_string += "\n"
+
+    for ldx in range(0, len(micro_labels)):
+        micro_header_string += "\n#    " + micro_labels[ldx]
+
+    micro_header_string += "\n#"
+
+    return micro_header_string
+
 # Write data out to the proper file path
-def write_out_data( output_file, input_path, num_jobs, header_lines, final_averages, final_stderr ):
+def write_out_data( output_file, input_path, num_jobs, labels, header_lines, final_averages, final_stderr ):
 
     path = Path(input_path)
     output_path = path.parent
@@ -173,6 +225,13 @@ def write_out_data( output_file, input_path, num_jobs, header_lines, final_avera
 
     np.savetxt(output + ".job_mean", final_averages, delimiter="  ", newline="\n", header=header, comments="")
     np.savetxt(output + ".job_stderr", final_stderr, delimiter="  ", newline="\n", header=header, comments="")
+
+    # Write out the microcanonical data
+    micro_labels, micro_avgs, micro_stderr = microcanonical_observable_data( labels, final_averages, final_stderr )
+    micro_header = microcanonical_header( micro_labels, header_lines )
+    micro_output = str(output_path) + "/" + microname_base + "-" + output_file[ output_file.find("REWL_") :  ]
+    np.savetxt(micro_output + ".job_mean", micro_avgs, delimiter="  ", newline="\n", header=micro_header, comments="")
+    np.savetxt(micro_output + ".job_stderr", micro_stderr, delimiter="  ", newline="\n", header=micro_header, comments="")
 
     return None
 
@@ -191,7 +250,7 @@ def main():
 
     final_stderr = stderr_job_data( cl_args.Lsize, labels, data_tuples, final_averages )
 
-    write_out_data( output_file, cl_args.input_path, len(data_tuples), header_lines, final_averages, final_stderr )
+    write_out_data( output_file, cl_args.input_path, len(data_tuples), labels, header_lines, final_averages, final_stderr )
 
     return 0
 
