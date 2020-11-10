@@ -107,22 +107,25 @@ def plot_probability_density( model_name, data_file_stem, coupling_string, coupl
 
             # Find the probability density as a function
             # of the extensive energy
-            density = np.exp( exponent ) / partition
+            # density = np.exp( exponent ) / partition
+            density = np.exp( exponent )
 
 
             # Rescale it by N to plot the normalized
             # density along the intensive energy axis
-            ax[1].plot( data_tuples[Ldx][1][:,0], Nfloat * density, label = r"$L = %s$" % Lvalue )
+            ax[1].plot( data_tuples[Ldx][1][:,0], density, label = r"$L = %s$" % Lvalue )
 
             order2_col = labels.index("Order Parameter2")
-            ax[0].plot( data_tuples[Ldx][1][:,order2_col]/Nfloat, Nfloat * density, label = r"$L = %s$" % Lvalue )
+            #ax[0].plot( data_tuples[Ldx][1][:,order2_col] / Nfloat, Nfloat * density, label = r"$L = %s$" % Lvalue )
+            ax[0].plot( data_tuples[Ldx][1][:,order2_col] / Nfloat, density, label = r"$L = %s$" % Lvalue )
 
         # Set xlim
         ax[1].set_xlim([-5,-3])
 
         ax[1].set_xlabel(r"Energy per Site $[E/N]$", fontsize = 12)
         ax[0].set_xlabel(r"%s" % labels[order2_col], fontsize = 12)
-        ax[0].set_ylabel(r"Probability Density $[N\cdot E^{-1}]$", fontsize = 12)
+        #ax[0].set_ylabel(r"Probability Density $[N\cdot E^{-1}]$", fontsize = 12)
+        ax[0].set_ylabel(r"Scaled Probability Density $[E^{-1}]$", fontsize = 12)
         ax[0].legend(fontsize = 10)
 
         fig.suptitle(model_name + " at $T_c = %s$: " % (Tc_val) + key_string, fontsize = 12)
