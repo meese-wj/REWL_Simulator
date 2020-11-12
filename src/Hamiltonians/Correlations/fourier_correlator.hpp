@@ -9,15 +9,15 @@
 #include <cmath>
 
 // We assume that Lx = Ly for now.
-template<typename OBS_TYPE>
+template<typename obs_t>
 struct Transform_Kernel
 {
     const size_t L;
     const size_t N = L * L;
-    const OBS_TYPE qmin = 2. * acos(-1.) / static_cast<OBS_TYPE>(L);
+    const obs_t qmin = 2. * acos(-1.) / static_cast<obs_t>(L);
     
-    OBS_TYPE * real_part = nullptr;
-    OBS_TYPE * imag_part = nullptr;
+    obs_t * real_part = nullptr;
+    obs_t * imag_part = nullptr;
 
     Transform_Kernel( const size_t _L ) : L(_L)
     {
@@ -27,13 +27,13 @@ struct Transform_Kernel
         // qmin = (2pi/L, 0) or (0, 2pi/L),
         // the function only has L unique
         // values.
-        real_part = new OBS_TYPE [L];
-        imag_part = new OBS_TYPE [L];
+        real_part = new obs_t [L];
+        imag_part = new obs_t [L];
 
         for ( size_t idx = 0; idx != L; ++idx )
         {
-            real_part[ idx ] = cos( qmin * static_cast<OBS_TYPE>(idx) ) / static_cast<OBS_TYPE>(N);
-            imag_part[ idx ] = sin( qmin * static_cast<OBS_TYPE>(idx) ) / static_cast<OBS_TYPE>(N);
+            real_part[ idx ] = cos( qmin * static_cast<obs_t>(idx) ) / static_cast<obs_t>(N);
+            imag_part[ idx ] = sin( qmin * static_cast<obs_t>(idx) ) / static_cast<obs_t>(N);
         }
     }
     
@@ -44,33 +44,33 @@ struct Transform_Kernel
     }
 };
 
-template<typename OBS_TYPE>
+template<typename obs_t>
 struct Fourier_Correlator
 {
-    const Transform_Kernel<OBS_TYPE> kernel;
+    const Transform_Kernel<obs_t> kernel;
 
     Fourier_Correlator( const size_t _L ) : kernel(_L)
     {}
 
     ~Fourier_Correlator()
     {
-        kernel.~Transform_Kernel<OBS_TYPE>();
+        kernel.~Transform_Kernel<obs_t>();
     }
 
-    OBS_TYPE compute_correlator( const OBS_TYPE * const field_array ) const;
+    obs_t compute_correlator( const obs_t * const field_array ) const;
 };
 
-template<typename OBS_TYPE>
-OBS_TYPE Fourier_Correlator<OBS_TYPE>::compute_correlator( const OBS_TYPE * const field_array ) const
+template<typename obs_t>
+obs_t Fourier_Correlator<obs_t>::compute_correlator( const obs_t * const field_array ) const
 {
     const size_t L = kernel.L;
-    OBS_TYPE corr_real_x = 0.;
-    OBS_TYPE corr_imag_x = 0.;
-    OBS_TYPE corr_real_y = 0.;
-    OBS_TYPE corr_imag_y = 0.;
-    OBS_TYPE temp_corr_x = 0.;
-    OBS_TYPE temp_kernel_real = 0.;
-    OBS_TYPE temp_kernel_imag = 0.;
+    obs_t corr_real_x = 0.;
+    obs_t corr_imag_x = 0.;
+    obs_t corr_real_y = 0.;
+    obs_t corr_imag_y = 0.;
+    obs_t temp_corr_x = 0.;
+    obs_t temp_kernel_real = 0.;
+    obs_t temp_kernel_imag = 0.;
     
     // Calculate the Correlator by summing over
     // idx and jdx (x and y axes). The correlators

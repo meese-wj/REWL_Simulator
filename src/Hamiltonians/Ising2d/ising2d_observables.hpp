@@ -2,6 +2,7 @@
 #define ISING2D_OBSERVABLES
 #include <string>
 #include <vector>
+#include <ising2d_parameters.cxx>
 #include <order_parameter_cumulants.hpp>
 
 static constexpr float DATA_INITIALIZER = 0.;
@@ -15,17 +16,29 @@ namespace Obs
 {
     enum class enum_names
     {
+#if CORRELATION_LENGTHS
+        mag, mag2, mag4, corr_qmin, counts_per_bin, NUM_OBS
+#else
         mag, mag2, mag4, counts_per_bin, NUM_OBS
+#endif
     };
 
     enum class nonlinear_obs_enum
     {
+#if CORRELATION_LENGTHS
+        susc, binder, corr_length, NUM_OBS
+#else
         susc, binder, NUM_OBS
+#endif
     };
 
+#if CORRELATION_LENGTHS
+    const std::vector<std::string> string_names = { "Magnetization", "Magnetization2", "Magnetization4", "G(qmin)", "Counts per Bin", "NUM OBS" };
+    const std::vector<std::string> nonlinear_obs_strings = { "Susceptibility", "Binder Cumulant", "Correlation Length" };
+#else
     const std::vector<std::string> string_names = { "Magnetization", "Magnetization2", "Magnetization4", "Counts per Bin", "NUM OBS" };
-
     const std::vector<std::string> nonlinear_obs_strings = { "Susceptibility", "Binder Cumulant" };
+#endif
 }
 
 constexpr size_t convert(const Obs::enum_names obs_val)
@@ -44,6 +57,10 @@ struct Ising2d_Obs
     const size_t num_bins; 
 
     data_t * obs_array = nullptr;
+
+#if CORRELATION_LENGTHS
+    Fourier_Correlator<data_t> correlator ( Ising2d_Parameters::L );
+#endif
 
     Ising2d_Obs(const size_t nbins) : num_bins(nbins)
     {
@@ -128,6 +145,10 @@ void calculate_nonlinear_observables( const size_t num_temps, const size_t syste
     const size_t num_nonlinear_obs = static_cast<size_t>(Obs::nonlinear_obs_enum::NUM_OBS);
     nonlinear_obs = new data_t [ num_nonlinear_obs * num_temps ];
 
+#if CORRELATION_LENGTHS
+    const size_t Lsize = static_cast<size_t>( sqrt(system_size) );
+#endif
+
     for ( size_t Tidx = 0; Tidx != num_temps; ++Tidx )
     {
         const data_t temperature = static_cast<data_t>( thermo -> temperatures[Tidx] );
@@ -137,7 +158,11 @@ void calculate_nonlinear_observables( const size_t num_temps, const size_t syste
 
         // Calculate the Binder cumulant
         nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::binder) ] = calculate_Binder_cumulant( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::mag4) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::mag2) ), system_size );
-    
+
+#if CORRELATION_LENGTHS
+        // Calculate the correlation length proxy
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::corr_length) ]= calculate_correlation_length( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::corr_qmin) ), Lsize );
+#endif 
     }
 }
 

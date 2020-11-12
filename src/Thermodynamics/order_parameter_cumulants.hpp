@@ -51,6 +51,9 @@ inline obs_t calculate_two_component_Binder_cumulant( const obs_t m4, const obs_
 template<typename obs_t>
 inline obs_t calculate_correlation_length( const obs_t G0, const obs_t Gq, const size_t L )
 {
+    if ( Gq == 0. )
+        return DBL_MAX;
+
     return ( static_cast<obs_t>(L) / (2. * acos(-1.)) ) * sqrt( (G0 - Gq) / Gq );
 }
 
