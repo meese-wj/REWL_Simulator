@@ -3,6 +3,7 @@
 # subdirectory as an include directory
 # properly for all of the Hamiltonians.
 add_subdirectory(grid)
+add_subdirectory(Correlations)
 add_subdirectory(Ising2d)
 add_subdirectory(Ashkin_Teller2d)
 
@@ -11,5 +12,6 @@ add_library(hamiltonians
 
 target_link_libraries(hamiltonians PUBLIC
                       grid_functions
+                      correlations
                       ising2d
                       ashkin_teller2d)
