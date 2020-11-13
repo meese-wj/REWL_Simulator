@@ -153,9 +153,7 @@ void Ising2d<data_t>::update_observables(const size_t bin, Ising2d_Obs<data_t> *
 #if CORRELATION_LENGTHS
     if ( static_cast<size_t> (obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin)) % counts_per_transform == 0 )
     {
-        data_t Gq_value = obs_ptr -> correlator.compute_correlator( spin_array );
-        //if ( current_state.energy == -0.75 * 24 * 24 )
-        //   printf("\ncorrelator = %e\n", Gq_value);
+        data_t Gq_value = obs_ptr -> correlator.compute_correlator( spin_array, 0, 0, 1 );
         obs_ptr -> update_qmin_correlator( Gq_value, Obs::enum_names::corr_qmin, bin,
                                            obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin) / counts_per_transform );
     }

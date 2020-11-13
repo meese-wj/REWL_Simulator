@@ -59,11 +59,12 @@ struct Fourier_Correlator
     ~Fourier_Correlator()
     {}
 
-    obs_t compute_correlator( const obs_t * const field_array ) const;
+    obs_t compute_correlator( const obs_t * const field_array, const size_t type_1, const size_t type_2, const size_t num_types, const bool is_mixed = false ) const;
 };
 
 template<typename obs_t>
-obs_t Fourier_Correlator<obs_t>::compute_correlator( const obs_t * const field_array ) const
+obs_t Fourier_Correlator<obs_t>::compute_correlator( const obs_t * const field_array, const size_t type_1, const size_t type_2,
+                                                     const size_t num_types, const bool is_mixed ) const
 {
     const size_t L = kernel.L;
     obs_t corr_real_x = 0.;
@@ -73,6 +74,7 @@ obs_t Fourier_Correlator<obs_t>::compute_correlator( const obs_t * const field_a
     obs_t temp_corr_x = 0.;
     obs_t temp_kernel_real = 0.;
     obs_t temp_kernel_imag = 0.;
+    obs_t field_value = 0.;
     
     // Calculate the Correlator by summing over
     // idx and jdx (x and y axes). The correlators
@@ -85,9 +87,14 @@ obs_t Fourier_Correlator<obs_t>::compute_correlator( const obs_t * const field_a
         temp_corr_x = 0.;
         for ( size_t jdx = 0; jdx != L; ++jdx )
         {
-            temp_corr_x += field_array[ idx * L + jdx ];
-            corr_real_y += field_array[ idx * L + jdx ] * kernel.real_part[ jdx ];
-            corr_imag_y += field_array[ idx * L + jdx ] * kernel.imag_part[ jdx ];
+            field_value = field_array[ (idx * L + jdx) * num_types + type_1 ];
+            // TODO: This "is_mixed" hack really only works for the n-flavor Ashkin Teller model...
+            if ( is_mixed )
+                field_value = field_array[ (idx * L + jdx) * num_types + type_1 ] * field_array[ (idx * L + jdx) * num_types + type_2 ];
+            
+            temp_corr_x += field_value;
+            corr_real_y += field_value * kernel.real_part[ jdx ];
+            corr_imag_y += field_value * kernel.imag_part[ jdx ];
 
             if ( idx == jdx )
             {

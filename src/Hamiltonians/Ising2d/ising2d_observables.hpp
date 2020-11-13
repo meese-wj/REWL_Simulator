@@ -39,7 +39,7 @@ namespace Obs
 
 #if CORRELATION_LENGTHS
     const std::vector<std::string> string_names = { "Magnetization", "Magnetization2", "Magnetization4", "G(qmin)", "Counts per Bin", "NUM OBS" };
-    const std::vector<std::string> nonlinear_obs_strings = { "Susceptibility", "Binder Cumulant", "Correlation Length" };
+    const std::vector<std::string> nonlinear_obs_strings = { "Susceptibility", "Binder Cumulant", "Correlation Length over L" };
 #else
     const std::vector<std::string> string_names = { "Magnetization", "Magnetization2", "Magnetization4", "Counts per Bin", "NUM OBS" };
     const std::vector<std::string> nonlinear_obs_strings = { "Susceptibility", "Binder Cumulant" };
@@ -184,7 +184,7 @@ void calculate_nonlinear_observables( const size_t num_temps, const size_t syste
 
 #if CORRELATION_LENGTHS
         // Calculate the correlation length proxy
-        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::corr_length) ]= calculate_correlation_length( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::corr_qmin) ), Lsize );
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::corr_length) ] = calculate_correlation_length( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::corr_qmin) ), Lsize ) / Lsize;
 #endif 
     }
 }
