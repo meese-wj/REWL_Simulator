@@ -9,6 +9,7 @@
  * tibility. */
 
 #include <cmath>
+#include <cfloat>
 
 // Calculate the EXTENSIVE susceptibility from
 // an intensive m and m2. If m and m2 are extensive

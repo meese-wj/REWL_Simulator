@@ -12,6 +12,11 @@
 // cmake include directories.
 #include <grid_setup.hpp>
 
+#if CORRELATION_LENGTHS
+// Include the correlation functionality.
+#include "../Correlations/fourier_correlator.hpp"
+#endif
+
 // TODO: Upgrade the energies to allow for 
 // double calculations. 
 template<typename data_t>
@@ -144,6 +149,18 @@ void Ising2d<data_t>::update_observables(const size_t bin, Ising2d_Obs<data_t> *
     obs_ptr -> update_observable_average(mag_val, Obs::enum_names::mag, bin);
     obs_ptr -> update_observable_average(mag_val * mag_val, Obs::enum_names::mag2, bin);
     obs_ptr -> update_observable_average(mag_val * mag_val * mag_val * mag_val, Obs::enum_names::mag4, bin);
+    
+#if CORRELATION_LENGTHS
+    if ( static_cast<size_t> (obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin)) % counts_per_transform == 0 )
+    {
+        data_t Gq_value = obs_ptr -> correlator.compute_correlator( spin_array );
+        //if ( current_state.energy == -0.75 * 24 * 24 )
+        //   printf("\ncorrelator = %e\n", Gq_value);
+        obs_ptr -> update_qmin_correlator( Gq_value, Obs::enum_names::corr_qmin, bin,
+                                           obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin) / counts_per_transform );
+    }
+#endif
+
     obs_ptr -> increment_counts_per_bin(bin);
 }
 

@@ -8,6 +8,8 @@
 
 #include <cmath>
 
+constexpr size_t counts_per_transform = 1000;
+
 // We assume that Lx = Ly for now.
 template<typename obs_t>
 struct Transform_Kernel
@@ -32,8 +34,10 @@ struct Transform_Kernel
 
         for ( size_t idx = 0; idx != L; ++idx )
         {
-            real_part[ idx ] = cos( qmin * static_cast<obs_t>(idx) ) / static_cast<obs_t>(N);
-            imag_part[ idx ] = sin( qmin * static_cast<obs_t>(idx) ) / static_cast<obs_t>(N);
+            real_part[ idx ] = cos( qmin * static_cast<obs_t>(idx) );
+            imag_part[ idx ] = sin( qmin * static_cast<obs_t>(idx) );
+            //real_part[ idx ] = cos( qmin * static_cast<obs_t>(idx) ) / sqrt( static_cast<obs_t>(N) );
+            //imag_part[ idx ] = sin( qmin * static_cast<obs_t>(idx) ) / sqrt( static_cast<obs_t>(N) );
         }
     }
     
@@ -53,9 +57,7 @@ struct Fourier_Correlator
     {}
 
     ~Fourier_Correlator()
-    {
-        kernel.~Transform_Kernel<obs_t>();
-    }
+    {}
 
     obs_t compute_correlator( const obs_t * const field_array ) const;
 };

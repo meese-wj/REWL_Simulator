@@ -2,8 +2,13 @@
 #define ISING2D_OBSERVABLES
 #include <string>
 #include <vector>
-#include <ising2d_parameters.cxx>
+#include "ising2d_parameters.cxx"
 #include <order_parameter_cumulants.hpp>
+
+#if CORRELATION_LENGTHS
+// Include the correlation functionality.
+#include "../Correlations/fourier_correlator.hpp"
+#endif
 
 static constexpr float DATA_INITIALIZER = 0.;
 
@@ -59,10 +64,14 @@ struct Ising2d_Obs
     data_t * obs_array = nullptr;
 
 #if CORRELATION_LENGTHS
-    Fourier_Correlator<data_t> correlator ( Ising2d_Parameters::L );
+    Fourier_Correlator<data_t> correlator;
 #endif
 
+#if CORRELATION_LENGTHS
+    Ising2d_Obs(const size_t nbins) : num_bins(nbins), correlator( Ising2d_Parameters::L )
+#else
     Ising2d_Obs(const size_t nbins) : num_bins(nbins)
+#endif
     {
         obs_array = new data_t [ num_bins * convert(Obs::enum_names::NUM_OBS) ];
         
@@ -100,6 +109,9 @@ struct Ising2d_Obs
 
     // Update average observable with the given value
     void update_observable_average(const data_t value, const Obs::enum_names ob, const size_t bin) const;
+#if CORRELATION_LENGTHS
+    void update_qmin_correlator(const data_t value, const Obs::enum_names ob, const size_t bin, const size_t counts ) const;
+#endif
 
     // Increment the counter
     void increment_counts_per_bin(const size_t bin) const
@@ -132,6 +144,17 @@ void Ising2d_Obs<data_t>::update_observable_average(const data_t value,
     set_observable(current_avg, ob, bin);
 }
 
+#if CORRELATION_LENGTHS
+template<typename data_t>
+void Ising2d_Obs<data_t>::update_qmin_correlator(const data_t value, 
+                                                 const Obs::enum_names ob, 
+                                                 const size_t bin, const size_t counts ) const
+{
+    data_t current_avg = get_observable(ob, bin);
+    current_avg = ( value + counts * current_avg ) / ( counts + 1 );
+    set_observable( current_avg, ob, bin );
+}
+#endif
 
 // Calculate the thermally-averaged nonlinear observables
 // given a thermodynamics object and the thermally-averaged
