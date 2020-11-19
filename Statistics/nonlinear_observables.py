@@ -109,7 +109,79 @@ def calculate_Ising_observables( labels, Lsize, avg_data, stderr_data, dim = 2 )
 
     return nonlinear_labels, nonlinear_avgs, nonlinear_stderr
 
-# TODO: Calculate Ashkin Teller observables
+def calculate_Ashkin_Teller_observables( labels, Lsize, avg_data, stderr_data, dim = 2 ):
+
+    Nfloat = float(Lsize) ** dim
+    T_idx = labels.index("Temperature")
+    sig_idx = labels.index("Sigma Mag")
+    sig2_idx = labels.index("Sigma Mag2")
+    sig4_idx = labels.index("Sigma Mag4")
+
+    tau_idx = labels.index("Tau Mag")
+    tau2_idx = labels.index("Tau Mag2")
+    tau4_idx = labels.index("Tau Mag4")
+
+    ord_idx = labels.index("Order Parameter")
+    ord2_idx = labels.index("Order Parameter2")
+    ord4_idx = labels.index("Order Parameter4")
+
+    nem_idx = labels.index("Nematicity")
+    nem2_idx = labels.index("Nematicity2")
+    nem4_idx = labels.index("Nematicity4")
+
+    nonlinear_labels = [ "1: Temperature",
+                         "2: Sigma Susceptibility", "3: Sigma Binder Cumulant",
+                         "4: Tau Susceptibility", "5: Tau Binder Cumulant",
+                         "6: Nematicity Susceptibility", "7: Nematicity Binder Cumulant",
+                         "8: Susceptibility", "9: Binder Cumulant" ]
+
+
+    num_obs = len(nonlinear_labels) - 1
+
+    susc = susceptibility()
+    scalar_binder = scalar_binder_cumulant()
+    spinor_binder = two_component_binder_cumulant()
+
+    nonlinear_avgs = np.zeros((avg_data.shape[0], 1 + num_obs))
+    nonlinear_stderr = np.zeros(nonlinear_avgs.shape)
+
+    # Set the temperature
+    nonlinear_avgs[:,T_idx] = avg_data[:,T_idx]
+    nonlinear_stderr[:,T_idx] = stderr_data[:,T_idx]
+
+    # Calculate the sigma susceptibility and error
+    nonlinear_avgs[:,1] = susc.avg( avg_data[:, sig_idx], avg_data[:, sig2_idx], Nfloat, avg_data[:, T_idx] )
+    nonlinear_stderr[:,1] = susc.stderr( stderr_data[:, sig_idx], stderr_data[:, sig2_idx], avg_data[:, sig_idx], Nfloat, avg_data[:, T_idx] )
+
+    # Calculate the sigma Binder cumulant and error
+    nonlinear_avgs[:,2] = scalar_binder.avg( avg_data[:, sig2_idx], avg_data[:, sig4_idx], Nfloat )
+    nonlinear_stderr[:,2] = scalar_binder.stderr( stderr_data[:, sig2_idx], stderr_data[:, sig4_idx], avg_data[:, sig2_idx], avg_data[:, sig4_idx], Nfloat )
+
+    # Calculate the tau susceptibility and error
+    nonlinear_avgs[:,3] = susc.avg( avg_data[:, tau_idx], avg_data[:, tau2_idx], Nfloat, avg_data[:, T_idx] )
+    nonlinear_stderr[:,3] = susc.stderr( stderr_data[:, tau_idx], stderr_data[:, tau2_idx], avg_data[:, tau_idx], Nfloat, avg_data[:, T_idx] )
+
+    # Calculate the tau scalar_binder cumulant and error
+    nonlinear_avgs[:,4] = scalar_binder.avg( avg_data[:, tau2_idx], avg_data[:, tau4_idx], Nfloat )
+    nonlinear_stderr[:,4] = scalar_binder.stderr( stderr_data[:, tau2_idx], stderr_data[:, tau4_idx], avg_data[:, tau2_idx], avg_data[:, tau4_idx], Nfloat )
+
+    # Calculate the nem susceptibility and error
+    nonlinear_avgs[:,5] = susc.avg( avg_data[:, nem_idx], avg_data[:, nem2_idx], Nfloat, avg_data[:, T_idx] )
+    nonlinear_stderr[:,5] = susc.stderr( stderr_data[:, nem_idx], stderr_data[:, nem2_idx], avg_data[:, nem_idx], Nfloat, avg_data[:, T_idx] )
+
+    # Calculate the nem scalar_binder cumulant and error
+    nonlinear_avgs[:,6] = scalar_binder.avg( avg_data[:, nem2_idx], avg_data[:, nem4_idx], Nfloat )
+    nonlinear_stderr[:,6] = scalar_binder.stderr( stderr_data[:, nem2_idx], stderr_data[:, nem4_idx], avg_data[:, nem2_idx], avg_data[:, nem4_idx], Nfloat )
+
+    # Calculate the order susceptibility and error
+    nonlinear_avgs[:,7] = susc.avg( avg_data[:, ord_idx], avg_data[:, ord2_idx], Nfloat, avg_data[:, T_idx] )
+    nonlinear_stderr[:,7] = susc.stderr( stderr_data[:, ord_idx], stderr_data[:, ord2_idx], avg_data[:, ord_idx], Nfloat, avg_data[:, T_idx] )
+
+    # Calculate the order Binder cumulant and error
+    nonlinear_avgs[:,8] = spinor_binder.avg( avg_data[:, ord2_idx], avg_data[:, ord4_idx], Nfloat )
+    nonlinear_stderr[:,8] = spinor_binder.stderr( stderr_data[:, ord2_idx], stderr_data[:, ord4_idx], avg_data[:, ord2_idx], avg_data[:, ord4_idx], Nfloat )
+
+    return nonlinear_labels, nonlinear_avgs, nonlinear_stderr
 
 def write_output_data( input_file, nonlinear_labels, header_lines, nonlinear_avgs, nonlinear_stderr ):
 
@@ -146,6 +218,10 @@ def main():
     if "Ising" in args.model:
 
         nonlinear_labels, nonlinear_avgs, nonlinear_stderr = calculate_Ising_observables( labels, args.Lsize, avg_data, stderr_data )
+
+    elif "Ashkin_Teller" in args.model:
+
+        nonlinear_labels, nonlinear_avgs, nonlinear_stderr = calculate_Ashkin_Teller_observables( labels, args.Lsize, avg_data, stderr_data )
 
 
     write_output_data( args.averages, nonlinear_labels, header_lines, nonlinear_avgs, nonlinear_stderr )

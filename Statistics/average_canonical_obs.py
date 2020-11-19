@@ -67,8 +67,6 @@ def read_in_data( input_path, Lsize, coupling_symbol, coupling_value, comment = 
     L_string = "L-" + ("%d" % int(Lsize))
     key_string = coupling_symbol + "-" + ("%.6f" % float(coupling_value))
 
-    print(os.listdir(input_path))
-
     for fl in os.listdir( input_path ):
         if not os.path.isdir( fl ) and ( filename_base in fl and L_string in fl and key_string in fl ):
 
@@ -166,7 +164,6 @@ def microcanonical_observable_data( labels, final_averages, final_stderr ):
     #micro_rows = int( np.floor( (1 - micro_dilutor) * num_rows )  )
     micro_rows=20000
     micro_increment = num_rows // micro_rows
-    print(micro_rows, micro_increment)
     micro_avgs = np.zeros((micro_rows, num_cols))
     micro_stderr = np.zeros(micro_avgs.shape)
 

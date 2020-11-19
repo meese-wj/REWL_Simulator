@@ -12,6 +12,11 @@
 // cmake include directories.
 #include <grid_setup.hpp>
 
+#if CORRELATION_LENGTHS
+// Include the correlation functionality.
+#include "../Correlations/fourier_correlator.hpp"
+#endif
+
 enum spin_type
 {
     sigma, tau, NUM_SPIN_TYPES
@@ -26,7 +31,7 @@ struct State
     float energy = 0;
     data_t sigma_magnetization = 0;
     data_t tau_magnetization = 0;
-    data_t nematicity = 0.;
+    data_t baxter = 0.;
     data_t DoF [spin_type::NUM_SPIN_TYPES] = { 1., 1. }; // Store the local degree of freedom
 };
 
@@ -38,7 +43,7 @@ void print(const State<data_t> & stat)
     printf("\n\tenergy              = %e", stat.energy);
     printf("\n\tsigma magnetization = %e", stat.sigma_magnetization);
     printf("\n\ttau magnetization   = %e", stat.tau_magnetization);
-    printf("\n\tnematicity          = %e", stat.nematicity);
+    printf("\n\tbaxter          = %e", stat.baxter);
     printf("\n\tDoF                 = %e\n", stat.DoF);
 }
 
@@ -124,20 +129,20 @@ void Ashkin_Teller2d<data_t>::recalculate_state()
     float temp_energy      = 0.;
     data_t temp_sigma_mag  = 0.;
     data_t temp_tau_mag    = 0.;
-    data_t temp_nematicity = 0.;
+    data_t temp_baxter = 0.;
 
     for ( size_t idx = 0; idx != Ashkin_Teller2d_Parameters::N; ++idx )
     {
        temp_sigma_mag += *spin_at_site(idx, spin_type::sigma);
        temp_tau_mag   += *spin_at_site(idx, spin_type::tau);
-       temp_nematicity += (*spin_at_site(idx, spin_type::sigma)) * (*spin_at_site(idx, spin_type::tau));
+       temp_baxter += (*spin_at_site(idx, spin_type::sigma)) * (*spin_at_site(idx, spin_type::tau));
        temp_energy += 0.5 * local_energy(idx, spins_address(idx));
     }
 
     current_state.energy              = temp_energy;
     current_state.sigma_magnetization = temp_sigma_mag;
     current_state.tau_magnetization   = temp_tau_mag;
-    current_state.nematicity          = temp_nematicity;
+    current_state.baxter              = temp_baxter;
 }
 
 // Change the state by changing the value of the spin
@@ -168,7 +173,7 @@ void Ashkin_Teller2d<data_t>::change_state(const size_t idx, State<data_t> & tem
 
     temp_state.sigma_magnetization = current_state.sigma_magnetization + temp_state.DoF[spin_type::sigma] - (*spin_at_site(idx, spin_type::sigma));
     temp_state.tau_magnetization   = current_state.tau_magnetization   + temp_state.DoF[spin_type::tau]   - (*spin_at_site(idx, spin_type::tau));
-    temp_state.nematicity          = current_state.nematicity + (temp_state.DoF[spin_type::sigma] * temp_state.DoF[spin_type::tau]) - ( *spin_at_site(idx, spin_type::sigma) * (*spin_at_site(idx, spin_type::tau)) );
+    temp_state.baxter              = current_state.baxter + (temp_state.DoF[spin_type::sigma] * temp_state.DoF[spin_type::tau]) - ( *spin_at_site(idx, spin_type::sigma) * (*spin_at_site(idx, spin_type::tau)) );
 
     temp_state.energy              = current_state.energy + local_energy(idx, &(temp_state.DoF[0])) - local_energy(idx, spins_address(idx) );
 
@@ -186,7 +191,7 @@ void Ashkin_Teller2d<data_t>::set_state(const size_t idx, const State<data_t> & 
 
     current_state.sigma_magnetization    = _state.sigma_magnetization;
     current_state.tau_magnetization      = _state.tau_magnetization;
-    current_state.nematicity             = _state.nematicity;
+    current_state.baxter                 = _state.baxter;
 
     *spin_at_site(idx, spin_type::sigma) = _state.DoF[spin_type::sigma];
     *spin_at_site(idx, spin_type::tau)   = _state.DoF[spin_type::tau];
@@ -199,7 +204,7 @@ void Ashkin_Teller2d<data_t>::update_observables(const size_t bin, Ashkin_Teller
     const data_t sigma_val  = abs( current_state.sigma_magnetization );
     const data_t tau_val    = abs( current_state.tau_magnetization );
     const data_t order_val2 = sigma_val * sigma_val + tau_val * tau_val;
-    const data_t nem_val    = abs( current_state.nematicity );
+    const data_t baxter_val    = abs( current_state.baxteraticity );
     
     obs_ptr -> update_observable_average(sigma_val, Obs::enum_names::sigma_mag, bin);
     obs_ptr -> update_observable_average(sigma_val * sigma_val, Obs::enum_names::sigma_mag2, bin);
@@ -213,9 +218,31 @@ void Ashkin_Teller2d<data_t>::update_observables(const size_t bin, Ashkin_Teller
     obs_ptr -> update_observable_average(order_val2,  Obs::enum_names::order_param2, bin);
     obs_ptr -> update_observable_average(order_val2 * order_val2, Obs::enum_names::order_param4, bin);
 
-    obs_ptr -> update_observable_average(nem_val, Obs::enum_names::nem_mag, bin);
-    obs_ptr -> update_observable_average(nem_val * nem_val, Obs::enum_names::nem_mag2, bin);
-    obs_ptr -> update_observable_average(nem_val * nem_val * nem_val * nem_val, Obs::enum_names::nem_mag4, bin);
+    obs_ptr -> update_observable_average(baxter_val, Obs::enum_names::baxter_mag, bin);
+    obs_ptr -> update_observable_average(baxter_val * baxter_val, Obs::enum_names::baxter_mag2, bin);
+    obs_ptr -> update_observable_average(baxter_val * baxter_val * baxter_val * baxter_val, Obs::enum_names::baxter_mag4, bin);
+
+#if CORRELATION_LENGTHS
+    if ( static_cast<size_t> (obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin)) % counts_per_transform == 0 )
+    {
+        data_t sigma_Gq_value = obs_ptr -> correlator.compute_correlator( spin_array, spin_type::sigma, spin_type::tau, spin_type::NUM_SPIN_TYPES, false );
+        data_t tau_Gq_value = obs_ptr -> correlator.compute_correlator( spin_array, spin_type::sigma, spin_type::tau, spin_type::NUM_SPIN_TYPES, false );
+        data_t baxter_Gq_value = obs_ptr -> correlator.compute_correlator( spin_array, spin_type::sigma, spin_type::tau, spin_type::NUM_SPIN_TYPES, true );
+
+        // Sigma correlator
+        obs_ptr -> update_qmin_correlator( sigma_Gq_value, Obs::enum_names::sigma_corr_qmin, bin,
+                                           obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin) / counts_per_transform );
+        // Tau correlator
+        obs_ptr -> update_qmin_correlator( tau_Gq_value, Obs::enum_names::tau_corr_qmin, bin,
+                                           obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin) / counts_per_transform );
+        // Order parameter correlator
+        obs_ptr -> update_qmin_correlator( sigma_Gq_value + tau_Gq_value, Obs::enum_names::order_corr_qmin, bin,
+                                           obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin) / counts_per_transform );
+        // Baxter correlator
+        obs_ptr -> update_qmin_correlator( baxter_Gq_value, Obs::enum_names::baxter_corr_qmin, bin,
+                                           obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin) / counts_per_transform );
+    }
+#endif
     
     obs_ptr -> increment_counts_per_bin(bin);
 }
@@ -249,7 +276,7 @@ void Ashkin_Teller2d<data_t>::print_lattice() const
 
 enum State_SendRecv
 {
-    energy = 444, sigma_mag, tau_mag, nem, state_dof, all_dof
+    energy = 444, sigma_mag, tau_mag, bax, state_dof, all_dof
 };
 
 // TODO: This should be specialized because it will break probably
@@ -262,7 +289,7 @@ void mpi_exchange_state( state_t * const state, const int partner_index, const i
 
     MPI_Sendrecv_replace( &( state -> tau_magnetization  ), 1, MPI_OBS_TYPE, partner_index, State_SendRecv::tau_mag, partner_index, State_SendRecv::tau_mag, local_communicators[ comm_id  ], status  );
     
-    MPI_Sendrecv_replace( &( state -> nematicity  ), 1, MPI_OBS_TYPE, partner_index, State_SendRecv::nem, partner_index, State_SendRecv::nem, local_communicators[ comm_id  ], status  );
+    MPI_Sendrecv_replace( &( state -> baxter ), 1, MPI_OBS_TYPE, partner_index, State_SendRecv::bax, partner_index, State_SendRecv::bax, local_communicators[ comm_id  ], status  );
     
     MPI_Sendrecv_replace( &( state -> DoF ), static_cast<int>(spin_type::NUM_SPIN_TYPES), MPI_OBS_TYPE, partner_index, State_SendRecv::state_dof, partner_index, State_SendRecv::state_dof, local_communicators[ comm_id  ], status  );
 

@@ -17,7 +17,8 @@ option(TRAPEZOIDAL_RULE "Use trapezoidal rule to evaluate the thermodynamical in
 option(INDEPENDENT_WALKERS "Do not allow for exchange or for intra-window walkers to average" OFF)
 option(DIFFERENT_SEEDS "Use timings to set the seeds for the walkers." ON)
 option(EQUAL_WINDOWS "Construct equally-sized windows in REWL." ON)
-option(JOB_ARRAYS "Allow for job arrays to run without data over-write." ON)
+option(JOB_ARRAYS "Allow for job arrays to run without data over-write." OFF)
+option(CORRELATION_LENGTHS "Compute the correlation length periodically in each energy bin." ON)
 
 # Add compile-time options to specify the Hamiltonian
 option(ISING2D "Run a 2d Ising model on a periodic square lattice." OFF)
@@ -84,6 +85,10 @@ endif()
 
 if (JOB_ARRAYS)
     add_definitions(-DJOB_ARRAYS)
+endif()
+
+if (CORRELATION_LENGTHS)
+    add_definitions(-DCORRELATION_LENGTHS)
 endif()
 
 add_subdirectory(src)

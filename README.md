@@ -65,6 +65,9 @@ Some `cmake` options to be aware of are as follows:
 * `JOB_ARRAYS`
     * If engaged, the path-construction system will be changed to allow for many jobs. 
     * This will eliminate potential data over-write and allow for further averaging over the independent jobs to benefit the statistics.
+* `CORRELATION_LENGTHS`
+    * If engaged, the Fourier transform of the field correlator will be averaged in each energy bin periodically.
+    * At the end of the simulation the correlation lengths will be obtained via a combination of the correlator at q = 0 and q = 2pi / L.
 
 #### Supported Hamiltonians
 If multiple Hamiltonians are selected at build time, then `cmake` will throw a `FATAL_ERROR`.

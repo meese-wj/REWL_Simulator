@@ -14,6 +14,11 @@ from bisect import bisect_left
 #data_file_stem = "self_averaged_observables"
 #observable_marker = "Intensive Observable"
 output_path = "Figures"
+error_incrementer = 60
+capsize = 2
+markersize = 2.5
+marker_edge_color = "black"
+marker_edge_width = 2.5
 
 def setup_args():
     parser = argparse.ArgumentParser()
@@ -59,13 +64,16 @@ def collect_observables_and_data( data_file_stem, observable_marker, coupling_sy
 
             Lvalue = find_string_value("L", fl)
 
-            data = np.loadtxt(fl, delimiter = "  ", dtype = float, comments = comment)
+            data = np.loadtxt(fl, delimiter = "  ", dtype="float64", comments = comment)
+            errs = np.zeros((0,0))
+
+            if "job_mean" in fl:
+                err_file = fl[ : fl.find("job_mean") ] + "job_stderr"
+                errs = np.loadtxt( err_file, delimiter = "  ", dtype="float64", comments = comment )
 
             print(fl, Lvalue)
 
-            data_tuples.append( (Lvalue, data) )
-
-
+            data_tuples.append( (Lvalue, data, errs) )
 
     print(labels)
 
@@ -74,7 +82,7 @@ def collect_observables_and_data( data_file_stem, observable_marker, coupling_sy
     return labels, data_tuples
 
 # Plot the probability density as functions of energy at a fixed temperature
-def plot_probability_density( model_name, data_file_stem, coupling_string, coupling_value, labels, data_tuples, plot_directory, Tc_val = None ):
+def plot_probability_density( model_name, data_file_stem, coupling_string, coupling_value, labels, data_tuples, plot_directory, Tc_val = None, plt_err = False ):
 
     xlabel = labels[0]
     key_string = coupling_string + " = " + "%.3f" % float(coupling_value)
@@ -107,22 +115,40 @@ def plot_probability_density( model_name, data_file_stem, coupling_string, coupl
 
             # Find the probability density as a function
             # of the extensive energy
-            density = np.exp( exponent ) / partition
-
+            # density = np.exp( exponent ) / partition
+            density = np.exp( exponent )
 
             # Rescale it by N to plot the normalized
             # density along the intensive energy axis
-            ax[1].plot( data_tuples[Ldx][1][:,0], Nfloat * density, label = r"$L = %s$" % Lvalue )
+            lines1 = ax[1].plot( data_tuples[Ldx][1][:,0], density, label = r"$L = %s$" % Lvalue )
 
             order2_col = labels.index("Order Parameter2")
-            ax[0].plot( data_tuples[Ldx][1][:,order2_col]/Nfloat, Nfloat * density, label = r"$L = %s$" % Lvalue )
+            #ax[0].plot( data_tuples[Ldx][1][:,order2_col] / Nfloat, Nfloat * density, label = r"$L = %s$" % Lvalue )
+            lines0 = ax[0].plot( data_tuples[Ldx][1][:,order2_col] / Nfloat, density, label = r"$L = %s$" % Lvalue )
+
+            if plt_err and data_tuples[Ldx][2].shape != (0,0):
+                energy_err = Nfloat * data_tuples[Ldx][2][:,0]
+                logdos_err = Nfloat * data_tuples[Ldx][2][:,1]
+                # Ignore the error in the max density since 1/density(max_exponent) -> 0
+                density_err = density * np.sqrt( logdos_err ** 2. + ( energy_err / float(Tc_val) ) ** 2. )
+                ax[0].errorbar(data_tuples[Ldx][1][:, order2_col] / Nfloat, density,
+                               xerr = data_tuples[Ldx][2][:, 0] / Nfloat, yerr = density_err, errorevery=error_incrementer,
+                               ms = markersize, mec = marker_edge_color, mew = marker_edge_width, mfc = lines[-1].get_color(),
+                               color = lines0[-1].get_color(),
+                               fmt='none', capsize=capsize, label = None)
+                ax[1].errorbar(data_tuples[Ldx][1][:, 0], density,
+                               xerr = data_tuples[Ldx][2][:, 0], yerr = density_err, errorevery=error_incrementer,
+                               color = lines1[-1].get_color(),
+                               ms = markersize, mec = marker_edge_color, mew = marker_edge_width, mfc = lines[-1].get_color(),
+                               fmt='none', capsize=capsize, label = None)
 
         # Set xlim
         ax[1].set_xlim([-5,-3])
 
         ax[1].set_xlabel(r"Energy per Site $[E/N]$", fontsize = 12)
         ax[0].set_xlabel(r"%s" % labels[order2_col], fontsize = 12)
-        ax[0].set_ylabel(r"Probability Density $[N\cdot E^{-1}]$", fontsize = 12)
+        #ax[0].set_ylabel(r"Probability Density $[N\cdot E^{-1}]$", fontsize = 12)
+        ax[0].set_ylabel(r"Scaled Probability Density $[E^{-1}]$", fontsize = 12)
         ax[0].legend(fontsize = 10)
 
         fig.suptitle(model_name + " at $T_c = %s$: " % (Tc_val) + key_string, fontsize = 12)
@@ -155,17 +181,31 @@ def plot_probability_density( model_name, data_file_stem, coupling_string, coupl
 
             # Find the probability density as a function
             # of the extensive energy
-            density = np.exp( exponent ) / partition
+            # density = np.exp( exponent ) / partition
+            density = np.exp( exponent )
 
             # Rescale it by N to plot the normalized
             # density along the intensive energy axis
-            ax.plot( data_tuples[Ldx][1][:,0], Nfloat * density, label = r"$L = %s$" % Lvalue )
+            # ax.plot( data_tuples[Ldx][1][:,0], Nfloat * density, label = r"$L = %s$" % Lvalue )
+            lines = ax.plot( data_tuples[Ldx][1][:,0], density, label = r"$L = %s$" % Lvalue )
+
+            if plt_err and data_tuples[Ldx][2].shape != (0,0):
+                energy_err = Nfloat * data_tuples[Ldx][2][:,0]
+                logdos_err = Nfloat * data_tuples[Ldx][2][:,1]
+                # Ignore the error in the max density since 1/density(max_exponent) -> 0
+                density_err = density * np.sqrt( logdos_err ** 2. + ( energy_err / float(Tc_val) ) ** 2. )
+                ax.errorbar(data_tuples[Ldx][1][:, 0], density,
+                            xerr = data_tuples[Ldx][2][:, 0], yerr = density_err, errorevery=error_incrementer,
+                            color = lines[-1].get_color(),
+                            ms = markersize, mec = marker_edge_color, mew = marker_edge_width, mfc = lines[-1].get_color(),
+                            fmt='none', capsize=capsize, label = None)
 
         # Set xlim
-        #ax.set_xlim([-1.6,-1.15])
+        ax.set_xlim([-1.6,-1.15])
 
         ax.set_xlabel(r"Energy per Site $[E/N]$", fontsize = 12)
-        ax.set_ylabel(r"Probability Density $[N\cdot E^{-1}]$", fontsize = 12)
+        #ax.set_ylabel(r"Probability Density $[N\cdot E^{-1}]$", fontsize = 12)
+        ax.set_ylabel(r"Scaled Probability Density $[E^{-1}]$", fontsize = 12)
         ax.legend(fontsize = 10)
 
         ax.set_title(model_name + " at $T_c = %s$: " % (Tc_val) + key_string, fontsize = 12)
@@ -204,7 +244,7 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
         print("\nPlotting %s vs %s" % (labels[lbl], xlabel))
         fig, ax = plt.subplots(1,1)
 
-        epsilon_range = None
+        epsilon_range = 0.1
         xmin, xmax, plt_ymin, plt_ymax = 0, 0, 0, 0
         if epsilon_range != None and Tc_val != None and Tc_val != "":
             xmin, xmax = (1 - epsilon_range) * float(Tc_val), (1 + epsilon_range) * float(Tc_val)
@@ -212,7 +252,15 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
         for Ldx in range(0, len(data_tuples)):
 
             Lvalue = data_tuples[Ldx][0]
-            ax.plot(data_tuples[Ldx][1][:,0], data_tuples[Ldx][1][:,lbl], label = r"$L = %s$" % Lvalue)
+            lines = ax.plot(data_tuples[Ldx][1][:,0], data_tuples[Ldx][1][:,lbl], label = r"$L = %s$" % Lvalue)
+
+            if data_tuples[Ldx][2].shape != (0,0):
+                ax.errorbar(data_tuples[Ldx][1][:, 0], data_tuples[Ldx][1][:, lbl],
+                            xerr = data_tuples[Ldx][2][:, 0], yerr = data_tuples[Ldx][2][:, lbl], errorevery=error_incrementer,
+                            color = lines[-1].get_color(),
+                            ms = markersize, mec = marker_edge_color, mew = marker_edge_width, mfc = lines[-1].get_color(),
+                            ls=None, capsize=capsize, label = None)
+
             if epsilon_range != None and Tc_val != None and Tc_val != "":
                 if "microcanonical" not in data_file_stem and "Counts" not in labels[lbl]:
                     test_ymin, test_ymax = get_y_range( data_tuples[Ldx][1][:,lbl], data_tuples[Ldx][1][:,0], xmin, xmax )

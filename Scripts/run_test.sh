@@ -1,5 +1,7 @@
 #!/bin/bash
 
+model="Ashkin_Teller2d"
+
 cd /home/joe/Linux_Code_Dev/REWL_Simulator/build
 echo
 pwd
@@ -7,7 +9,7 @@ echo
 ls
 echo
 echo "Building and running code."
-cmake ..
+cmake .. "-D${model^^}=ON"
 
 # *******************************
 # Set MPI variables from CMake
@@ -31,7 +33,7 @@ then
     echo "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} \
           ./bin/REWL_Simulator ${MPIEXEC_POSTFLAGS}"
     time ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} \
-         ./bin/REWL_Simulator ${MPIEXEC_POSTFLAGS} 0
+         ./bin/REWL_Simulator ${MPIEXEC_POSTFLAGS}
 else
     echo
     echo "Error in compilation. Exiting."
