@@ -19,7 +19,7 @@ static constexpr float DATA_INITIALIZER = 0.;
 // average quantities in each bin.
 namespace Obs
 {
-    // The "nematicity" here is product sigma * tau.
+    // The "Baxter variable" here is product sigma * tau.
     // The term comes from the J1-J2 antiferromagnetic
     // Heisenberg model.
     enum class enum_names
@@ -28,13 +28,13 @@ namespace Obs
         sigma_mag, sigma_mag2, sigma_mag4, sigma_corr_qmin,
         tau_mag,   tau_mag2,   tau_mag4, tau_corr_qmin,
         order_param, order_param2, order_param4, order_corr_qmin,
-        nem_mag,   nem_mag2,   nem_mag4, nem_corr_qmin,
+        baxter_mag,   baxter_mag2,   baxter_mag4, baxter_corr_qmin,
         counts_per_bin, NUM_OBS
 #else
         sigma_mag, sigma_mag2, sigma_mag4, 
         tau_mag,   tau_mag2,   tau_mag4, 
         order_param, order_param2, order_param4,
-        nem_mag,   nem_mag2,   nem_mag4,
+        baxter_mag,   baxter_mag2,   baxter_mag4,
         counts_per_bin, NUM_OBS
 #endif
     };
@@ -44,12 +44,12 @@ namespace Obs
 #if CORRELATION_LENGTHS
         sigma_susc, sigma_binder, sigma_corr_length,
         tau_susc, tau_binder, tau_corr_length,
-        nem_susc, nem_binder_cumulant, nem_corr_length,
+        baxter_susc, baxter_binder_cumulant, baxter_corr_length,
         susc, binder_cumulant, corr_length, NUM_OBS
 #else
         sigma_susc, sigma_binder, 
         tau_susc, tau_binder,
-        nem_susc, nem_binder_cumulant,
+        baxter_susc, baxter_binder_cumulant,
         susc, binder_cumulant, NUM_OBS
 #endif
     };
@@ -58,24 +58,24 @@ namespace Obs
     const std::vector<std::string> string_names = { "Sigma Mag", "Sigma Mag2", "Sigma Mag4", "Sigma G(qmin)" ,
                                                     "Tau Mag",   "Tau Mag2",   "Tau Mag4", "Tau G(qmin)",
                                                     "Order Parameter", "Order Parameter2", "Order Parameter4", "Order Parameter G(qmin)",
-                                                    "Nematicity", "Nematicity2", "Nematicity4", "Nematicity G(qmin)",
+                                                    "Baxter", "Baxter2", "Baxter4", "Baxter G(qmin)",
                                                     "Counts per Bin", "NUM OBS" };
 
     const std::vector<std::string> nonlinear_obs_strings = { "Sigma Susceptibility", "Sigma Binder Cumulant", "Sigma Correlation Length over L",
                                                              "Tau Susceptibility",   "Tau Binder Cumulant", "Tau Correlation Length over L",
-                                                             "Nematicity Susceptibility",   "Nematicity Binder Cumulant", "Nematicity Correlation Length over L",
+                                                             "Baxter Susceptibility",   "Baxter Binder Cumulant", "Baxter Correlation Length over L",
                                                              "Susceptibility", "Binder Cumulant", "Order Parameter Correlation Length over L"
     };
 #else
     const std::vector<std::string> string_names = { "Sigma Mag", "Sigma Mag2", "Sigma Mag4", 
                                                     "Tau Mag",   "Tau Mag2",   "Tau Mag4",
                                                     "Order Parameter", "Order Parameter2", "Order Parameter4",
-                                                    "Nematicity", "Nematicity2", "Nematicity4",
+                                                    "Baxter", "Baxter2", "Baxter4",
                                                     "Counts per Bin", "NUM OBS" };
 
     const std::vector<std::string> nonlinear_obs_strings = { "Sigma Susceptibility", "Sigma Binder Cumulant",
                                                              "Tau Susceptibility",   "Tau Binder Cumulant",
-                                                             "Nematicity Susceptibility",   "Nematicity Binder Cumulant",
+                                                             "Baxter Susceptibility",   "Baxter Binder Cumulant",
                                                              "Susceptibility", "Binder Cumulant" };
 #endif
 }
@@ -225,11 +225,11 @@ void calculate_nonlinear_observables( const size_t num_temps, const size_t syste
         // Calculate the tau Binder cumulant
         nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::tau_binder) ] = calculate_Binder_cumulant( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::tau_mag4) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::tau_mag2) ), system_size );
  
-        // Calculate the nematicity susceptibility
-        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::nem_susc) ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::nem_mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::nem_mag) ), temperature, system_size ) / static_cast<data_t>(system_size);
+        // Calculate the Baxter susceptibility
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::baxter_susc) ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::baxter_mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::baxter_mag) ), temperature, system_size ) / static_cast<data_t>(system_size);
 
-        // Calculate the nematicity Binder cumulant
-        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::nem_binder_cumulant) ] = calculate_Binder_cumulant( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::nem_mag4) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::nem_mag4) ), system_size );
+        // Calculate the Baxter Binder cumulant
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::baxter_binder_cumulant) ] = calculate_Binder_cumulant( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::baxter_mag4) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::baxter_mag2) ), system_size );
     
         // Calculate the order parameter susceptibility
         nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::susc) ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::order_param2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::order_param) ), temperature, system_size ) / static_cast<data_t>(system_size);
@@ -247,8 +247,8 @@ void calculate_nonlinear_observables( const size_t num_temps, const size_t syste
         // Tau Correlation Length
         nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::tau_corr_length) ] = calculate_correlation_length( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::tau_mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::tau_corr_qmin) ), Lsize ) / Lsize;
 
-        // Nematicity Correlation Length
-        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::nem_corr_length) ] = calculate_correlation_length( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::nem_mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::nem_corr_qmin) ), Lsize ) / Lsize;
+        // Baxter Correlation Length
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::baxter_corr_length) ] = calculate_correlation_length( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::baxter_mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::baxter_corr_qmin) ), Lsize ) / Lsize;
 
         // Order Parameter Correlation Length
         nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::corr_length) ] = calculate_correlation_length( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::order_param2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::order_corr_qmin) ), Lsize ) / Lsize;
