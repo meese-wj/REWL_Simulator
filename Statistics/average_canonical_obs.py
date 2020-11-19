@@ -122,7 +122,7 @@ def average_job_data( Lsize, labels, data_tuples ):
     en2_idx = labels.index("Energy2")
     cv_idx = labels.index("Specific Heat")
 
-    final_data[:, cv_idx] = specific_heat( final_data[:, en2_idx], final_data[:, en_idx], Nfloat, final_data[:, 0] )
+    #final_data[:, cv_idx] = specific_heat( final_data[:, en2_idx], final_data[:, en_idx], Nfloat, final_data[:, 0] )
 
     return final_data
 
@@ -153,7 +153,7 @@ def stderr_job_data( Lsize, labels, data_tuples, final_averages ):
     en2_idx = labels.index("Energy2")
     cv_idx = labels.index("Specific Heat")
 
-    final_stderr[:, cv_idx] = specific_heat_error( final_stderr[:, en2_idx], final_stderr[:, en_idx], final_averages[:, en_idx], Nfloat, final_averages[:, 0] )
+    #final_stderr[:, cv_idx] = specific_heat_error( final_stderr[:, en2_idx], final_stderr[:, en_idx], final_averages[:, en_idx], Nfloat, final_averages[:, 0] )
 
     return final_stderr
 

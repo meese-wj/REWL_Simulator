@@ -279,11 +279,12 @@ int main(int argc, char * argv[])
 #endif
 
     MPI_Barrier(MPI_COMM_WORLD);    
-    printf("\nCompletely done with the simulation on process %d\n", world_rank);
-    fflush(stdout);
-    int ret_val = MPI_Finalize();
-    printf("\nID %d: Finalize return = %d", world_rank, ret_val);
-    fflush(stdout);
+    //printf("\nCompletely done with the simulation on process %d\n", world_rank);
+    //fflush(stdout);
+    MPI_Finalize();
+    //int ret_val = MPI_Finalize();
+    //printf("\nID %d: Finalize return = %d", world_rank, ret_val);
+    //fflush(stdout);
     return 0;
 }
 #else
