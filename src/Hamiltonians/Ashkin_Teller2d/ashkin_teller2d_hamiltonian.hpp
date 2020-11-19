@@ -204,7 +204,7 @@ void Ashkin_Teller2d<data_t>::update_observables(const size_t bin, Ashkin_Teller
     const data_t sigma_val  = abs( current_state.sigma_magnetization );
     const data_t tau_val    = abs( current_state.tau_magnetization );
     const data_t order_val2 = sigma_val * sigma_val + tau_val * tau_val;
-    const data_t baxter_val    = abs( current_state.baxteraticity );
+    const data_t baxter_val    = abs( current_state.baxter );
     
     obs_ptr -> update_observable_average(sigma_val, Obs::enum_names::sigma_mag, bin);
     obs_ptr -> update_observable_average(sigma_val * sigma_val, Obs::enum_names::sigma_mag2, bin);

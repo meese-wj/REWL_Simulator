@@ -2,7 +2,7 @@
 #SBATCH --nodes=4
 #SBATCH --ntasks-per-node=24
 #SBATCH --mem-per-cpu=2gb
-#SBATCH --time=16:00:00
+#SBATCH --time=25:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=meese022@umn.edu
 #SBATCH -p small
