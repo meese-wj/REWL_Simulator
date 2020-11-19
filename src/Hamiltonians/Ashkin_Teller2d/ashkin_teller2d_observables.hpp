@@ -251,7 +251,7 @@ void calculate_nonlinear_observables( const size_t num_temps, const size_t syste
         nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::nem_corr_length) ] = calculate_correlation_length( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::nem_mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::nem_corr_qmin) ), Lsize ) / Lsize;
 
         // Order Parameter Correlation Length
-        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::corr_length) ] = calculate_correlation_length( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::order_mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::order_corr_qmin) ), Lsize ) / Lsize;
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::corr_length) ] = calculate_correlation_length( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::order_param2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::order_corr_qmin) ), Lsize ) / Lsize;
 #endif
 
     }
