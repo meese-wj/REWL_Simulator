@@ -145,6 +145,9 @@ void Ising2d_Obs<data_t>::update_observable_average(const data_t value,
 }
 
 #if CORRELATION_LENGTHS
+// This function is necessary so that the correlators will
+// only be updated periodically whereas all of the other 
+// observables can be computed each time.
 template<typename data_t>
 void Ising2d_Obs<data_t>::update_qmin_correlator(const data_t value, 
                                                  const Obs::enum_names ob, 

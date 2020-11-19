@@ -12,6 +12,11 @@
 // cmake include directories.
 #include <grid_setup.hpp>
 
+#if CORRELATION_LENGTHS
+// Include the correlation functionality.
+#include "../Correlations/fourier_correlator.hpp"
+#endif
+
 enum spin_type
 {
     sigma, tau, NUM_SPIN_TYPES
@@ -216,6 +221,28 @@ void Ashkin_Teller2d<data_t>::update_observables(const size_t bin, Ashkin_Teller
     obs_ptr -> update_observable_average(nem_val, Obs::enum_names::nem_mag, bin);
     obs_ptr -> update_observable_average(nem_val * nem_val, Obs::enum_names::nem_mag2, bin);
     obs_ptr -> update_observable_average(nem_val * nem_val * nem_val * nem_val, Obs::enum_names::nem_mag4, bin);
+
+#if CORRELATION_LENGTHS
+    if ( static_cast<size_t> (obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin)) % counts_per_transform == 0 )
+    {
+        data_t sigma_Gq_value = obs_ptr -> correlator.compute_correlator( spin_array, spin_type::sigma, spin_type::tau, spin_type::NUM_SPIN_TYPES, false );
+        data_t tau_Gq_value = obs_ptr -> correlator.compute_correlator( spin_array, spin_type::sigma, spin_type::tau, spin_type::NUM_SPIN_TYPES, false );
+        data_t nem_Gq_value = obs_ptr -> correlator.compute_correlator( spin_array, spin_type::sigma, spin_type::tau, spin_type::NUM_SPIN_TYPES, true );
+
+        // Sigma correlator
+        obs_ptr -> update_qmin_correlator( sigma_Gq_value, Obs::enum_names::sigma_corr_qmin, bin,
+                                           obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin) / counts_per_transform );
+        // Tau correlator
+        obs_ptr -> update_qmin_correlator( tau_Gq_value, Obs::enum_names::tau_corr_qmin, bin,
+                                           obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin) / counts_per_transform );
+        // Order parameter correlator
+        obs_ptr -> update_qmin_correlator( sigma_Gq_value + tau_Gq_value, Obs::enum_names::order_corr_qmin, bin,
+                                           obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin) / counts_per_transform );
+        // Nematicity correlator
+        obs_ptr -> update_qmin_correlator( nem_Gq_value, Obs::enum_names::nem_corr_qmin, bin,
+                                           obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin) / counts_per_transform );
+    }
+#endif
     
     obs_ptr -> increment_counts_per_bin(bin);
 }
