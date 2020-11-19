@@ -39,9 +39,9 @@ void write_observables_to_file( const size_t num_temps, const size_t num_obs,
 
     for ( size_t Tidx = 0; Tidx != num_temps; ++Tidx )
     {
-        output_file << std::setprecision(std::numeric_limits<energy_t>::digits10) << std::fixed;
+        output_file << std::setprecision(std::numeric_limits<energy_t>::digits10) << std::scientific;
         output_file << temperature_array[ Tidx ] << DELIMITER; 
-        output_file << std::setprecision(std::numeric_limits<obs_t>::digits10) << std::fixed;
+        output_file << std::setprecision(std::numeric_limits<obs_t>::digits10) << std::scientific;
         
         for ( size_t ob = 0; ob != num_obs; ++ob )
         {
