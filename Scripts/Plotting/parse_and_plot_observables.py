@@ -16,9 +16,9 @@ from bisect import bisect_left
 output_path = "Figures"
 error_incrementer = 60
 capsize = 2
-markersize = 2.5
+markersize = 5
 marker_edge_color = "black"
-marker_edge_width = 2.5
+marker_edge_width = 1
 
 def setup_args():
     parser = argparse.ArgumentParser()
@@ -131,14 +131,14 @@ def plot_probability_density( model_name, data_file_stem, coupling_string, coupl
                 logdos_err = Nfloat * data_tuples[Ldx][2][:,1]
                 # Ignore the error in the max density since 1/density(max_exponent) -> 0
                 density_err = density * np.sqrt( logdos_err ** 2. + ( energy_err / float(Tc_val) ) ** 2. )
-                ax[0].errorbar(data_tuples[Ldx][1][:, order2_col] / Nfloat, density,
-                               xerr = data_tuples[Ldx][2][:, 0] / Nfloat, yerr = density_err, errorevery=error_incrementer,
+                ax[0].errorbar(data_tuples[Ldx][1][::error_incrementer, order2_col] / Nfloat, density[::error_incrementer],
+                               xerr = data_tuples[Ldx][2][::error_incrementer, 0] / Nfloat, yerr = density_err[::error_incrementer],
                                ms = markersize, mec = marker_edge_color, mew = marker_edge_width, mfc = lines[-1].get_color(),
-                               color = lines0[-1].get_color(),
+                               color = "None", marker = "o", ecolor = lines[-1].get_color(),
                                fmt='none', capsize=capsize, label = None)
-                ax[1].errorbar(data_tuples[Ldx][1][:, 0], density,
-                               xerr = data_tuples[Ldx][2][:, 0], yerr = density_err, errorevery=error_incrementer,
-                               color = lines1[-1].get_color(),
+                ax[1].errorbar(data_tuples[Ldx][1][::error_incrementer, 0], density[::error_incrementer],
+                               xerr = data_tuples[Ldx][2][::error_incrementer, 0], yerr = density_err[::error_incrementer], errorevery=error_incrementer,
+                               color = "None", marker = "o", ecolor = lines[-1].get_color(),
                                ms = markersize, mec = marker_edge_color, mew = marker_edge_width, mfc = lines[-1].get_color(),
                                fmt='none', capsize=capsize, label = None)
 
@@ -194,9 +194,9 @@ def plot_probability_density( model_name, data_file_stem, coupling_string, coupl
                 logdos_err = Nfloat * data_tuples[Ldx][2][:,1]
                 # Ignore the error in the max density since 1/density(max_exponent) -> 0
                 density_err = density * np.sqrt( logdos_err ** 2. + ( energy_err / float(Tc_val) ) ** 2. )
-                ax.errorbar(data_tuples[Ldx][1][:, 0], density,
-                            xerr = data_tuples[Ldx][2][:, 0], yerr = density_err, errorevery=error_incrementer,
-                            color = lines[-1].get_color(),
+                ax.errorbar(data_tuples[Ldx][1][::error_incrementer, 0], density[::error_incrementer],
+                            xerr = data_tuples[Ldx][2][::error_incrementer, 0], yerr = density_err[::error_incrementer],
+                            color = "None", marker = "o", ecolor = lines[-1].get_color(),
                             ms = markersize, mec = marker_edge_color, mew = marker_edge_width, mfc = lines[-1].get_color(),
                             fmt='none', capsize=capsize, label = None)
 
@@ -255,9 +255,9 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
             lines = ax.plot(data_tuples[Ldx][1][:,0], data_tuples[Ldx][1][:,lbl], label = r"$L = %s$" % Lvalue)
 
             if data_tuples[Ldx][2].shape != (0,0):
-                ax.errorbar(data_tuples[Ldx][1][:, 0], data_tuples[Ldx][1][:, lbl],
-                            xerr = data_tuples[Ldx][2][:, 0], yerr = data_tuples[Ldx][2][:, lbl], errorevery=error_incrementer,
-                            color = lines[-1].get_color(),
+                ax.errorbar(data_tuples[Ldx][1][::error_incrementer, 0], data_tuples[Ldx][1][::error_incrementer, lbl],
+                            xerr = data_tuples[Ldx][2][::error_incrementer, 0], yerr = data_tuples[Ldx][2][::error_incrementer, lbl],
+                            color = "None", marker = "o", ecolor = lines[-1].get_color(),
                             ms = markersize, mec = marker_edge_color, mew = marker_edge_width, mfc = lines[-1].get_color(),
                             ls=None, capsize=capsize, label = None)
 

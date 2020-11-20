@@ -129,7 +129,7 @@ def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_valu
     lines = ax.plot( Lvalues, np.exp( fit_predictions( np.log(Lvalues) ) ), color = "red", ls = "dashed", label = r"FSS Fit: %s" % label_string )
     lines = ax.scatter( Lvalues, max_obs, label = None )
     if data_tuples[Ldx][2].shape != (0,0):
-        lines = ax.errorbar( Lvalues, max_obs, yerr=max_obs_err, color = "black", mfc = "black", ls=None, label = None, capsize=2)
+        lines = ax.errorbar( Lvalues, max_obs, yerr=max_obs_err, color = "None", ecolor = "C0", ms = 5, marker = "o", mfc = "C0", mec = "black", mew = 1,  ls=None, label = None, capsize=2)
 
     ax.set_xscale("log")
     ax.set_yscale("log")
@@ -164,7 +164,7 @@ def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_valu
 
         fig, ax = plt.subplots(1,1)
         lines = ax.plot( smooth_over_L, Tfit_predictions, color = "red", ls = "dashed", label = r"%s" % label_string )
-        lines = ax.scatter( 1./Lvalues, Tc_obs, label = None )
+        lines = ax.plot( 1./Lvalues, Tc_obs, color = "None", marker = "o", mfc = "C0", mec = "black", mew = 1, label = None )
 
         ax.set_xlabel(r"$L^{-1}$", fontsize = 12)
         ax.set_ylabel(ylabel, fontsize = 12)
