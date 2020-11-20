@@ -111,10 +111,12 @@ def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_valu
     # Now fit on a loglog plot
     fit_scaling, covariance = None, None
     if data_tuples[Ldx][2].shape != (0,0):
-        fit_scaling, covariance = np.polyfit( np.log(Lvalues), np.log(max_obs), 1, w = max_obs_err, cov = True, full = False )
+        fit_scaling, covariance = opt.curve_fit( lambda x,a,b: a * x + b, np.log(Lvalues), np.log(max_obs), sigma = max_obs_err )
     else:
-        fit_scaling, covariance = np.polyfit( np.log(Lvalues), np.log(max_obs), 1, cov = True, full = False )
-    fit_predictions = np.poly1d( fit_scaling )
+        fit_scaling, covariance = opt.curve_fit( lambda x,a,b: a * x + b, np.log(Lvalues), np.log(max_obs) )
+
+    smooth_L = np.linspace(np.min(Lvalues), np.max(Lvalues), 1000)
+    fit_predictions = fit_scaling[0] * np.log( smooth_L ) + fit_scaling[1]
     errors = np.sqrt( np.diag( covariance ) )
 
     label_string = ""
@@ -126,7 +128,7 @@ def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_valu
         print("\nSusceptibility gamma/nu = %.3f +/- %.3f\n" % (fit_scaling[0], errors[0]) )
 
     # Finally Plot the results
-    lines = ax.plot( Lvalues, np.exp( fit_predictions( np.log(Lvalues) ) ), color = "red", ls = "dashed", label = r"FSS Fit: %s" % label_string )
+    lines = ax.plot( smooth_L, np.exp( fit_predictions), color = "red", ls = "dashed", label = r"FSS Fit: %s" % label_string )
     lines = ax.scatter( Lvalues, max_obs, label = None )
     if data_tuples[Ldx][2].shape != (0,0):
         lines = ax.errorbar( Lvalues, max_obs, yerr=max_obs_err, color = "None", ecolor = "C0", ms = 5, marker = "o", mfc = "C0", mec = "black", mew = 1,  ls=None, label = None, capsize=2)
@@ -154,7 +156,7 @@ def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_valu
         nu, nu_err = 1/Tfit_scaling[2], Terrors[2]/Tfit_scaling[2]**2
 
         label_string = "$T_c(L) = T_c(\infty) + aL^{-1/\\nu}$ \n$T_c(\infty) = %.3f \pm %.3f$ \n$ \\nu = %.3f \pm %.3f$" % ( Tfit_scaling[0], Terrors[0], nu, nu_err )
-        ylabel = labels[lbl] + " pseudo $T_c$"
+        ylabel = labels[lbl] + " Pseudo $T_c$"
         if fss_observable == "Specific Heat":
             print("\nSpecific Heat Tc(inf) = %.3f +/- %.3f\n" % (Tfit_scaling[0], Terrors[0]) )
             print("\nSpecific Heat nu = %.3f +/- %.3f\n" % (nu, nu_err) )
@@ -163,16 +165,19 @@ def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_valu
             print("\nSusceptibility nu = %.3f +/- %.3f\n" % (nu, nu_err) )
 
         fig, ax = plt.subplots(1,1)
-        lines = ax.plot( smooth_over_L, Tfit_predictions, color = "red", ls = "dashed", label = r"%s" % label_string )
-        lines = ax.plot( 1./Lvalues, Tc_obs, color = "None", marker = "o", mfc = "C0", mec = "black", mew = 1, label = None )
+        lines = ax.plot( smooth_over_L ** Tfit_scaling[2], Tfit_predictions, color = "red", ls = "dashed", label = r"%s" % label_string )
+        lines = ax.plot( ( 1./Lvalues ) ** Tfit_scaling[2], Tc_obs, color = "None", marker = "o", mfc = "C0", mec = "black", mew = 1, label = None )
 
-        ax.set_xlabel(r"$L^{-1}$", fontsize = 12)
+        ax.set_xlabel(r"Scaled System Size $L^{-1/\nu}$", fontsize = 12)
         ax.set_ylabel(ylabel, fontsize = 12)
         ax.set_title(model_name + ": " + key_string, fontsize = 12)
         ax.legend( fontsize = 10 )
 
         plotname = labels[lbl] + " pseudo Tc scaling.png"
         plt.savefig(plot_directory + "/" + plotname)
+
+    else:
+        print("\nCannot obtain " + labels[lbl] + " pseudo Tc due to too few system sizes.\n")
 
 
     plt.close()
