@@ -3,6 +3,7 @@
 
 import argparse
 import numpy as np
+import scipy.optimize as opt
 from parse_file_header import collect_labels
 import matplotlib as mpl
 mpl.use('Agg')  # THIS IS REQUIRED FOR WSL2
@@ -80,17 +81,21 @@ def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_valu
     key_string = coupling_string + " = " + "%.3f" % float(coupling_value)
 
     # Find the index of the FSS variable
+    Tlbl = labels.index( "Temperature" )
     lbl = labels.index( fss_observable )
 
     # Now store the max values in a list
     Lvalues = []
     max_obs = []
+    Tc_obs = []
     for Ldx in range(0, len(data_tuples)):
         Lvalues.append( float( data_tuples[Ldx][0] ) )
         max_obs.append( np.max( data_tuples[Ldx][1][:,lbl] ) )
+        Tc_obs.append( data_tuples[Ldx][1][ np.argmax( data_tuples[Ldx][1][:,lbl] ), Tlbl ] )
 
     Lvalues = np.array(Lvalues)
     max_obs = np.array(max_obs)
+    Tc_obs = np.array(Tc_obs)
 
     print("\nPlotting FSS max{ %s } vs %s" % (labels[lbl], xlabel))
     fig, ax = plt.subplots(1,1)
@@ -123,6 +128,37 @@ def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_valu
     plotname = "%s" % ("Peak " + labels[lbl] + " vs " + xlabel + ".png")
 
     plt.savefig(plot_directory + "/" + plotname)
+
+    # Now plot Tc on loglog
+    if len(data_tuples) > 4:
+        Tfit_scaling, Tcovariance = opt.curve_fit( lambda x,a,b,p: a + b * x ** p, 1./Lvalues, Tc_obs )
+        smooth_over_L = np.linspace(0, 1/np.min(Lvalues), 1000)
+        Tfit_predictions = Tfit_scaling[0] + Tfit_scaling[1] * (smooth_over_L) ** Tfit_scaling[2]
+        Terrors = np.diag(Tcovariance)
+
+        nu, nu_err = 1/Tfit_scaling[2], Terrors[2]/Tfit_scaling[2]**2
+
+        label_string = "$T_c(L) = T_c(\infty) + aL^{-1/\\nu}$ \n$T_c(\infty) = %.3f \pm %.3f$ \n$ \\nu = %.3f \pm %.3f$" % ( Tfit_scaling[0], Terrors[0], nu, nu_err )
+        ylabel = labels[lbl] + " pseudo $T_c$"
+        if fss_observable == "Specific Heat":
+            print("\nSpecific Heat Tc(inf) = %.3f +/- %.3f\n" % (Tfit_scaling[0], Terrors[0]) )
+            print("\nSpecific Heat nu = %.3f +/- %.3f\n" % (nu, nu_err) )
+        elif fss_observable == "Susceptibility":
+            print("\nSusceptibility Tc(inf) = %.3f +/- %.3f\n" % (Tfit_scaling[0], Terrors[0]) )
+            print("\nSusceptibility nu = %.3f +/- %.3f\n" % (nu, nu_err) )
+
+        fig, ax = plt.subplots(1,1)
+        ax.plot( smooth_over_L, Tfit_predictions, color = "red", ls = "dashed", label = r"%s" % label_string )
+        ax.scatter( 1./Lvalues, Tc_obs, label = None )
+
+        ax.set_xlabel(r"$L^{-1}$", fontsize = 12)
+        ax.set_ylabel(ylabel, fontsize = 12)
+        ax.set_title(model_name + ": " + key_string, fontsize = 12)
+        ax.legend( fontsize = 10 )
+
+        plotname = labels[lbl] + " pseudo Tc scaling.png"
+        plt.savefig(plot_directory + "/" + plotname)
+
 
     plt.close()
 
