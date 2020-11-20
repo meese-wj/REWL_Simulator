@@ -58,10 +58,14 @@ def collect_observables_and_data( data_file_stem, fss_observable, observable_mar
             Lvalue = find_string_value("L", fl)
 
             data = np.loadtxt(fl, delimiter = "  ", dtype = float, comments = comment)
+            error = np.zeros((0,0))
+            if "job_mean" in fl:
+                error_string = fl[:fl.find(".job_mean")] + ".job_stderr"
+                error = np.loadtxt( error_string, delimiter = "  ", dtype = "float64", comments = comment )
 
             print(fl, Lvalue)
 
-            data_tuples.append( (Lvalue, data) )
+            data_tuples.append( (Lvalue, data, error) )
 
 
 
@@ -86,22 +90,30 @@ def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_valu
 
     # Now store the max values in a list
     Lvalues = []
-    max_obs = []
+    max_obs, max_obs_err = [], []
     Tc_obs = []
     for Ldx in range(0, len(data_tuples)):
         Lvalues.append( float( data_tuples[Ldx][0] ) )
         max_obs.append( np.max( data_tuples[Ldx][1][:,lbl] ) )
         Tc_obs.append( data_tuples[Ldx][1][ np.argmax( data_tuples[Ldx][1][:,lbl] ), Tlbl ] )
 
+        if data_tuples[Ldx][2].shape != (0,0):
+            max_obs_err.append(  data_tuples[Ldx][2][ np.argmax( data_tuples[Ldx][1][:,lbl] ), lbl ] )
+
     Lvalues = np.array(Lvalues)
     max_obs = np.array(max_obs)
+    max_obs_err = np.array(max_obs_err)
     Tc_obs = np.array(Tc_obs)
 
     print("\nPlotting FSS max{ %s } vs %s" % (labels[lbl], xlabel))
     fig, ax = plt.subplots(1,1)
 
     # Now fit on a loglog plot
-    fit_scaling, covariance = np.polyfit( np.log(Lvalues), np.log(max_obs), 1, cov = True, full = False )
+    fit_scaling, covariance = None, None
+    if data_tuples[Ldx][2].shape != (0,0):
+        fit_scaling, covariance = np.polyfit( np.log(Lvalues), np.log(max_obs), 1, w = max_obs_err, cov = True, full = False )
+    else:
+        fit_scaling, covariance = np.polyfit( np.log(Lvalues), np.log(max_obs), 1, cov = True, full = False )
     fit_predictions = np.poly1d( fit_scaling )
     errors = np.sqrt( np.diag( covariance ) )
 
@@ -114,8 +126,10 @@ def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_valu
         print("\nSusceptibility gamma/nu = %.3f +/- %.3f\n" % (fit_scaling[0], errors[0]) )
 
     # Finally Plot the results
-    ax.scatter( Lvalues, max_obs, label = None )
-    ax.plot( Lvalues, np.exp( fit_predictions( np.log(Lvalues) ) ), color = "red", ls = "dashed", label = r"FSS Fit: %s" % label_string )
+    lines = ax.plot( Lvalues, np.exp( fit_predictions( np.log(Lvalues) ) ), color = "red", ls = "dashed", label = r"FSS Fit: %s" % label_string )
+    lines = ax.scatter( Lvalues, max_obs, label = None )
+    if data_tuples[Ldx][2].shape != (0,0):
+        lines = ax.errorbar( Lvalues, max_obs, yerr=max_obs_err, color = "black", mfc = "black", ls=None, label = None, capsize=2)
 
     ax.set_xscale("log")
     ax.set_yscale("log")
@@ -131,6 +145,7 @@ def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_valu
 
     # Now plot Tc on loglog
     if len(data_tuples) > 4:
+
         Tfit_scaling, Tcovariance = opt.curve_fit( lambda x,a,b,p: a + b * x ** p, 1./Lvalues, Tc_obs )
         smooth_over_L = np.linspace(0, 1/np.min(Lvalues), 1000)
         Tfit_predictions = Tfit_scaling[0] + Tfit_scaling[1] * (smooth_over_L) ** Tfit_scaling[2]
@@ -148,8 +163,8 @@ def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_valu
             print("\nSusceptibility nu = %.3f +/- %.3f\n" % (nu, nu_err) )
 
         fig, ax = plt.subplots(1,1)
-        ax.plot( smooth_over_L, Tfit_predictions, color = "red", ls = "dashed", label = r"%s" % label_string )
-        ax.scatter( 1./Lvalues, Tc_obs, label = None )
+        lines = ax.plot( smooth_over_L, Tfit_predictions, color = "red", ls = "dashed", label = r"%s" % label_string )
+        lines = ax.scatter( 1./Lvalues, Tc_obs, label = None )
 
         ax.set_xlabel(r"$L^{-1}$", fontsize = 12)
         ax.set_ylabel(ylabel, fontsize = 12)
