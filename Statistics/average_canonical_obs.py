@@ -16,8 +16,10 @@ from pathlib import Path
 job_id_string = "JOBID"
 filename_base = "self_averaged_observables"
 microname_base = "microcanonical_observables"
+nonlinear_base = "nonlinear_observables"
 micro_dilutor = 0.1 # fraction by which to dilute the self-averaged observables for the microcanonical ones
-observable_marker = "Intensive Observable Names by Column"
+file_types = [ filename_base, nonlinear_base ]
+observable_markers = [ "Intensive Observable Names by Column", "Intensive Nonlinear Observable Names by Column" ]
 
 def setup_args():
     parser = argparse.ArgumentParser()
@@ -58,7 +60,7 @@ def get_file_header( file_string, comment = "#" ):
 
     return header_lines
 
-def read_in_data( input_path, Lsize, coupling_symbol, coupling_value, comment = "#" ):
+def read_in_data( input_path, Lsize, coupling_symbol, coupling_value, file_type, observable_marker, comment = "#" ):
 
     file_header = []
     extracted_file = ""
@@ -68,7 +70,7 @@ def read_in_data( input_path, Lsize, coupling_symbol, coupling_value, comment = 
     key_string = coupling_symbol + "-" + ("%.6f" % float(coupling_value))
 
     for fl in os.listdir( input_path ):
-        if not os.path.isdir( fl ) and ( filename_base in fl and L_string in fl and key_string in fl ):
+        if not os.path.isdir( fl ) and ( file_type in fl and L_string in fl and key_string in fl ):
 
             if len(labels) == 0:
                 extracted_file = extract_file_name( fl )
@@ -77,7 +79,7 @@ def read_in_data( input_path, Lsize, coupling_symbol, coupling_value, comment = 
 
             ID = find_string_value(job_id_string, fl)
 
-            data = np.loadtxt( input_path + fl, delimiter = "  ", dtype = float, comments = comment)
+            data = np.loadtxt( input_path + fl, delimiter = "  ", dtype = "float64", comments = comment)
 
             data_tuples.append( (ID, data) )
 
@@ -103,7 +105,7 @@ def average_job_data( Lsize, labels, data_tuples ):
 
     num_jobs = len(data_tuples)
 
-    print(labels)
+    print("Observable Labels:", labels, "\n")
 
     final_data = np.zeros(data_tuples[0][1].shape)
 
@@ -115,12 +117,15 @@ def average_job_data( Lsize, labels, data_tuples ):
 
     # Recompute the specific heat
     # TODO: This will break for higher dimensions
+    # TODO: get rid of this
+    """
     Nfloat = float(Lsize) ** 2.
     en_idx = labels.index("Energy")
     en2_idx = labels.index("Energy2")
     cv_idx = labels.index("Specific Heat")
 
     #final_data[:, cv_idx] = specific_heat( final_data[:, en2_idx], final_data[:, en_idx], Nfloat, final_data[:, 0] )
+    """
 
     return final_data
 
@@ -146,12 +151,14 @@ def stderr_job_data( Lsize, labels, data_tuples, final_averages ):
 
     # Recompute the specific heat error
     # TODO: This will break for higher dimensions
-    Nfloat = float(Lsize) ** 2.
+    # TODO: Get rid of this
+    """Nfloat = float(Lsize) ** 2.
     en_idx = labels.index("Energy")
     en2_idx = labels.index("Energy2")
     cv_idx = labels.index("Specific Heat")
 
     #final_stderr[:, cv_idx] = specific_heat_error( final_stderr[:, en2_idx], final_stderr[:, en_idx], final_averages[:, en_idx], Nfloat, final_averages[:, 0] )
+    """
 
     return final_stderr
 
@@ -188,7 +195,7 @@ def microcanonical_observable_data( labels, final_averages, final_stderr ):
     return micro_labels, micro_avgs, micro_stderr
 
 # Get the microcanonical observable header
-def microcanonical_header( micro_labels, header_lines ):
+def microcanonical_header( micro_labels, header_lines, observable_marker = observable_markers[0] ):
 
     full_line_obs_marker = "# " + observable_marker + "\n"
     micro_header_string = ""
@@ -205,7 +212,7 @@ def microcanonical_header( micro_labels, header_lines ):
     return micro_header_string
 
 # Write data out to the proper file path
-def write_out_data( output_file, input_path, num_jobs, labels, header_lines, final_averages, final_stderr ):
+def write_out_data( output_file, input_path, num_jobs, labels, header_lines, final_averages, final_stderr, file_type ):
 
     path = Path(input_path)
     output_path = path.parent
@@ -223,12 +230,13 @@ def write_out_data( output_file, input_path, num_jobs, labels, header_lines, fin
     np.savetxt(output + ".job_mean", final_averages, delimiter="  ", newline="\n", header=header, comments="")
     np.savetxt(output + ".job_stderr", final_stderr, delimiter="  ", newline="\n", header=header, comments="")
 
-    # Write out the microcanonical data
-    micro_labels, micro_avgs, micro_stderr = microcanonical_observable_data( labels, final_averages, final_stderr )
-    micro_header = microcanonical_header( micro_labels, header_lines )
-    micro_output = str(output_path) + "/" + microname_base + "-" + output_file[ output_file.find("REWL_") :  ]
-    np.savetxt(micro_output + ".job_mean", micro_avgs, delimiter="  ", newline="\n", header=micro_header, comments="")
-    np.savetxt(micro_output + ".job_stderr", micro_stderr, delimiter="  ", newline="\n", header=micro_header, comments="")
+    if file_type == filename_base:
+        # Write out the microcanonical data from the self-averaged data
+        micro_labels, micro_avgs, micro_stderr = microcanonical_observable_data( labels, final_averages, final_stderr )
+        micro_header = microcanonical_header( micro_labels, header_lines )
+        micro_output = str(output_path) + "/" + microname_base + "-" + output_file[ output_file.find("REWL_") :  ]
+        np.savetxt(micro_output + ".job_mean", micro_avgs, delimiter="  ", newline="\n", header=micro_header, comments="")
+        np.savetxt(micro_output + ".job_stderr", micro_stderr, delimiter="  ", newline="\n", header=micro_header, comments="")
 
     return None
 
@@ -236,18 +244,28 @@ def main():
 
     cl_args = setup_args()
 
-    output_file, header_lines, labels, data_tuples = read_in_data( cl_args.input_path, cl_args.Lsize, cl_args.coupling_symbol, cl_args.coupling_value )
+    print("="*70, "\nPost-Simulation Inter-Job Statistics Calculator\n" + "="*70 + "\n")
+    for type_idx in range(len(file_types)):
 
-    if len(data_tuples) == 0:
-        print("\nNo data to average.\n")
-        return 1
+        print("\nNow analyzing %s data for L = %s\n" % (file_types[type_idx], cl_args.Lsize))
 
-    final_averages, final_stderr = 0,0
-    final_averages = average_job_data( cl_args.Lsize, labels, data_tuples )
+        output_file, header_lines, labels, data_tuples = read_in_data( cl_args.input_path, cl_args.Lsize, cl_args.coupling_symbol, cl_args.coupling_value, file_types[type_idx], observable_markers[type_idx] )
 
-    final_stderr = stderr_job_data( cl_args.Lsize, labels, data_tuples, final_averages )
+        if len(data_tuples) == 0:
+            print("\nNo data to average.\n")
+            return 1
 
-    write_out_data( output_file, cl_args.input_path, len(data_tuples), labels, header_lines, final_averages, final_stderr )
+        final_averages, final_stderr = 0,0
+        final_averages = average_job_data( cl_args.Lsize, labels, data_tuples )
+
+        final_stderr = stderr_job_data( cl_args.Lsize, labels, data_tuples, final_averages )
+
+        write_out_data( output_file, cl_args.input_path, len(data_tuples), labels, header_lines, final_averages, final_stderr, file_types[type_idx] )
+
+        if type_idx != len(file_types) - 1:
+            print("*"*70)
+
+    print("="*70, "\n")
 
     return 0
 
