@@ -19,6 +19,11 @@ constexpr float SYSTEM_EXCHANGE_J = 1.0;
 // Mixed spin coupling K > 0 is ferromagnetic
 constexpr float SYSTEM_EXCHANGE_K = 1.;
 
+#if RFAT_BAXTER
+// Random field strength
+constexpr float BAXTER_FIELD_H = 0.;
+#endif
+
 // Number of nearest neighbors
 constexpr size_t SYSTEM_NUM_NEAREST_NEIGHBORS_int = 4;
 constexpr float SYSTEM_NUM_NEAREST_NEIGHBORS_float = 4;
@@ -48,6 +53,10 @@ namespace Ashkin_Teller2d_Parameters
     constexpr size_t num_DoF = 2 * N;     // Number of independent degrees of freedom.
     constexpr float J = SYSTEM_EXCHANGE_J;
     constexpr float K = SYSTEM_EXCHANGE_K;
+#if RFAT_BAXTER
+    // Field strength for the Baxter phase
+    constexpr float h = BAXTER_FIELD_H;
+#endif
     constexpr size_t num_neighbors_i = SYSTEM_NUM_NEAREST_NEIGHBORS_int;
     constexpr float num_neighbors_f = SYSTEM_NUM_NEAREST_NEIGHBORS_float; 
     constexpr double ground_state_degeneracy = GROUND_STATE_DEGENERACY;

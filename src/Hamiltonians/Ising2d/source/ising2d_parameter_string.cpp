@@ -6,11 +6,11 @@ Ising2d_Parameter_String::Ising2d_Parameter_String( const std::string & job_id_s
 Ising2d_Parameter_String::Ising2d_Parameter_String()
 #endif
 {
+    file_name_base = "";
 #if JOB_ARRAYS
-    file_name_base = "JOBID-" + job_id_string + "_REWL_L-" + L + "_J-" + J + "_h-" + h + ".dat";
-#else
-    file_name_base = "REWL_L-" + L + "_J-" + J + "_h-" + h + ".dat";
+    file_name_base += "JOBID-" + job_id_string + "_"; 
 #endif
+    file_name_base += "REWL_L-" + L + "_J-" + J + "_h-" + h + ".dat";
 
     file_header = "# REWL " + model_name + " on a Periodic Square Lattice\n#";
     file_header += "\n# Hamiltonian Parameters";

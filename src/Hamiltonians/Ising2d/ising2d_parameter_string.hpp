@@ -19,6 +19,9 @@ struct Ising2d_Parameter_String
     const std::string num_bins = std::to_string(Ising2d_Parameters::num_bins);
 
     const std::string model_name = "Ising2d";
+#if RFIM
+    model_name += " RFIM";
+#endif
     const std::string size_string = "L-" + L;
 
     std::string file_name_base;

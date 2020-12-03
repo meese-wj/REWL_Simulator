@@ -11,6 +11,9 @@ struct Ashkin_Teller2d_Parameter_String
     const std::string num_DoF = std::to_string(Ashkin_Teller2d_Parameters::num_DoF);
     const std::string J = std::to_string(Ashkin_Teller2d_Parameters::J);
     const std::string K = std::to_string(Ashkin_Teller2d_Parameters::K);
+#if RFAT_BAXTER
+    const std::string h = std::to_string(Ashkin_Teller2d_Parameters::h);
+#endif
     const std::string num_neighbors = std::to_string(Ashkin_Teller2d_Parameters::num_neighbors_i);
 
     const std::string energy_min = std::to_string(Ashkin_Teller2d_Parameters::energy_min);
@@ -19,6 +22,9 @@ struct Ashkin_Teller2d_Parameter_String
     const std::string num_bins = std::to_string(Ashkin_Teller2d_Parameters::num_bins);
 
     const std::string model_name = "Ashkin_Teller2d";
+#if RFAT_BAXTER
+    model_name += " RFAT Baxter";
+#endif
     const std::string size_string = "L-" + L;
 
     std::string file_name_base;

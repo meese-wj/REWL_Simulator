@@ -17,6 +17,14 @@
 #include "../Correlations/fourier_correlator.hpp"
 #endif
 
+#if RFAT_BAXTER
+// Include the random fields
+#include "../Disorder/random_fields.hpp"
+#if MPI_ON 
+#include <mpi.h>
+#endif
+#endif
+
 enum spin_type
 {
     sigma, tau, NUM_SPIN_TYPES
@@ -53,6 +61,9 @@ struct Ashkin_Teller2d
     State<data_t> current_state;
 
     data_t * spin_array = nullptr;
+#if RFAT_BAXTER
+    float * field_array = nullptr;
+#endif
     size_t * neighbor_array = nullptr;
 
     // Add some Hamiltonian dependent functions
@@ -77,7 +88,16 @@ struct Ashkin_Teller2d
                                             Ashkin_Teller2d_Parameters::L,
                                             Ashkin_Teller2d_Parameters::num_neighbors_i,
                                             neighbor_array);
-
+#if RFIM
+        generate_random_field<float>( Ashkin_Teller2d_Parameters::N, 
+                                      Ashkin_Teller2d_Parameters::h, 
+                                      field_array, disorder_distribution::uniform );
+#if MPI_ON
+        // Distribute the random field from the zero processor
+        MPI_Bcast( field_array, static_cast<int>(Ising2d_Parameters::N), MPI_FLOAT, 0, MPI_COMM_WORLD );
+#endif
+#endif
+ 
         recalculate_state();
     }
 
@@ -119,6 +139,9 @@ float Ashkin_Teller2d<data_t>::local_energy(const size_t idx, const data_t * con
         en += Ashkin_Teller2d_Parameters::K * static_cast<float>( sigma_idx * tau_idx
                                                                 * (*spin_at_site(neighbor, spin_type::sigma))
                                                                 * (*spin_at_site(neighbor, spin_type::tau)  )   );
+#if RFAT_BAXTER
+        en += -field_array[idx] * sigma_idx * tau_idx;
+#endif
     }
     return -en;
 }

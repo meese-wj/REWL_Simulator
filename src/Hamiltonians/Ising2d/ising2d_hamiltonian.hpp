@@ -17,6 +17,14 @@
 #include "../Correlations/fourier_correlator.hpp"
 #endif
 
+#if RFIM
+// Include the random fields
+#include "../Disorder/random_fields.hpp"
+#if MPI_ON 
+#include <mpi.h>
+#endif
+#endif
+
 // TODO: Upgrade the energies to allow for 
 // double calculations. 
 template<typename data_t>
@@ -42,6 +50,9 @@ struct Ising2d
     State<data_t> current_state;
 
     data_t * spin_array = nullptr;
+#if RFIM
+    float * field_array = nullptr;
+#endif
     size_t * neighbor_array = nullptr;
 
     // Add some Hamiltonian dependent functions
@@ -67,7 +78,14 @@ struct Ising2d
                                             Ising2d_Parameters::L,
                                             Ising2d_Parameters::num_neighbors_i,
                                             neighbor_array);
-
+#if RFIM
+        generate_random_field<float>( Ising2d_Parameters::N, Ising2d_Parameters::h, 
+                                      field_array, disorder_distribution::uniform );
+#if MPI_ON
+        // Distribute the random field from the zero processor
+        MPI_Bcast( field_array, static_cast<int>(Ising2d_Parameters::N), MPI_FLOAT, 0, MPI_COMM_WORLD );
+#endif
+#endif
         recalculate_state();
     }
 
@@ -87,7 +105,11 @@ struct Ising2d
 template<typename data_t>
 float Ising2d<data_t>::local_field(const size_t idx) const
 {
+#if RFIM
+    float field = field_array[idx];
+#else
     float field = Ising2d_Parameters::h;
+#endif
     for ( size_t nidx = 0; nidx != Ising2d_Parameters::num_neighbors_i; ++nidx )
     {
         field += Ising2d_Parameters::J * static_cast<float>( spin_array[ neighbor_array[ idx * Ising2d_Parameters::num_neighbors_i + nidx ] ] );
