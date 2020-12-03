@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(REWL VERSION 0.1.0)
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+message(STATUS "CMAKE_BINARY_DIR = ${CMAKE_BINARY_DIR}")
 
 add_compile_options(-std=c++17 -Wall -Werror -pedantic)
 
@@ -24,6 +25,10 @@ option(CORRELATION_LENGTHS "Compute the correlation length periodically in each 
 option(ISING2D "Run a 2d Ising model on a periodic square lattice." OFF)
 option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice." OFF)
 
+# Additions to Hamiltonians
+option(RFIM "Include random fields for the Ising model." OFF)
+option(RFAT_BAXTER "Include random fields for the Baxter spin in the Ashkin-Teller model." OFF)
+
 # *********************************************************************
 # Add consequences of the options below.
 
@@ -41,18 +46,38 @@ if (MPI_ON)
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 endif()
 
+# *********************************************************************
 # Error out if more than one Hamiltonian is activated.
 # TODO: This is probably unsustainable for many models...
 if (ISING2D AND ASHKIN_TELLER2D)
     message(FATAL_ERROR "More than one Hamiltonian is activated.")
 endif()
 
+# Error out if RFIM and Ashkin-Teller model
+if (RFIM AND ASHKIN_TELLER2D)
+    message(FATAL_ERROR "RFIM was activated for the Ashkin-Teller model.")
+endif()
+
+# Error out if RFAT_BAXTER and Ising model
+if (RFAT_BAXTER AND ISING2D)
+    message(FATAL_ERROR "RFAT_BAXTER was activated for the Ising model.")
+endif()
+# *********************************************************************
+
 if (ISING2D)
     add_definitions(-DISING2D)
 endif()
 
+if (RFIM)
+    add_definitions(-DRFIM)
+endif()
+
 if (ASHKIN_TELLER2D)
     add_definitions(-DASHKIN_TELLER2D)
+endif()
+
+if (RFAT_BAXTER)
+    add_definitions(-DRFAT_BAXTER)
 endif()
 
 if (COLLECT_TIMINGS)

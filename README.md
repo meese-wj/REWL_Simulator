@@ -77,3 +77,10 @@ If multiple Hamiltonians are selected at build time, then `cmake` will throw a `
 * `ASHKIN_TELLER2D`
     * This flag sets the Ashkin-Teller model on a 2d square periodic grid.
     * Right now, the Ashkin-Teller model is supported within the ferromagnetic Baxter regime. 
+
+##### Hamiltonian Additions
+These are add-ons to the Hamiltonians above.
+* `RFIM`
+    * This morphs the Ising model into a random-field Ising model.
+* `RFAT_BAXTER`
+    * This adds a random-field for the Baxter spin in the Ashkin-Teller model.
