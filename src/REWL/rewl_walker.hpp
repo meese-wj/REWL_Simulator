@@ -31,6 +31,7 @@ struct REWL_Walker
 
     void adjust_state_to_range();
     energy_t get_min_energy() const;
+    void reinitialize_energies();
 
 #if SAMPLE_AFTER
     void wang_landau_walk(const size_t num_sweeps, const bool sample_observables);
@@ -74,11 +75,11 @@ template<typename energy_t,
          typename logdos_t, 
          typename obs_t, 
          class histogram_index_functor>
-REWL_Walker<energy_t, 
-            logdos_t, 
-            obs_t, 
-            histogram_index_functor>::
-            adjust_state_to_range()
+void REWL_Walker<energy_t, 
+                 logdos_t, 
+                 obs_t, 
+                 histogram_index_functor>::
+                 adjust_state_to_range()
 {
 #if MPI_ON
     MPI_Comm_rank( MPI_COMM_WORLD, &walker_world_rank );
@@ -125,11 +126,11 @@ template<typename energy_t,
          typename logdos_t, 
          typename obs_t, 
          class histogram_index_functor>
-REWL_Walker<energy_t, 
-            logdos_t, 
-            obs_t, 
-            histogram_index_functor>::
-            get_min_energy()
+energy_t REWL_Walker<energy_t, 
+                     logdos_t, 
+                     obs_t, 
+                     histogram_index_functor>::
+                     get_min_energy() const
 {
     energy_t min_energy = system.current_state.energy;
 #if MPI_ON
@@ -169,12 +170,12 @@ template<typename energy_t,
          typename logdos_t, 
          typename obs_t, 
          class histogram_index_functor>
-REWL_Walker<energy_t, 
-            logdos_t, 
-            obs_t, 
-            histogram_index_functor>::
-            reinitialize_energies( const energy_t min, const energy_t max,
-                                   const energy_t binsize, const size_t num_bins )
+void REWL_Walker<energy_t, 
+                 logdos_t, 
+                 obs_t, 
+                 histogram_index_functor>::
+                 reinitialize_energies( const energy_t min, const energy_t max,
+                                        const energy_t binsize, const size_t num_bins )
 {
    hist_idx = histogram_index_functor(min, max, binsize);
    system_obs = Observables_t<obs_t>(num_bins);

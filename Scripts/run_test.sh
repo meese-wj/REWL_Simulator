@@ -1,6 +1,6 @@
 #!/bin/bash
 
-model="Ashkin_Teller2d"
+model="Ising2d"
 
 cd /home/joe/Linux_Code_Dev/REWL_Simulator/build
 echo
@@ -9,7 +9,7 @@ echo
 ls
 echo
 echo "Building and running code."
-cmake .. "-D${model^^}=ON"
+cmake .. "-D${model^^}=ON -RFIM=ON"
 
 # *******************************
 # Set MPI variables from CMake
