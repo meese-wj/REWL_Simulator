@@ -21,9 +21,10 @@ struct Ashkin_Teller2d_Parameter_String
     const std::string energy_bin_size = std::to_string(Ashkin_Teller2d_Parameters::energy_bin_size);
     const std::string num_bins = std::to_string(Ashkin_Teller2d_Parameters::num_bins);
 
-    const std::string model_name = "Ashkin_Teller2d";
 #if RFAT_BAXTER
-    model_name += " RFAT Baxter";
+    const std::string model_name = "Ashkin_Teller2d RFAT Baxter";
+#else
+    const std::string model_name = "Ashkin_Teller2d";
 #endif
     const std::string size_string = "L-" + L;
 

@@ -119,10 +119,12 @@ struct Ashkin_Teller2d
     data_t * get_front_DoFs() const { return spin_array; }
 
 #if RFAT_BAXTER
-    void import_disorder( const float * const disorder ) const;
+    void import_disorder( const float * const disorder )
     {
         for ( size_t idx = 0; idx != Ashkin_Teller2d_Parameters::N; ++idx )
             field_array[idx] = disorder[idx];
+
+        recalculate_state();
     }
 #endif
 };

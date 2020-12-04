@@ -39,8 +39,4 @@
     using Hamiltonian_t = Ashkin_Teller2d<data_t>;
 #endif
 
-#if RFIM || RFAT_BAXTER
-#define RANDOM_DISORDER
-#endif
-
 #endif

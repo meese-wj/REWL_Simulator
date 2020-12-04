@@ -69,7 +69,9 @@ if (ISING2D)
 endif()
 
 if (RFIM)
+    message(STATUS "RFIM engaged.")
     add_definitions(-DRFIM)
+    add_definitions(-DRANDOM_DISORDER)
 endif()
 
 if (ASHKIN_TELLER2D)
@@ -78,6 +80,7 @@ endif()
 
 if (RFAT_BAXTER)
     add_definitions(-DRFAT_BAXTER)
+    add_definitions(-DRANDOM_DISORDER)
 endif()
 
 if (COLLECT_TIMINGS)

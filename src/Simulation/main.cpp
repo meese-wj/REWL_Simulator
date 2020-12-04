@@ -42,17 +42,28 @@ int main(int argc, char * argv[])
 
     ENERGY_TYPE ground_state_energy = 0.;
     ENERGY_TYPE highest_energy = 0.;
-    Hamiltonian_t * toy_model = new Hamiltonian_t();
-    ground_state_energy = toy_model -> current_state.energy;
-    highest_energy = System_Parameters::energy_max;
+    Hamiltonian_t<OBS_TYPE> * toy_model = nullptr;
+
+    if ( world_rank == REWL_MASTER_PROC )
+    {
+        toy_model = new Hamiltonian_t<OBS_TYPE> ();
+        ground_state_energy = toy_model -> current_state.energy;
+        highest_energy = System_Parameters::energy_max;
+
+        for ( size_t idx = 0; idx != System_Parameters::N; ++idx )
+            std::cout << "\nafter h[" << idx << "] = " << toy_model -> field_array[idx] << "\n"; 
+    }
 
     MPI_Bcast(&ground_state_energy, 1, MPI_ENERGY_TYPE, REWL_MASTER_PROC, MPI_COMM_WORLD);
     MPI_Bcast(&highest_energy, 1, MPI_ENERGY_TYPE, REWL_MASTER_PROC, MPI_COMM_WORLD);
+    std::cout << "\nground state = " << ground_state_energy << " highest state = " << highest_energy << "\n";
 #if RANDOM_DISORDER
-    ENERGY_TYPE * disorder_array = new ENERGY_TYPE [System_Parameters::N];
+    ENERGY_TYPE * disorder_array = new ENERGY_TYPE [System_Parameters::N]();
     MPI_Scatter( toy_model -> field_array, System_Parameters::N, MPI_ENERGY_TYPE, 
-                 disorder_array, System_Parameters::N, MPI_ENERGY_TYPE, MPI_COMM_WORLD );
+                 disorder_array, System_Parameters::N, MPI_ENERGY_TYPE, REWL_MASTER_PROC, MPI_COMM_WORLD );
+    std::cout << "\ndisorder array scattered...\n";
 #endif
+    MPI_Barrier(MPI_COMM_WORLD);
     delete toy_model;
 
     /* ****************************************************************************** */
@@ -326,7 +337,7 @@ int main(int argc, char * argv[])
     
     ENERGY_TYPE ground_state_energy = 0.;
     ENERGY_TYPE highest_energy = 0.;
-    Hamiltonian_t * toy_model = new Hamiltonian_t();
+    Hamiltonian_t<OBS_TYPE> * toy_model = new Hamiltonian_t<OBS_TYPE> ();
     ground_state_energy = toy_model -> current_state.energy;
     highest_energy = System_Parameters::energy_max;
 

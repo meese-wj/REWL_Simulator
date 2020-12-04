@@ -18,9 +18,10 @@ struct Ising2d_Parameter_String
     const std::string energy_bin_size = std::to_string(Ising2d_Parameters::energy_bin_size);
     const std::string num_bins = std::to_string(Ising2d_Parameters::num_bins);
 
-    const std::string model_name = "Ising2d";
 #if RFIM
-    model_name += " RFIM";
+    const std::string model_name = "Ising2d RFIM";
+#else
+    const std::string model_name = "Ising2d";
 #endif
     const std::string size_string = "L-" + L;
 

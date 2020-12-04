@@ -82,6 +82,9 @@ struct Ising2d
         generate_random_field<float>( Ising2d_Parameters::N, Ising2d_Parameters::h, 
                                       field_array, disorder_distribution::uniform );
 #endif
+        std::cout << "\nfield pointer out of function = " << field_array << "\n";
+        for ( size_t idx = 0; idx != Ising2d_Parameters::N; ++idx )
+            printf("constructor h[%ld] = %e\n", idx, field_array[idx]);
         recalculate_state();
     }
 
@@ -98,10 +101,12 @@ struct Ising2d
     data_t * get_front_DoFs() const { return spin_array; }
 
 #if RFIM
-    void import_disorder( const float * const disorder ) const;
+    void import_disorder( const float * const disorder )
     {
         for ( size_t idx = 0; idx != Ising2d_Parameters::N; ++idx )
             field_array[idx] = disorder[idx];
+
+        recalculate_state();
     }
 #endif
 };
