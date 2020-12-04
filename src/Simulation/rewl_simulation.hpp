@@ -68,10 +68,28 @@ REWL_simulation::REWL_simulation()
     MPI_Comm_size( MPI_COMM_WORLD, &REWL_Parameters::num_walkers );
     i_am_the_master = ( my_world_rank == REWL_MASTER_PROC );
 #endif
-    
+
+    // Construct the Hamiltonian first with null binning
+    // then use the minimum energy to set up the glazier
+#if DIFFERENT_SEEDS
+    // TODO: How can I guarantee that the seeds are different?
+    std::uint64_t walker_seed = static_cast<std::uint64_t>( std::chrono::high_resolution_clock::now().time_since_epoch().count() );
+#else
+    std::uint64_t walker_seed = static_cast<std::uint64_t> (1);
+#endif
+   
+    // Set up a walker with no binning to 
+    // first get the Hamiltonian
+    my_walker = new REWL_Walker<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE, histogram_index<ENERGY_TYPE> >
+                (-1., 0., 1, 1, walker_seed);
+
+    // Take the energies from the walkers
+    ENERGY_TYPE master_min = my_walker -> get_min_energy();
+    ENERGY_TYPE master_max = System_Parameters::energy_max;  // TODO: Maybe change this? I don't know how much it matters.
+   
     // Construct the glazier
     window_maker = new glazier<ENERGY_TYPE, histogram_index<ENERGY_TYPE> >
-                        (System_Parameters::energy_min, System_Parameters::energy_max,
+                        (master_min, master_max,
                          System_Parameters::energy_bin_size, 
                          static_cast<size_t>(REWL_Parameters::num_walkers) / REWL_Parameters::replicas_per_window,
                          REWL_Parameters::replicas_per_window, 
@@ -89,15 +107,14 @@ REWL_simulation::REWL_simulation()
     printf("\nID %d: min, max, bin size, num bins = %e, %e, %e, %ld", my_world_rank, walker_min, walker_max, walker_bin_size, walker_num_bins);
     printf("\n");
 
-#if DIFFERENT_SEEDS
-    // TODO: How can I guarantee that the seeds are different?
-    std::uint64_t walker_seed = static_cast<std::uint64_t>( std::chrono::high_resolution_clock::now().time_since_epoch().count() );
-#else
-    std::uint64_t walker_seed = static_cast<std::uint64_t> (1);
-#endif
+    // Free the glazier memory now before reinitializing.
+    // This is to try and keep the walker compact in 
+    // memory space. Afterall the glazier can be 
+    // recalculated exactly later on if I really need it.
+    delete window_maker;
 
-    my_walker = new REWL_Walker<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE, histogram_index<ENERGY_TYPE> >
-                (walker_min, walker_max, walker_bin_size, walker_num_bins, walker_seed);
+    // Reinitialize bins in the walker
+    my_walker.reinitialize_energies( walker_min, walker_max, walker_bin_size, walker_num_bins );
 
     printf("\nID %d: done with the constructor\n", my_world_rank);
 

@@ -21,10 +21,10 @@ struct REWL_Walker
     logdos_t incrementer = 1.;
     histogram_index_functor hist_idx;
     rng<float> random;
-    Wang_Landau<energy_t, logdos_t, Hamiltonian_t<obs_t>, 
-                Observables_t<obs_t>, State_t<obs_t>, histogram_index_functor> wl_walker;
     Hamiltonian_t<obs_t> system;
     Observables_t<obs_t> system_obs;
+    Wang_Landau<energy_t, logdos_t, Hamiltonian_t<obs_t>, 
+                Observables_t<obs_t>, State_t<obs_t>, histogram_index_functor> wl_walker;
 
     REWL_Walker(const energy_t _min, const energy_t _max, const energy_t _bsize, const size_t _nbins, const std::uint32_t _seed);
     ~REWL_Walker(){}
@@ -160,12 +160,28 @@ REWL_Walker<energy_t,
                         system(),
                         system_obs(_nbins)
 {
-#if RANDOM_DISORDER
-    // For random disorder simulations, the new
-    // ground state energy needs to be determined
-    // and then 
+    // Don't do anything here...
+}
 
-#endif
+// Reinitialize the walker's binning
+// and set the state.
+template<typename energy_t,
+         typename logdos_t, 
+         typename obs_t, 
+         class histogram_index_functor>
+REWL_Walker<energy_t, 
+            logdos_t, 
+            obs_t, 
+            histogram_index_functor>::
+            reinitialize_energies( const energy_t min, const energy_t max,
+                                   const energy_t binsize, const size_t num_bins )
+{
+   hist_idx = histogram_index_functor(min, max, binsize);
+   system_obs = Observables_t<obs_t>(num_bins);
+   wl_walker = Wang_Landau<energy_t, logdos_t, Hamiltonian_t<obs_t>, Observables_t<obs_t>, State_t<obs_t>, histogram_index_functor>(min, max, binsize, num_bins);
+
+   // Finally, readjust the state to the proper range.
+   adjust_state_to_range();
 }
 
 template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
