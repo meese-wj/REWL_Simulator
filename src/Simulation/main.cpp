@@ -40,6 +40,21 @@ int main(int argc, char * argv[])
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
+    ENERGY_TYPE ground_state_energy = 0.;
+    ENERGY_TYPE highest_energy = 0.;
+    Hamiltonian_t * toy_model = new Hamiltonian_t();
+    ground_state_energy = toy_model -> current_state.energy;
+    highest_energy = System_Parameters::energy_max;
+
+    MPI_Bcast(&ground_state_energy, 1, MPI_ENERGY_TYPE, REWL_MASTER_PROC, MPI_COMM_WORLD);
+    MPI_Bcast(&highest_energy, 1, MPI_ENERGY_TYPE, REWL_MASTER_PROC, MPI_COMM_WORLD);
+#if RANDOM_DISORDER
+    ENERGY_TYPE * disorder_array = new ENERGY_TYPE [System_Parameters::N];
+    MPI_Scatter( toy_model -> field_array, System_Parameters::N, MPI_ENERGY_TYPE, 
+                 disorder_array, System_Parameters::N, MPI_ENERGY_TYPE, MPI_COMM_WORLD );
+#endif
+    delete toy_model;
+
     /* ****************************************************************************** */
     /* Set up the file system for this simulation.                                    */
     /* ****************************************************************************** */
@@ -116,7 +131,12 @@ int main(int argc, char * argv[])
     /* **************************************************************************** */
 #endif
 
-    REWL_simulation * simulation = new REWL_simulation();
+    REWL_simulation * simulation = new REWL_simulation(ground_state_energy, highest_energy);
+
+#if RANDOM_DISORDER
+    simulation -> my_walker -> system.import_disorder( disorder_array );
+    delete [] disorder_array;
+#endif
 
     if ( world_rank == REWL_MASTER_PROC )
         printf("\nStarting simulation...\n");
@@ -303,6 +323,19 @@ int main(int argc, char * argv[])
 #endif
         return 1;
     }
+    
+    ENERGY_TYPE ground_state_energy = 0.;
+    ENERGY_TYPE highest_energy = 0.;
+    Hamiltonian_t * toy_model = new Hamiltonian_t();
+    ground_state_energy = toy_model -> current_state.energy;
+    highest_energy = System_Parameters::energy_max;
+
+#if RANDOM_DISORDER
+    ENERGY_TYPE * disorder_array = new ENERGY_TYPE [System_Parameters::N];
+    for ( size_t idx = 0; idx != System_Parameters::N; ++idx )
+        disorder_array[idx] = toy_model -> field_array[idx];
+#endif
+    delete toy_model;
 
     /* ****************************************************************************** */
     /* Set up the file system for this simulation.                                    */
@@ -322,7 +355,12 @@ int main(int argc, char * argv[])
 
     /* ****************************************************************************** */
  
-    REWL_simulation * simulation = new REWL_simulation();
+    REWL_simulation * simulation = new REWL_simulation(ground_state_energy, highest_energy);
+
+#if RANDOM_DISORDER
+    simulation -> my_walker -> system.import_disorder( disorder_array );
+    delete [] disorder_array;
+#endif
 
     printf("\nStarting simulation...");
 #if PRINT_HISTOGRAM
