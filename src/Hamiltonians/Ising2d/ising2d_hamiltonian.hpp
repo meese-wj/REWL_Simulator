@@ -81,10 +81,6 @@ struct Ising2d
 #if RFIM
         generate_random_field<float>( Ising2d_Parameters::N, Ising2d_Parameters::h, 
                                       field_array, disorder_distribution::uniform );
-#if MPI_ON
-        // Distribute the random field from the zero processor
-        MPI_Bcast( field_array, static_cast<int>(Ising2d_Parameters::N), MPI_FLOAT, 0, MPI_COMM_WORLD );
-#endif
 #endif
         recalculate_state();
     }
@@ -100,6 +96,14 @@ struct Ising2d
     void print_lattice() const;
     
     data_t * get_front_DoFs() const { return spin_array; }
+
+#if RFIM
+    void import_disorder( const float * const disorder ) const;
+    {
+        for ( size_t idx = 0; idx != Ising2d_Parameters::N; ++idx )
+            field_array[idx] = disorder[idx];
+    }
+#endif
 };
 
 template<typename data_t>
