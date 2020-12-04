@@ -21,17 +21,13 @@ struct REWL_Walker
     logdos_t incrementer = 1.;
     histogram_index_functor hist_idx;
     rng<float> random;
-    Hamiltonian_t<obs_t> system;
-    Observables_t<obs_t> system_obs;
     Wang_Landau<energy_t, logdos_t, Hamiltonian_t<obs_t>, 
                 Observables_t<obs_t>, State_t<obs_t>, histogram_index_functor> wl_walker;
+    Hamiltonian_t<obs_t> system;
+    Observables_t<obs_t> system_obs;
 
     REWL_Walker(const energy_t _min, const energy_t _max, const energy_t _bsize, const size_t _nbins, const std::uint32_t _seed);
     ~REWL_Walker(){}
-
-    void adjust_state_to_range();
-    energy_t get_min_energy() const;
-    void reinitialize_energies();
 
 #if SAMPLE_AFTER
     void wang_landau_walk(const size_t num_sweeps, const bool sample_observables);
@@ -68,18 +64,25 @@ struct REWL_Walker
 
 };
 
-
-// Move the system into its given 
-// energy range
 template<typename energy_t,
          typename logdos_t, 
          typename obs_t, 
          class histogram_index_functor>
-void REWL_Walker<energy_t, 
-                 logdos_t, 
-                 obs_t, 
-                 histogram_index_functor>::
-                 adjust_state_to_range()
+REWL_Walker<energy_t, 
+            logdos_t, 
+            obs_t, 
+            histogram_index_functor>::
+            REWL_Walker(const energy_t _min, 
+                        const energy_t _max, 
+                        const energy_t _bsize, 
+                        const size_t _nbins, 
+                        const std::uint32_t _seed)
+                      : 
+                        hist_idx(_min, _max, _bsize),
+                        random(_seed),
+                        wl_walker(_min, _max, _bsize, _nbins),
+                        system(),
+                        system_obs(_nbins)
 {
 #if MPI_ON
     MPI_Comm_rank( MPI_COMM_WORLD, &walker_world_rank );
@@ -118,71 +121,6 @@ void REWL_Walker<energy_t,
 #if MPI_ON
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
-}
-
-// Return the minimum energy
-// from the master processor
-template<typename energy_t,
-         typename logdos_t, 
-         typename obs_t, 
-         class histogram_index_functor>
-energy_t REWL_Walker<energy_t, 
-                     logdos_t, 
-                     obs_t, 
-                     histogram_index_functor>::
-                     get_min_energy() const
-{
-    energy_t min_energy = system.current_state.energy;
-#if MPI_ON
-    // Broadcast the master processor min energy to everyone
-    MPI_Bcast( &min_energy, 1, MPI_ENERGY_TYPE, REWL_MASTER_PROC, MPI_COMM_WORLD );
-#endif
-    return min_energy;
-}
-
-// REWL_Walker constructor
-template<typename energy_t,
-         typename logdos_t, 
-         typename obs_t, 
-         class histogram_index_functor>
-REWL_Walker<energy_t, 
-            logdos_t, 
-            obs_t, 
-            histogram_index_functor>::
-            REWL_Walker(const energy_t _min, 
-                        const energy_t _max, 
-                        const energy_t _bsize, 
-                        const size_t _nbins, 
-                        const std::uint32_t _seed)
-                      : 
-                        hist_idx(_min, _max, _bsize),
-                        random(_seed),
-                        wl_walker(_min, _max, _bsize, _nbins),
-                        system(),
-                        system_obs(_nbins)
-{
-    // Don't do anything here...
-}
-
-// Reinitialize the walker's binning
-// and set the state.
-template<typename energy_t,
-         typename logdos_t, 
-         typename obs_t, 
-         class histogram_index_functor>
-void REWL_Walker<energy_t, 
-                 logdos_t, 
-                 obs_t, 
-                 histogram_index_functor>::
-                 reinitialize_energies( const energy_t min, const energy_t max,
-                                        const energy_t binsize, const size_t num_bins )
-{
-   hist_idx = histogram_index_functor(min, max, binsize);
-   system_obs = Observables_t<obs_t>(num_bins);
-   wl_walker = Wang_Landau<energy_t, logdos_t, Hamiltonian_t<obs_t>, Observables_t<obs_t>, State_t<obs_t>, histogram_index_functor>(min, max, binsize, num_bins);
-
-   // Finally, readjust the state to the proper range.
-   adjust_state_to_range();
 }
 
 template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>
