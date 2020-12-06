@@ -16,13 +16,13 @@ struct Ashkin_Teller2d_Parameter_String
 #endif
     const std::string num_neighbors = std::to_string(Ashkin_Teller2d_Parameters::num_neighbors_i);
 
-    const std::string energy_min = std::to_string(Ashkin_Teller2d_Parameters::energy_min);
-    const std::string energy_max = std::to_string(Ashkin_Teller2d_Parameters::energy_max);
+    std::string energy_min = std::to_string(Ashkin_Teller2d_Parameters::energy_min);
+    std::string energy_max = std::to_string(Ashkin_Teller2d_Parameters::energy_max);
     const std::string energy_bin_size = std::to_string(Ashkin_Teller2d_Parameters::energy_bin_size);
-    const std::string num_bins = std::to_string(Ashkin_Teller2d_Parameters::num_bins);
+    std::string num_bins = std::to_string(Ashkin_Teller2d_Parameters::num_bins);
 
 #if RFAT_BAXTER
-    const std::string model_name = "Ashkin_Teller2d RFAT Baxter";
+    const std::string model_name = "Ashkin_Teller2d_RFAT_Baxter";
 #else
     const std::string model_name = "Ashkin_Teller2d";
 #endif
@@ -32,12 +32,15 @@ struct Ashkin_Teller2d_Parameter_String
     std::string file_header;
 
 #if JOB_ARRAYS
+    std::string job_id;
     Ashkin_Teller2d_Parameter_String( const std::string & job_id_string );
 #else
     Ashkin_Teller2d_Parameter_String();
 #endif
 
     ~Ashkin_Teller2d_Parameter_String(){}
+
+    void update_file_header();
 };
 
 #endif

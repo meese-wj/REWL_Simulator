@@ -49,19 +49,18 @@ int main(int argc, char * argv[])
         toy_model = new Hamiltonian_t<OBS_TYPE> ();
         ground_state_energy = toy_model -> current_state.energy;
         highest_energy = System_Parameters::energy_max;
-
-        for ( size_t idx = 0; idx != System_Parameters::N; ++idx )
-            std::cout << "\nafter h[" << idx << "] = " << toy_model -> field_array[idx] << "\n"; 
     }
 
     MPI_Bcast(&ground_state_energy, 1, MPI_ENERGY_TYPE, REWL_MASTER_PROC, MPI_COMM_WORLD);
     MPI_Bcast(&highest_energy, 1, MPI_ENERGY_TYPE, REWL_MASTER_PROC, MPI_COMM_WORLD);
-    std::cout << "\nground state = " << ground_state_energy << " highest state = " << highest_energy << "\n";
 #if RANDOM_DISORDER
     ENERGY_TYPE * disorder_array = new ENERGY_TYPE [System_Parameters::N]();
-    MPI_Scatter( toy_model -> field_array, System_Parameters::N, MPI_ENERGY_TYPE, 
-                 disorder_array, System_Parameters::N, MPI_ENERGY_TYPE, REWL_MASTER_PROC, MPI_COMM_WORLD );
-    std::cout << "\ndisorder array scattered...\n";
+    if ( world_rank == REWL_MASTER_PROC )
+    {
+        for ( size_t idx = 0; idx != System_Parameters::N; ++idx )
+            disorder_array[idx] = toy_model -> field_array[idx];
+    }
+    MPI_Bcast( disorder_array, System_Parameters::N, MPI_ENERGY_TYPE, REWL_MASTER_PROC, MPI_COMM_WORLD );
 #endif
     MPI_Barrier(MPI_COMM_WORLD);
     delete toy_model;
@@ -79,6 +78,11 @@ int main(int argc, char * argv[])
 #else
     System_Strings sys_strings = System_Strings();
 #endif
+    sys_strings.energy_min = std::to_string(ground_state_energy);
+    sys_strings.energy_max = std::to_string(highest_energy);
+    sys_strings.num_bins = std::to_string(static_cast<size_t>((highest_energy - ground_state_energy) / System_Parameters::energy_bin_size));
+    sys_strings.update_file_header();
+    
     REWL_Parameter_String rewl_strings = REWL_Parameter_String();
     std::filesystem::path data_path;
     std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
@@ -148,6 +152,8 @@ int main(int argc, char * argv[])
     simulation -> my_walker -> system.import_disorder( disorder_array );
     delete [] disorder_array;
 #endif
+
+    simulation -> my_walker -> adjust_state_to_range();
 
     if ( world_rank == REWL_MASTER_PROC )
         printf("\nStarting simulation...\n");
@@ -353,6 +359,11 @@ int main(int argc, char * argv[])
     /* ****************************************************************************** */
     
     System_Strings sys_strings = System_Strings();
+    sys_strings.energy_min = std::to_string(ground_state_energy);
+    sys_strings.energy_max = std::to_string(highest_energy);
+    sys_strings.num_bins = std::to_string(static_cast<size_t>((highest_energy - ground_state_energy) / System_Parameters::energy_bin_size));
+    sys_strings.update_file_header();
+
     REWL_Parameter_String rewl_strings = REWL_Parameter_String();
 #if JOB_ARRAYS
     System_Strings sys_strings = System_Strings( job_id_string );
@@ -372,6 +383,8 @@ int main(int argc, char * argv[])
     simulation -> my_walker -> system.import_disorder( disorder_array );
     delete [] disorder_array;
 #endif
+
+    simulation -> my_walker -> adjust_state_to_range();
 
     printf("\nStarting simulation...");
 #if PRINT_HISTOGRAM

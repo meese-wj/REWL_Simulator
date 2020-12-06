@@ -82,9 +82,6 @@ struct Ising2d
         generate_random_field<float>( Ising2d_Parameters::N, Ising2d_Parameters::h, 
                                       field_array, disorder_distribution::uniform );
 #endif
-        std::cout << "\nfield pointer out of function = " << field_array << "\n";
-        for ( size_t idx = 0; idx != Ising2d_Parameters::N; ++idx )
-            printf("constructor h[%ld] = %e\n", idx, field_array[idx]);
         recalculate_state();
     }
 

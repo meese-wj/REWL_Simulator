@@ -50,7 +50,6 @@ void find_left_concatenation_indices( index_pair * const concatenate_indices,
     size_t left_start_index = INT32_MAX;
     for ( int ldx = energy_left.size() - 1; ldx != -1; --ldx )
     {
-        printf("\nright energy = %e, left energy bin = %e", right_energy_val, energy_left[ ldx ]);
         if ( energy_left[ldx] == right_energy_val )
         {
             left_start_index = static_cast<size_t>(ldx);

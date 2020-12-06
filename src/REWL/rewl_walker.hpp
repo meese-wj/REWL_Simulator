@@ -29,6 +29,8 @@ struct REWL_Walker
     REWL_Walker(const energy_t _min, const energy_t _max, const energy_t _bsize, const size_t _nbins, const std::uint32_t _seed);
     ~REWL_Walker(){}
 
+    void adjust_state_to_range();
+
 #if SAMPLE_AFTER
     void wang_landau_walk(const size_t num_sweeps, const bool sample_observables);
 #else
@@ -64,25 +66,17 @@ struct REWL_Walker
 
 };
 
+// Move the system into the proper
+// energy range
 template<typename energy_t,
          typename logdos_t, 
          typename obs_t, 
          class histogram_index_functor>
-REWL_Walker<energy_t, 
-            logdos_t, 
-            obs_t, 
-            histogram_index_functor>::
-            REWL_Walker(const energy_t _min, 
-                        const energy_t _max, 
-                        const energy_t _bsize, 
-                        const size_t _nbins, 
-                        const std::uint32_t _seed)
-                      : 
-                        hist_idx(_min, _max, _bsize),
-                        random(_seed),
-                        wl_walker(_min, _max, _bsize, _nbins),
-                        system(),
-                        system_obs(_nbins)
+void REWL_Walker<energy_t, 
+                 logdos_t, 
+                 obs_t, 
+                 histogram_index_functor>::
+                 adjust_state_to_range()
 {
 #if MPI_ON
     MPI_Comm_rank( MPI_COMM_WORLD, &walker_world_rank );
@@ -118,9 +112,30 @@ REWL_Walker<energy_t,
         in_range = hist_idx.energy_in_range(system.current_state.energy);
         //printf("\nID %d: current energy = %e, in_range = %s\n", walker_world_rank, system.current_state.energy, ( in_range ? "true" : "false" ));
     }
-#if MPI_ON
-    MPI_Barrier(MPI_COMM_WORLD);
-#endif
+}
+
+// Walker constructor
+template<typename energy_t,
+         typename logdos_t, 
+         typename obs_t, 
+         class histogram_index_functor>
+REWL_Walker<energy_t, 
+            logdos_t, 
+            obs_t, 
+            histogram_index_functor>::
+            REWL_Walker(const energy_t _min, 
+                        const energy_t _max, 
+                        const energy_t _bsize, 
+                        const size_t _nbins, 
+                        const std::uint32_t _seed)
+                      : 
+                        hist_idx(_min, _max, _bsize),
+                        random(_seed),
+                        wl_walker(_min, _max, _bsize, _nbins),
+                        system(),
+                        system_obs(_nbins)
+{
+// Do nothing here and adjust later
 }
 
 template<typename energy_t, typename logdos_t, typename obs_t, class histogram_index_functor>

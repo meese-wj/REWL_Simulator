@@ -13,13 +13,13 @@ struct Ising2d_Parameter_String
     const std::string h = std::to_string(Ising2d_Parameters::h);
     const std::string num_neighbors = std::to_string(Ising2d_Parameters::num_neighbors_i);
 
-    const std::string energy_min = std::to_string(Ising2d_Parameters::energy_min);
-    const std::string energy_max = std::to_string(Ising2d_Parameters::energy_max);
+    std::string energy_min = std::to_string(Ising2d_Parameters::energy_min);
+    std::string energy_max = std::to_string(Ising2d_Parameters::energy_max);
     const std::string energy_bin_size = std::to_string(Ising2d_Parameters::energy_bin_size);
-    const std::string num_bins = std::to_string(Ising2d_Parameters::num_bins);
+    std::string num_bins = std::to_string(Ising2d_Parameters::num_bins);
 
 #if RFIM
-    const std::string model_name = "Ising2d RFIM";
+    const std::string model_name = "Ising2d_RFIM";
 #else
     const std::string model_name = "Ising2d";
 #endif
@@ -29,12 +29,15 @@ struct Ising2d_Parameter_String
     std::string file_header;
 
 #if JOB_ARRAYS
+    std::string job_id;
     Ising2d_Parameter_String( const std::string & job_id_string );
 #else
     Ising2d_Parameter_String();
 #endif
 
     ~Ising2d_Parameter_String(){}
+
+    void update_file_header();
 };
 
 #endif

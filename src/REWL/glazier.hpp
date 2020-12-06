@@ -75,6 +75,7 @@ void glazier<data_t, histogram_index_functor>::construct_windows()
     const data_t window_size = (global_max - global_min) / denom;
 
     // Set up an array of functors per window
+    // TODO: Change to the index functor
     //histogram_index_functor * window_functor = nullptr;
 
     for ( size_t wdx = 0; wdx != num_windows; ++wdx )
@@ -82,7 +83,6 @@ void glazier<data_t, histogram_index_functor>::construct_windows()
         data_t window_min  = global_min + static_cast<data_t>(wdx) * (1 - window_overlap) * window_size;
         data_t window_max  = window_min + window_size;
         size_t window_bins = static_cast<size_t> ( (window_max - window_min) / global_bin_size );
-        printf("\nbefore: window = %ld: min = %e, max = %e, num bins = %ld, binsize = %e\n", wdx, window_min, window_max, window_bins, global_bin_size);
 
         if ( wdx != 0 )
         {
@@ -94,13 +94,11 @@ void glazier<data_t, histogram_index_functor>::construct_windows()
         
         size_t num_bins = static_cast<size_t>( ceil( (window_max - window_min) / global_bin_size ) );
         window_max = window_min + global_bin_size * static_cast<data_t>( num_bins );
-        printf("num_bins, window_min, window_max = %ld, %e, %e\n", num_bins, window_min, window_max);
 
         while ( window_max > global_max )
             window_max -= global_bin_size;
          
         window_bins = static_cast<size_t> ( (window_max - window_min) / global_bin_size );
-        printf("after: window = %ld: min = %e, max = %e, num bins = %ld, binsize = %e\n\n", wdx, window_min, window_max, window_bins, global_bin_size);
 
         //delete window_functor;
         //window_functor = new histogram_index_functor( window_min, window_max, window_bins );
@@ -113,7 +111,6 @@ void glazier<data_t, histogram_index_functor>::construct_windows()
             all_windows[ wdx * replicas_per_window + replica ].num_bins = window_bins;
         }
     }
-    printf("\n");
     //delete window_functor;
 }
 #else

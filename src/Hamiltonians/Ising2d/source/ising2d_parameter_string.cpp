@@ -6,9 +6,17 @@ Ising2d_Parameter_String::Ising2d_Parameter_String( const std::string & job_id_s
 Ising2d_Parameter_String::Ising2d_Parameter_String()
 #endif
 {
+#if JOB_ARRAYS
+    job_id = job_id_string;
+#endif
+    update_file_header();
+}
+
+void Ising2d_Parameter_String::update_file_header()
+{
     file_name_base = "";
 #if JOB_ARRAYS
-    file_name_base += "JOBID-" + job_id_string + "_"; 
+    file_name_base += "JOBID-" + job_id + "_"; 
 #endif
     file_name_base += "REWL_L-" + L + "_J-" + J + "_h-" + h + ".dat";
 
