@@ -254,6 +254,8 @@ def main():
         if len(data_tuples) == 0:
             print("\nNo data to average.\n")
             return 1
+        else:
+            print("\nTotal Files: %d Jobs Found.\n" % len(data_tuples))
 
         final_averages, final_stderr = 0,0
         final_averages = average_job_data( cl_args.Lsize, labels, data_tuples )
