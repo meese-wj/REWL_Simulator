@@ -201,7 +201,7 @@ def plot_probability_density( model_name, data_file_stem, coupling_string, coupl
                             fmt='none', capsize=capsize, label = None)
 
         # Set xlim
-        ax.set_xlim([-1.6,-1.15])
+        ax.set_xlim([-2.0,-1.25])
 
         ax.set_xlabel(r"Energy per Site $[E/N]$", fontsize = 12)
         #ax.set_ylabel(r"Probability Density $[N\cdot E^{-1}]$", fontsize = 12)
@@ -244,7 +244,7 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
         print("\nPlotting %s vs %s" % (labels[lbl], xlabel))
         fig, ax = plt.subplots(1,1)
 
-        epsilon_range = 0.1
+        epsilon_range = 0.25
         xmin, xmax, plt_ymin, plt_ymax = 0, 0, 0, 0
         if epsilon_range != None and Tc_val != None and Tc_val != "":
             xmin, xmax = (1 - epsilon_range) * float(Tc_val), (1 + epsilon_range) * float(Tc_val)
