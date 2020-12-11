@@ -88,7 +88,7 @@ struct Ashkin_Teller2d
                                             Ashkin_Teller2d_Parameters::L,
                                             Ashkin_Teller2d_Parameters::num_neighbors_i,
                                             neighbor_array);
-#if RFIM
+#if RFAT_BAXTER
         generate_random_field<float>( Ashkin_Teller2d_Parameters::N, 
                                       Ashkin_Teller2d_Parameters::h, 
                                       field_array, disorder_distribution::uniform );
@@ -146,7 +146,7 @@ float Ashkin_Teller2d<data_t>::local_energy(const size_t idx, const data_t * con
                                                                 * (*spin_at_site(neighbor, spin_type::sigma))
                                                                 * (*spin_at_site(neighbor, spin_type::tau)  )   );
 #if RFAT_BAXTER
-        en += -field_array[idx] * sigma_idx * tau_idx;
+        en += field_array[idx] * sigma_idx * tau_idx;
 #endif
     }
     return -en;
