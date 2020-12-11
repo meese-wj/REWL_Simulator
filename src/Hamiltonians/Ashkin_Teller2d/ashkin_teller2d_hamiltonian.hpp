@@ -25,6 +25,10 @@
 #endif
 #endif
 
+#if SIMULATED_ANNEALING
+#include <random_number_generators.hpp>
+#endif
+
 enum spin_type
 {
     sigma, tau, NUM_SPIN_TYPES
@@ -125,6 +129,19 @@ struct Ashkin_Teller2d
 
         recalculate_state();
     }
+
+#if SIMULATED_ANNEALING
+    void randomize_dofs() 
+    {
+        std::uint64_t seed = static_cast<std::uint64_t>( std::chrono::high_resolution_clock::now().time_since_epoch().count() );
+        random_number_generator<float> rng (seed);
+
+        for ( size_t idx = 0; idx != Ising2d_Parameters::num_DoF; ++idx )
+            spin_array[ idx ] = ( rng() < 0.5 ? 1. : -1. );
+
+        recalculate_state();
+    }
+#endif
 
 #if RFAT_BAXTER
     void import_disorder( const float * const disorder )

@@ -9,7 +9,7 @@ echo
 ls
 echo
 echo "Building and running code."
-cmake .. "-D${model^^}=ON" "-DRFIM=OFF"
+cmake .. "-D${model^^}=ON" "-DRFIM=ON"
 
 # *******************************
 # Set MPI variables from CMake

@@ -71,6 +71,9 @@ template<typename energy_t, class Hamiltonian_t, class State_t>
 void Simulated_Annealer<energy_t, Hamiltonian_t, State_t>::
      simulate_annealing( const size_t num_sites, const size_t num_flavors, Hamiltonian_t * const system ) 
 {
+    // First randomize the degrees of freedom
+    system -> randomize_dofs();
+
     printf("\n");
 #if COLLECT_TIMINGS
     auto start = std::chrono::high_resolution_clock::now();
@@ -107,6 +110,7 @@ void Simulated_Annealer<energy_t, Hamiltonian_t, State_t>::
         iteration_start = std::chrono::high_resolution_clock::now();
 #endif
         printf("\n");
+        system -> print_lattice();
         fflush(stdout);
     }
 
