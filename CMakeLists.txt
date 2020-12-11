@@ -20,6 +20,7 @@ option(DIFFERENT_SEEDS "Use timings to set the seeds for the walkers." ON)
 option(EQUAL_WINDOWS "Construct equally-sized windows in REWL." ON)
 option(JOB_ARRAYS "Allow for job arrays to run without data over-write." OFF)
 option(CORRELATION_LENGTHS "Compute the correlation length periodically in each energy bin." ON)
+option(SIMULATED_ANNEALING "Perform a simulated annealing run to find the ground state configuration at the start." ON)
 
 # Add compile-time options to specify the Hamiltonian
 option(ISING2D "Run a 2d Ising model on a periodic square lattice." OFF)
@@ -117,6 +118,10 @@ endif()
 
 if (CORRELATION_LENGTHS)
     add_definitions(-DCORRELATION_LENGTHS)
+endif()
+
+if (SIMULATED_ANNEALING)
+    add_definitions(-DSIMULATED_ANNEALING)
 endif()
 
 add_subdirectory(src)

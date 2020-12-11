@@ -97,6 +97,14 @@ struct Ising2d
     
     data_t * get_front_DoFs() const { return spin_array; }
 
+    void import_DoFs( const data_t * const array )
+    {
+        for ( size_t idx = 0; idx != Ising2d_Parameters::num_DoF; ++idx )
+            spin_array[idx] = array[idx];
+
+        recalculate_state();
+    }
+
 #if RFIM
     void import_disorder( const float * const disorder )
     {
