@@ -80,6 +80,7 @@ void Simulated_Annealer<energy_t, Hamiltonian_t, State_t>::
     auto iteration_start = start;
     auto timer = start;
 #endif
+
     for ( size_t Tidx = 0; Tidx <= num_temps; ++Tidx )
     {
         energy_t temperature = calculate_temperature(initial_temp, final_temp, Tidx, num_temps);
@@ -99,7 +100,8 @@ void Simulated_Annealer<energy_t, Hamiltonian_t, State_t>::
         temperature_energies[2 * Tidx + 0] = temperature; 
         temperature_energies[2 * Tidx + 1] = system -> current_state.energy; 
 
-        printf("\nStep %ld / %ld: Energy = %e", Tidx, num_temps, system -> current_state.energy);
+        printf("\nStep %ld / %ld:", Tidx, num_temps); 
+        printf("\nEnergy = %e", system -> current_state.energy);
         printf("\nTemperature = %.4e\nBeta = %.4e", temperature, beta);
 #if COLLECT_TIMINGS
         timer = std::chrono::high_resolution_clock::now();

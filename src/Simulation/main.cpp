@@ -49,7 +49,7 @@ int main(int argc, char * argv[])
         toy_model = new Hamiltonian_t<OBS_TYPE> ();
 
 #if SIMULATED_ANNEALING
-        Simulated_Annealer<ENERGY_TYPE, Hamiltonian_t<OBS_TYPE>, State_t<OBS_TYPE> > * annealer = new Simulated_Annealer<ENERGY_TYPE, Hamiltonian_t<OBS_TYPE>, State_t<OBS_TYPE> >( (size_t)1e5, 100., 0.5, 20 );
+        Simulated_Annealer<ENERGY_TYPE, Hamiltonian_t<OBS_TYPE>, State_t<OBS_TYPE> > * annealer = new Simulated_Annealer<ENERGY_TYPE, Hamiltonian_t<OBS_TYPE>, State_t<OBS_TYPE> >( (size_t)1e5, 100., 0.5, 40 );
         printf("\nSimulated annealer started. Initial energy = %e", toy_model -> current_state.energy);        
         annealer -> simulate_annealing( System_Parameters::N, System_Parameters::num_DoF / System_Parameters::N, toy_model );
 
