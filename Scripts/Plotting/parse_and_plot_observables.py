@@ -244,8 +244,9 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
         print("\nPlotting %s vs %s" % (labels[lbl], xlabel))
         fig, ax = plt.subplots(1,1)
 
-        epsilon_range = 0.5
-        xmin, xmax, plt_ymin, plt_ymax = 0, 0, 0, 0
+        epsilon_range = 0.1
+        #xmin, xmax, plt_ymin, plt_ymax = 0, 0, 0, 0
+        xmin, xmax, plt_ymin, plt_ymax = None, None, None, None
         if epsilon_range != None and Tc_val != None and Tc_val != "":
             xmin, xmax = (1 - epsilon_range) * float(Tc_val), (1 + epsilon_range) * float(Tc_val)
 
@@ -264,9 +265,13 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
             if epsilon_range != None and Tc_val != None and Tc_val != "":
                 if "microcanonical" not in data_file_stem and "Counts" not in labels[lbl]:
                     test_ymin, test_ymax = get_y_range( data_tuples[Ldx][1][:,lbl], data_tuples[Ldx][1][:,0], xmin, xmax )
-                    if abs(test_ymin) > abs(plt_ymin):
+                    #print("Plot Min = ", plt_ymin, "  Test Min = ", test_ymin)
+                    #print("Plot Max = ", plt_ymax, "  Test Max = ", test_ymax)
+                    #if abs(test_ymin) > abs(plt_ymin):
+                    if plt_ymin == None or test_ymin < plt_ymin:
                         plt_ymin = test_ymin
-                    if abs(test_ymax) > abs(plt_ymax):
+                    #if abs(test_ymax) > abs(plt_ymax):
+                    if plt_ymax == None or test_ymax > plt_ymax:
                         plt_ymax = test_ymax
 
         if epsilon_range != None and Tc_val != None and Tc_val != "":
