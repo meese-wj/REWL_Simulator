@@ -81,6 +81,71 @@ def collect_observables_and_data( data_file_stem, observable_marker, coupling_sy
 
     return labels, data_tuples
 
+# Find successive crossing temperature from Binder cumulants
+# or correlation lengths
+def crossing_temperatures( model_name, data_file_stem, coupling_string, coupling_value, label, label_idx, data_tuples, plot_directory, Tmin, Tmax ):
+
+    possible_labels = [ "Binder", "Correlation Length" ]
+
+    if len(data_tuples) < 3:
+        return
+
+    perform_analysis = False
+    for pl in possible_labels:
+        if pl in label:
+            perform_analysis = True
+
+    if not perform_analysis:
+        return
+
+    Lvalues = []
+    Crossings = []
+
+    for ldx in range(len(data_tuples) - 1):
+
+        Lvalues.append( data_tuples[ldx][0] )
+        # Find the closest indices of Tmin and Tmax
+        Tmin_idx = bisect_left( data_tuples[ldx][1][:,0], Tmin )
+        Tmax_idx = bisect_left( data_tuples[ldx][1][:,0], Tmax )
+        # Calculate the distance between the data
+        # at L and the next largest L
+        # diff_values = np.abs( data_tuples[ldx + 1][1][Tmin_idx:Tmax_idx, label_idx] - data_tuples[ldx][1][Tmin_idx:Tmax_idx, label_idx] )
+        diff_values = data_tuples[ldx + 1][1][Tmin_idx:Tmax_idx, label_idx] - data_tuples[ldx][1][Tmin_idx:Tmax_idx, label_idx]
+        sign_values = np.sign(diff_values)
+        sign_idx = 0
+        for idx in range(1, len(sign_values)):
+            if sign_values[idx] != sign_values[idx -1]:
+                sign_idx = idx
+                break
+
+        Crossings.append( data_tuples[ldx][1][ Tmin_idx + idx, 0] )
+
+    Lvalues = np.array(Lvalues)
+    Crossings = np.array(Crossings)
+
+    # Now plot the successive crossings vs L
+    fig, ax = plt.subplots(1,1)
+    ax.plot( Lvalues, Crossings,
+             color = "None", marker = "o", mfc = "C0",
+             ms = markersize, mec = marker_edge_color, mew = marker_edge_width )
+
+
+    ax.set_xlabel(r"System Size $L$", fontsize = 12)
+    ax.set_ylabel(r"%s Crossing Temperature" % label, fontsize = 10)
+
+    midpoint = 0.5 * ( Tmin + Tmax )
+    ax.set_ylim([(1-0.1)*Tmin, (1+0.05)*Tmax])
+
+    key_string = coupling_string + " = " + "%.3f" % float(coupling_value)
+    plottitle = model_name + ": " + key_string + " with $T \in [%.3f, %.3f]$" % (Tmin, Tmax)
+    ax.set_title(r"%s" % plottitle, fontsize = 12)
+
+    plotname = label + " Crossing Temperatures.png"
+    plt.savefig( plot_directory + "/" + plotname )
+
+    plt.close()
+
+
 # Plot the probability density as functions of energy at a fixed temperature
 def plot_probability_density( model_name, data_file_stem, coupling_string, coupling_value, labels, data_tuples, plot_directory, Tc_val = None, plt_err = False ):
 
@@ -290,6 +355,8 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
             elif "microcanonical" in data_file_stem and lbl == 1:
                 plot_probability_density( model_name, data_file_stem, coupling_string, coupling_value, labels, data_tuples, plot_directory, Tc_val )
 
+        if xmin != None and xmax != None and "nonlinear" in data_file_stem:
+                crossing_temperatures( model_name, data_file_stem, coupling_string, coupling_value, labels[lbl], lbl, data_tuples, plot_directory, (1-0.05)*float(Tc_val), (1+0.05)*float(Tc_val) )
 
         ax.set_xlabel(xlabel, fontsize = 12)
         ax.set_ylabel(labels[lbl], fontsize = 12)
