@@ -46,7 +46,7 @@ struct REWL_simulation
     size_t replica_exchange_update( int & exchange_direction, const size_t iteration_counter, 
                                     const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const;
 #endif
-    void average_and_redistribute_window( const bool simulation_incomplete, const int * my_comm_ids, MPI_Comm * const window_communicators ) const;
+    void average_and_redistribute_window( const bool simulation_incomplete, const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const window_communicators ) const;
     bool check_if_window_is_flat( const int * my_comm_ids, MPI_Comm * const window_communicators ) const;
 #endif
 
@@ -217,6 +217,8 @@ size_t REWL_simulation::replica_exchange_update( int & exchange_direction, const
             
             // Now shuffle the partners and pair by index
             std::shuffle( shuffled_partners.begin(), shuffled_partners.end(), my_walker -> random.generator );
+            //int wr = 0;
+            //MPI_Comm_rank( MPI_COMM_WORLD, &wr );
             //printf("\n");
             for ( size_t replica = 0; replica != REWL_Parameters::replicas_per_window; ++replica )
             {
@@ -224,7 +226,7 @@ size_t REWL_simulation::replica_exchange_update( int & exchange_direction, const
                 partners[ replica ] = shuffled_partners[ replica ];
                 // Assign the shuffled_partner at replica the replica in the lower window
                 partners[ shuffled_partners[ replica ] ] = replica;
-                //printf("\nreplica = %ld, partners[%ld] = %d, partners[%d] = %d", replica, replica, partners[replica], shuffled_partners[replica], partners[shuffled_partners[replica]]);
+                //printf("\nwr %d: replica = %ld, partners[%ld] = %d, partners[%d] = %d", wr, replica, replica, partners[replica], shuffled_partners[replica], partners[shuffled_partners[replica]]);
             }
             //printf("\n");
 
@@ -295,7 +297,7 @@ size_t REWL_simulation::replica_exchange_update( int & exchange_direction, const
                 mpi_exchange_state<State_t<OBS_TYPE> >( my_walker -> current_state(), partner_index, comm_id, local_communicators, &status );
                 mpi_exchange_DoFs<OBS_TYPE>( my_walker -> DoFs(), System_Parameters::num_DoF, partner_index, comm_id, local_communicators, &status );
             }
-
+        
             // Finally, update the histograms after the exchanges
             my_walker -> update_histograms();
 #if SAMPLE_AFTER
@@ -318,8 +320,14 @@ inline size_t counts_index( const size_t bin )
     return bin * convert(System_Obs_enum_t::NUM_OBS) + convert(System_Obs_enum_t::counts_per_bin);
 }
 
+// Get an observable index at a bin
+inline size_t obs_index( const size_t bin, const size_t ob )
+{
+    return bin * convert( System_Obs_enum_t::NUM_OBS ) + ob;
+}
+
 // Compute the weighted average in a window and redistribute
-void REWL_simulation::average_and_redistribute_window( const bool simulation_incomplete, const int * const my_comm_ids, MPI_Comm * const window_communicators ) const
+void REWL_simulation::average_and_redistribute_window( const bool simulation_incomplete, const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const window_communicators ) const
 {
     if ( REWL_Parameters::replicas_per_window == 1 )
         return;
@@ -328,8 +336,13 @@ void REWL_simulation::average_and_redistribute_window( const bool simulation_inc
 
     // Store the sum of each walker's energy histogram in an array
     size_t num_bins = my_walker -> wl_walker.wl_histograms.num_bins;
-    size_t * total_energy_histogram = new size_t [ num_bins ] ();
-    OBS_TYPE * total_energy_histogram_obs_t = new OBS_TYPE [ num_bins ] ();
+    size_t * total_energy_histogram = nullptr; 
+    OBS_TYPE * total_energy_histogram_obs_t = nullptr;
+
+    if ( simulation_incomplete )
+        total_energy_histogram = new size_t [ num_bins ] ();
+    else
+        total_energy_histogram_obs_t = new OBS_TYPE [ num_bins ] ();
 
     MPI_Barrier( window_communicators[ comm_id ] );
 
@@ -347,26 +360,34 @@ void REWL_simulation::average_and_redistribute_window( const bool simulation_inc
     for ( size_t bin = 0; bin != num_bins; ++bin )
     {
         LOGDOS_TYPE weight = 0.;
+        
         if (simulation_incomplete)
             weight = static_cast<LOGDOS_TYPE>( my_walker -> wl_walker.wl_histograms.histograms[bin].count ) / static_cast<LOGDOS_TYPE>( total_energy_histogram[bin] );
         else
             weight = static_cast<LOGDOS_TYPE>( my_walker -> system_obs.obs_array[ counts_index(bin) ] ) / static_cast<LOGDOS_TYPE>( total_energy_histogram_obs_t[bin] );
+        
+
+        //weight = 1. / static_cast<LOGDOS_TYPE>(REWL_Parameters::replicas_per_window);
          
         logdos_weights[bin] = weight * ( my_walker -> wl_walker.wl_histograms.histograms[bin].logdos );
-
-        for ( size_t ob = 0; ob != convert(System_Obs_enum_t::NUM_OBS); ++ob )
+        
+        if ( !simulation_incomplete )
         {
-            obs_weights[ bin * convert(System_Obs_enum_t::NUM_OBS) + ob ] = my_walker -> system_obs.obs_array[ bin * convert(System_Obs_enum_t::NUM_OBS) + ob ];
-            // Just sum the counts like normal
-            if ( ob != convert(System_Obs_enum_t::counts_per_bin ) )
-               obs_weights[ bin * convert(System_Obs_enum_t::NUM_OBS) + ob ] *= static_cast<OBS_TYPE>(weight); 
-            else
+            for ( size_t ob = 0; ob != convert(System_Obs_enum_t::NUM_OBS); ++ob )
             {
-                // Subtract out the old counts so only the new counts 
-                // from the last iteration are counted
-                obs_weights[ counts_index(bin) ] -= old_counts[bin]; 
-            }
-        }  
+                obs_weights[ obs_index(bin, ob) ] = my_walker -> system_obs.obs_array[ obs_index(bin, ob) ];
+                // Sum the weighted observables in the next step
+                if ( ob != convert(System_Obs_enum_t::counts_per_bin ) )
+                   obs_weights[ obs_index(bin, ob) ] *= static_cast<OBS_TYPE>(weight); 
+                // Just sum the counts like normal
+                else
+                {
+                    // Subtract out the old counts so only the new counts 
+                    // from the last iteration are counted
+                    obs_weights[ counts_index(bin) ] -= old_counts[bin]; 
+                }
+            } 
+        } 
     }
 
     // Break up the reductions for better memory management
@@ -376,18 +397,21 @@ void REWL_simulation::average_and_redistribute_window( const bool simulation_inc
         MPI_Allreduce( &( logdos_weights[bin] ), &( my_walker -> wl_walker.wl_histograms.histograms[bin].logdos ), 1, MPI_LOGDOS_TYPE, MPI_SUM, window_communicators[ comm_id ] );
     }
     // Now use a reduction to sum the observables and deposit them accordingly
-    for ( size_t bin = 0; bin != num_bins; ++bin )
+    if (!simulation_incomplete)
     {
-        for ( size_t ob = 0; ob != convert(System_Obs_enum_t::NUM_OBS); ++ob )
+        for ( size_t bin = 0; bin != num_bins; ++bin )
         {
-            const size_t ob_index = bin * convert(System_Obs_enum_t::NUM_OBS) + ob;
-            MPI_Allreduce( &( obs_weights[ob_index] ), &( my_walker -> system_obs.obs_array[ob_index] ), 1, MPI_OBS_TYPE, MPI_SUM, window_communicators[ comm_id ] );
-            if ( ob == convert(System_Obs_enum_t::counts_per_bin) )
+            for ( size_t ob = 0; ob != convert(System_Obs_enum_t::NUM_OBS); ++ob )
             {
-                // Add back the old counts
-                my_walker -> system_obs.obs_array[ob_index] += old_counts[bin];
-                // Record the current counts in the old counts now
-                old_counts[bin] = my_walker -> system_obs.obs_array[ob_index];
+                const size_t ob_index = obs_index(bin, ob);
+                MPI_Allreduce( &( obs_weights[ob_index] ), &( my_walker -> system_obs.obs_array[ob_index] ), 1, MPI_OBS_TYPE, MPI_SUM, window_communicators[ comm_id ] );
+                if ( ob == convert(System_Obs_enum_t::counts_per_bin) )
+                {
+                    // Add back the old counts
+                    my_walker -> system_obs.obs_array[ob_index] += old_counts[bin];
+                    // Record the current counts in the old counts now
+                    old_counts[bin] = my_walker -> system_obs.obs_array[ob_index];
+                }
             }
         }
     }
@@ -485,8 +509,65 @@ void REWL_simulation::simulate(
             my_walker -> wl_walker.wl_histograms.print_histogram_counts(iteration_counter, histogram_path);
 #endif
             // If the window is flat, average the logdos and observables
-            average_and_redistribute_window( simulation_incomplete, my_comm_ids, window_communicators );
+            /*
+            if ( my_comm_ids[ Communicators::window_comm ] == 0 )
+            {
+                OBS_TYPE * obs_arr = nullptr;
 
+                if ( my_ids_per_comm[ Communicators::window_comm ] == 0 )
+                {
+                    obs_arr = new OBS_TYPE [ REWL_Parameters::replicas_per_window ];
+                }
+
+                if ( my_ids_per_comm[ Communicators::window_comm ] == 0 )
+                    printf("\nID %d: Magnetizations before -- ", my_world_rank);
+                for( size_t bin = 0; bin != my_walker -> wl_walker.wl_histograms.num_bins / 50; ++bin )
+                {
+                    MPI_Gather( &( my_walker -> system_obs.obs_array[ bin * convert(System_Obs_enum_t::NUM_OBS) ] ), 1, MPI_OBS_TYPE, obs_arr, 1, MPI_OBS_TYPE, 0, window_communicators[ my_comm_ids[ Communicators::window_comm ] ] );
+
+                    if ( my_ids_per_comm[ Communicators::window_comm ] == 0 )
+                    {
+                        printf("\nBin %ld: ", bin);
+                        for ( size_t replica = 0; replica != REWL_Parameters::replicas_per_window; ++replica )
+                            printf("%e, ", obs_arr[replica]);
+                        printf("\n");
+                    }
+                }
+                printf("\n\n");
+                
+                delete [] obs_arr;
+            }
+            */ 
+            average_and_redistribute_window( simulation_incomplete, my_ids_per_comm, my_comm_ids, window_communicators );
+            /*            
+            if ( my_comm_ids[ Communicators::window_comm ] == 0 )
+            {
+                OBS_TYPE * obs_arr = nullptr;
+
+                if ( my_ids_per_comm[ Communicators::window_comm ] == 0 )
+                {
+                    obs_arr = new OBS_TYPE [ REWL_Parameters::replicas_per_window ];
+                }
+
+                if ( my_ids_per_comm[ Communicators::window_comm ] == 0 )
+                    printf("\nID %d: Magnetizations after -- ", my_world_rank);
+                for( size_t bin = 0; bin != my_walker -> wl_walker.wl_histograms.num_bins / 50; ++bin )
+                {
+                    MPI_Gather( &( my_walker -> system_obs.obs_array[ bin * convert(System_Obs_enum_t::NUM_OBS) ] ), 1, MPI_OBS_TYPE, obs_arr, 1, MPI_OBS_TYPE, 0, window_communicators[ my_comm_ids[ Communicators::window_comm ] ] );
+
+                    if ( my_ids_per_comm[ Communicators::window_comm ] == 0 )
+                    {
+                        printf("\nBin %ld: ", bin);
+                        for ( size_t replica = 0; replica != REWL_Parameters::replicas_per_window; ++replica )
+                            printf("%e, ", obs_arr[replica]);
+                        printf("\n");
+                    }
+                }
+                printf("\n\n");
+                
+                delete [] obs_arr;
+            }
+            */
             // Reset only the energy histogram and leave
             // the logdos alone.
 
@@ -614,7 +695,7 @@ void REWL_simulation::simulate(
     // Finally average the results within a single window
     // Only the 0-processor in each window will communicate 
     // with the master processor at the end
-    average_and_redistribute_window( simulation_incomplete, my_comm_ids, window_communicators ); 
+    average_and_redistribute_window( simulation_incomplete, my_ids_per_comm, my_comm_ids, window_communicators ); 
 }
 #endif
 

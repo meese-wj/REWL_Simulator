@@ -20,7 +20,7 @@ using OBS_TYPE = double;
 namespace REWL_Parameters
 {
     int num_walkers = 1;
-    size_t replicas_per_window = 2;
+    size_t replicas_per_window = 4;
     //float window_overlap = static_cast<float>( single_bin_overlap ); 
     float window_overlap = 0.75;
 
