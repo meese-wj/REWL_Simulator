@@ -47,12 +47,31 @@ int main(int argc, char * argv[])
     if ( world_rank == REWL_MASTER_PROC )
     {
         toy_model = new Hamiltonian_t<OBS_TYPE> ();
+
+#if SIMULATED_ANNEALING
+        Simulated_Annealer<ENERGY_TYPE, Hamiltonian_t<OBS_TYPE>, State_t<OBS_TYPE> > * annealer = new Simulated_Annealer<ENERGY_TYPE, Hamiltonian_t<OBS_TYPE>, State_t<OBS_TYPE> >( (size_t)1e3, 50., 0.05, 250 );
+        printf("\nSimulated annealer started. Initial energy = %e", toy_model -> current_state.energy);        
+        annealer -> simulate_annealing( System_Parameters::N, System_Parameters::num_DoF / System_Parameters::N, toy_model );
+
+        delete annealer;
+#endif
+
+        toy_model -> print_lattice();
+
         ground_state_energy = toy_model -> current_state.energy;
         highest_energy = System_Parameters::energy_max;
     }
 
     MPI_Bcast(&ground_state_energy, 1, MPI_ENERGY_TYPE, REWL_MASTER_PROC, MPI_COMM_WORLD);
     MPI_Bcast(&highest_energy, 1, MPI_ENERGY_TYPE, REWL_MASTER_PROC, MPI_COMM_WORLD);
+    OBS_TYPE * dof_field_array = new OBS_TYPE [System_Parameters::num_DoF]();
+    if ( world_rank == REWL_MASTER_PROC )
+    {
+        for ( size_t idx = 0; idx != System_Parameters::num_DoF; ++idx )
+            dof_field_array[idx] = toy_model -> spin_array[idx];
+    }
+    MPI_Bcast( dof_field_array, System_Parameters::num_DoF, MPI_OBS_TYPE, REWL_MASTER_PROC, MPI_COMM_WORLD );
+
 #if RANDOM_DISORDER
     ENERGY_TYPE * disorder_array = new ENERGY_TYPE [System_Parameters::N]();
     if ( world_rank == REWL_MASTER_PROC )
@@ -147,6 +166,8 @@ int main(int argc, char * argv[])
 #endif
 
     REWL_simulation * simulation = new REWL_simulation(ground_state_energy, highest_energy);
+    simulation -> my_walker -> system.import_DoFs( dof_field_array );
+    delete dof_field_array;
 
 #if RANDOM_DISORDER
     simulation -> my_walker -> system.import_disorder( disorder_array );
@@ -344,8 +365,20 @@ int main(int argc, char * argv[])
     ENERGY_TYPE ground_state_energy = 0.;
     ENERGY_TYPE highest_energy = 0.;
     Hamiltonian_t<OBS_TYPE> * toy_model = new Hamiltonian_t<OBS_TYPE> ();
+
+#if SIMULATED_ANNEALING
+        Simulated_Annealer<ENERGY_TYPE, Hamiltonian_t<OBS_TYPE>, State_t<OBS_TYPE> > * annealer = new Simulated_Annealer<ENERGY_TYPE, Hamiltonian_t<OBS_TYPE>, State_t<OBS_TYPE> >( (size_t)1e5, 50., 0.05, 20 );
+        
+        annealer -> simulate_annealing( System_Parameters::N, System_Parameters::num_DoF / System_Parameters::N, toy_model );
+
+        delete annealer;
+#endif
+
     ground_state_energy = toy_model -> current_state.energy;
     highest_energy = System_Parameters::energy_max;
+    OBS_TYPE * dof_field_array = new OBS_TYPE [System_Parameters::num_DoF]();
+    for ( size_t idx = 0; idx != System_Parameters::num_DoF; ++idx )
+        dof_field_array[idx] = toy_model -> spin_array[idx];
 
 #if RANDOM_DISORDER
     ENERGY_TYPE * disorder_array = new ENERGY_TYPE [System_Parameters::N];
@@ -378,6 +411,8 @@ int main(int argc, char * argv[])
     /* ****************************************************************************** */
  
     REWL_simulation * simulation = new REWL_simulation(ground_state_energy, highest_energy);
+    simulation -> my_walker -> system.import_DoFs( dof_field_array );
+    delete dof_field_array;
 
 #if RANDOM_DISORDER
     simulation -> my_walker -> system.import_disorder( disorder_array );

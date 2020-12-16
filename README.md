@@ -68,6 +68,9 @@ Some `cmake` options to be aware of are as follows:
 * `CORRELATION_LENGTHS`
     * If engaged, the Fourier transform of the field correlator will be averaged in each energy bin periodically.
     * At the end of the simulation the correlation lengths will be obtained via a combination of the correlator at q = 0 and q = 2pi / L.
+* `SIMULATED_ANNEALING`
+    * This will run a simulated annealing simulation at the beginning of the REWL simulation to determine the ground state energy and configuration.
+    * This is crucial for when the ground state is unknown.
 
 #### Supported Hamiltonians
 If multiple Hamiltonians are selected at build time, then `cmake` will throw a `FATAL_ERROR`.

@@ -5,6 +5,7 @@
 add_subdirectory(grid)
 add_subdirectory(Correlations)
 add_subdirectory(Disorder)
+add_subdirectory(Simulated_Annealer)
 add_subdirectory(Ising2d)
 add_subdirectory(Ashkin_Teller2d)
 
@@ -15,5 +16,6 @@ target_link_libraries(hamiltonians PUBLIC
                       grid_functions
                       correlations
                       disorder
+                      simulated_annealer
                       ising2d
                       ashkin_teller2d)

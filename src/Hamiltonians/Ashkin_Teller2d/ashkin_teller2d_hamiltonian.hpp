@@ -25,6 +25,10 @@
 #endif
 #endif
 
+#if SIMULATED_ANNEALING
+#include <random_number_generators.hpp>
+#endif
+
 enum spin_type
 {
     sigma, tau, NUM_SPIN_TYPES
@@ -88,7 +92,7 @@ struct Ashkin_Teller2d
                                             Ashkin_Teller2d_Parameters::L,
                                             Ashkin_Teller2d_Parameters::num_neighbors_i,
                                             neighbor_array);
-#if RFIM
+#if RFAT_BAXTER
         generate_random_field<float>( Ashkin_Teller2d_Parameters::N, 
                                       Ashkin_Teller2d_Parameters::h, 
                                       field_array, disorder_distribution::uniform );
@@ -118,6 +122,27 @@ struct Ashkin_Teller2d
 
     data_t * get_front_DoFs() const { return spin_array; }
 
+    void import_DoFs( const data_t * const array )
+    {
+        for ( size_t idx = 0; idx != Ashkin_Teller2d_Parameters::num_DoF; ++idx )
+            spin_array[idx] = array[idx];
+
+        recalculate_state();
+    }
+
+#if SIMULATED_ANNEALING
+    void randomize_dofs() 
+    {
+        std::uint64_t seed = static_cast<std::uint64_t>( std::chrono::high_resolution_clock::now().time_since_epoch().count() );
+        random_number_generator<float> rng (seed);
+
+        for ( size_t idx = 0; idx != Ising2d_Parameters::num_DoF; ++idx )
+            spin_array[ idx ] = ( rng() < 0.5 ? 1. : -1. );
+
+        recalculate_state();
+    }
+#endif
+
 #if RFAT_BAXTER
     void import_disorder( const float * const disorder )
     {
@@ -146,7 +171,7 @@ float Ashkin_Teller2d<data_t>::local_energy(const size_t idx, const data_t * con
                                                                 * (*spin_at_site(neighbor, spin_type::sigma))
                                                                 * (*spin_at_site(neighbor, spin_type::tau)  )   );
 #if RFAT_BAXTER
-        en += -field_array[idx] * sigma_idx * tau_idx;
+        en += field_array[idx] * sigma_idx * tau_idx;
 #endif
     }
     return -en;

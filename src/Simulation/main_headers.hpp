@@ -25,6 +25,9 @@ const std::string DELIMITER = "  ";
 #include <write_self_averaged_observables.hpp>
 #include <write_nonlinear_observables.hpp>
 
+#if SIMULATED_ANNEALING
+#include <Simulated_Annealer/simulated_annealer.hpp>
+#endif
 
 
 
