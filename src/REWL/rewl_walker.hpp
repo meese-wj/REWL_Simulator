@@ -20,7 +20,7 @@ struct REWL_Walker
    
     logdos_t incrementer = 1.;
     histogram_index_functor hist_idx;
-    rng<float> random;
+    rng<double> random;
     Wang_Landau<energy_t, logdos_t, Hamiltonian_t<obs_t>, 
                 Observables_t<obs_t>, State_t<obs_t>, histogram_index_functor> wl_walker;
     Hamiltonian_t<obs_t> system;
