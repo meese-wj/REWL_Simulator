@@ -255,10 +255,10 @@ size_t REWL_simulation::replica_exchange_update( int & exchange_direction, const
             // Send the new energy to the partner index to use in the exchange
             MPI_Sendrecv_replace( &new_energy, 1, MPI_ENERGY_TYPE, partner_index, 1, partner_index, 1, local_communicators[ comm_id ], &status );
 
-            float pexchange = 0.;
+            double pexchange = 0.;
             if ( my_walker -> energy_in_range( new_energy ) )
             {
-                pexchange = static_cast<float>( exp( std::min(0., my_walker -> get_logdos( current_energy ) - my_walker -> get_logdos( new_energy )) ) );
+                pexchange = static_cast<double>( exp( std::min(0., my_walker -> get_logdos( current_energy ) - my_walker -> get_logdos( new_energy )) ) );
             }
             //printf("\nID %d = %d: pexchange before = %e", my_world_rank, my_ids_per_comm[exchange_direction], pexchange);
 
@@ -266,8 +266,8 @@ size_t REWL_simulation::replica_exchange_update( int & exchange_direction, const
             if ( my_ids_per_comm[ exchange_direction ] < static_cast<int>(REWL_Parameters::replicas_per_window) )
             {
                 // Have the lower ids be the calculator
-                float other_pexchange = 0.;
-                MPI_Recv( &other_pexchange, 1, MPI_FLOAT, partner_index, 2, local_communicators[ comm_id ], &status );
+                double other_pexchange = 0.;
+                MPI_Recv( &other_pexchange, 1, MPI_DOUBLE, partner_index, 2, local_communicators[ comm_id ], &status );
 
                 // The exchange probability comes from the product of both
                 // energy moves
@@ -277,15 +277,15 @@ size_t REWL_simulation::replica_exchange_update( int & exchange_direction, const
 
                 // Send the whether the result is made to the partner
                 MPI_Send( &we_do_exchange, 1, MPI_CXX_BOOL, partner_index, 3, local_communicators[ comm_id ] );
-                MPI_Send( &pexchange, 1, MPI_FLOAT, partner_index, 4, local_communicators[ comm_id ] );
+                MPI_Send( &pexchange, 1, MPI_DOUBLE, partner_index, 4, local_communicators[ comm_id ] );
             }
             else
             {
                 // Send the exchange probability to the calculator
                 // and await a response
-                MPI_Send( &pexchange, 1, MPI_FLOAT, partner_index, 2, local_communicators[ comm_id ] );
+                MPI_Send( &pexchange, 1, MPI_DOUBLE, partner_index, 2, local_communicators[ comm_id ] );
                 MPI_Recv( &we_do_exchange, 1, MPI_CXX_BOOL, partner_index, 3, local_communicators[ comm_id ], &status );
-                MPI_Recv( &pexchange, 1, MPI_FLOAT, partner_index, 4, local_communicators[ comm_id ], &status );
+                MPI_Recv( &pexchange, 1, MPI_DOUBLE, partner_index, 4, local_communicators[ comm_id ], &status );
             }
             //printf("\nID %d = %d: pexchange after = %e\n", my_world_rank, my_ids_per_comm[exchange_direction], pexchange);
 

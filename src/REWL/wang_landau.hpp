@@ -26,16 +26,16 @@ struct Wang_Landau
 
 #if SAMPLE_AFTER
     void wang_landau_update(const size_t idx, const bool sample_observables, const logdos_t incrementer, Hamiltonian_t * const ham,
-                            Observables_t * const ham_obs, rng<float> & random, const histogram_index_functor & hist_idx);
+                            Observables_t * const ham_obs, rng<double> & random, const histogram_index_functor & hist_idx);
 
     void wang_landau_sweep(const size_t system_size, const size_t num_flavors, const bool sample_observables, const logdos_t incrementer, Hamiltonian_t * const ham, 
-                           Observables_t * const ham_obs, rng<float> & random, const histogram_index_functor & hist_idx );
+                           Observables_t * const ham_obs, rng<double> & random, const histogram_index_functor & hist_idx );
 #else
     void wang_landau_update(const size_t idx, const logdos_t incrementer, Hamiltonian_t * const ham,
-                            Observables_t * const ham_obs, rng<float> & random, const histogram_index_functor & hist_idx);
+                            Observables_t * const ham_obs, rng<double> & random, const histogram_index_functor & hist_idx);
 
     void wang_landau_sweep(const size_t system_size, const size_t num_flavors, const logdos_t incrementer, Hamiltonian_t * const ham, 
-                           Observables_t * const ham_obs, rng<float> & random, const histogram_index_functor & hist_idx );
+                           Observables_t * const ham_obs, rng<double> & random, const histogram_index_functor & hist_idx );
 #endif
 
 
@@ -53,7 +53,7 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
 #endif
         const logdos_t incrementer,
                                                                                     Hamiltonian_t * const ham, Observables_t * const ham_obs, 
-                                                                                    rng<float> & random, const histogram_index_functor & hist_idx)
+                                                                                    rng<double> & random, const histogram_index_functor & hist_idx)
 {
     //printf("\n\nSite %ld of %ld: spin = %e", idx, System_Parameters::N-1, ham -> spin_array[idx]);
     //printf("\n\nDoF %ld = %c before", idx, ham -> spin_array[idx] == 1. ? '+' : '-');
@@ -91,7 +91,7 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
         //printf("\ncurrent bin, new bin, entropy change = %ld, %ld, %e", current_bin, new_bin, entropy_change);
 
         // Check if the move is allowed
-        if ( entropy_change <= 0. || random() < static_cast<float>(exp(-entropy_change)) )
+        if ( entropy_change <= 0. || random() < static_cast<double>(exp(-entropy_change)) )
         {
             // If allowed, change the state to the temporary one
             // and change the current bin to the new bin. Note that
@@ -136,7 +136,7 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
         const bool sample_observables,
 #endif
         const logdos_t incrementer, Hamiltonian_t * const ham, Observables_t * const ham_obs, 
-                                                                                   rng<float> & random, const histogram_index_functor & hist_idx)
+                                                                                   rng<double> & random, const histogram_index_functor & hist_idx)
 {
     // Update each flavor of the degree of freedom independently
     // while all others are quenched for a single sweep.

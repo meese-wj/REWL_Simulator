@@ -309,7 +309,7 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
         print("\nPlotting %s vs %s" % (labels[lbl], xlabel))
         fig, ax = plt.subplots(1,1)
 
-        epsilon_range = 0.1
+        epsilon_range = .1
         #xmin, xmax, plt_ymin, plt_ymax = 0, 0, 0, 0
         xmin, xmax, plt_ymin, plt_ymax = None, None, None, None
         if epsilon_range != None and Tc_val != None and Tc_val != "":
