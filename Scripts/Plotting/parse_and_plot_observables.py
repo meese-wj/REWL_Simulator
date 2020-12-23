@@ -290,9 +290,12 @@ def get_y_range( yvalues, xvalues, xmin, xmax, extension=0.05 ):
     xindex_min = bisect_left( xvalues, xmin )
     xindex_max = bisect_left( xvalues, xmax )
 
+    # First prune the yvalues for any nans which break Python
+    # prune_yvalues = yvalues[ np.isnan(yvalues) != True ]
+
     # Now find the min and max of y on this range
-    ymin = np.min( yvalues[xindex_min:xindex_max] )
-    ymax = np.max( yvalues[xindex_min:xindex_max] )
+    ymin = np.nanmin( yvalues[xindex_min:xindex_max] )
+    ymax = np.nanmax( yvalues[xindex_min:xindex_max] )
 
     # Set the ylimits to be some fractional extension of
     # the yrange
@@ -330,8 +333,8 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
             if epsilon_range != None and Tc_val != None and Tc_val != "":
                 if "microcanonical" not in data_file_stem and "Counts" not in labels[lbl]:
                     test_ymin, test_ymax = get_y_range( data_tuples[Ldx][1][:,lbl], data_tuples[Ldx][1][:,0], xmin, xmax )
-                    #print("Plot Min = ", plt_ymin, "  Test Min = ", test_ymin)
-                    #print("Plot Max = ", plt_ymax, "  Test Max = ", test_ymax)
+                    print("Plot Min = ", plt_ymin, "  Test Min = ", test_ymin)
+                    print("Plot Max = ", plt_ymax, "  Test Max = ", test_ymax)
                     #if abs(test_ymin) > abs(plt_ymin):
                     if plt_ymin == None or test_ymin < plt_ymin:
                         plt_ymin = test_ymin
@@ -356,7 +359,7 @@ def plot_data_tuples( model_name, data_file_stem, coupling_string, coupling_valu
                 plot_probability_density( model_name, data_file_stem, coupling_string, coupling_value, labels, data_tuples, plot_directory, Tc_val )
 
         if xmin != None and xmax != None and "nonlinear" in data_file_stem:
-                crossing_temperatures( model_name, data_file_stem, coupling_string, coupling_value, labels[lbl], lbl, data_tuples, plot_directory, (1-0.05)*float(Tc_val), (1+0.05)*float(Tc_val) )
+                crossing_temperatures( model_name, data_file_stem, coupling_string, coupling_value, labels[lbl], lbl, data_tuples, plot_directory, (1-0.1)*float(Tc_val), (1+0.05)*float(Tc_val) )
 
         ax.set_xlabel(xlabel, fontsize = 12)
         ax.set_ylabel(labels[lbl], fontsize = 12)
