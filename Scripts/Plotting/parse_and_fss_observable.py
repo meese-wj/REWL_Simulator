@@ -5,6 +5,7 @@ import argparse
 import numpy as np
 import scipy.optimize as opt
 from parse_file_header import collect_labels
+import multiple_couplings
 import matplotlib as mpl
 mpl.use('Agg')  # THIS IS REQUIRED FOR WSL2
 import matplotlib.pyplot as plt
@@ -19,38 +20,22 @@ def setup_args():
     parser.add_argument("fss_observable", help = "Which observable to undergo finite size scaling", type = str)
     parser.add_argument("data_file_stem", help = "Observable type being plotted", type = str)
     parser.add_argument("observable_marker", help = "Line in data header before observable labels", type = str)
-    parser.add_argument("coupling_symbol", help = "The constant value to parse through", type = str)
-    parser.add_argument("coupling_value",  help = "Value of the coupling", type = str)
+    parser.add_argument("coupling_symbol", help = "The constant value(s) to parse through. May be a space separated list.", type = str)
+    parser.add_argument("coupling_value",  help = "Value of the coupling(s). May be a space separated list.", type = str)
 
     return parser.parse_args()
 
-def check_for_output(coupling_symbol, coupling_value):
-
-    key_string = coupling_symbol + "-" + coupling_value
-    if not os.path.isdir( os.getcwd() + "/" + output_path + "_" + key_string ):
-        os.mkdir( os.getcwd() + "/" + output_path + "_" + key_string )
-
-    return os.getcwd() + "/" + output_path + "_" + key_string
-
-def find_string_value( string_type, file_string ):
-
-    start = file_string.find(string_type + "-") + len(string_type + "-")
-    end = start + file_string[start:].find("_")
-
-    return file_string[start:end]
-
-
-def collect_observables_and_data( data_file_stem, fss_observable, observable_marker, coupling_symbol, coupling_value, comment = "#"):
+def collect_observables_and_data( data_file_stem, fss_observable, observable_marker, coupling_tuples, comment = "#"):
 
     labels = []
 
     data_tuples = []
 
-    key_string = coupling_symbol + "-" + ("%.6f" % float(coupling_value))
-    print("\nKey String:", key_string)
+    coupling_string = get_coupling_string( coupling_tuples, isfloat = True )
+    print("\nCoupling String:", coupling_string)
 
     for fl in os.listdir( os.getcwd() ):
-        if not os.path.isdir( fl ) and ( data_file_stem in fl and key_string in fl and "stderr" not in fl ):
+        if not os.path.isdir( fl ) and ( data_file_stem in fl and couplings_in_file(coupling_tuples, fl) and "stderr" not in fl ):
 
             if len(labels) == 0:
                 labels = collect_labels( fl, observable_marker, comment )
@@ -79,10 +64,10 @@ def collect_observables_and_data( data_file_stem, fss_observable, observable_mar
 
     return labels, data_tuples
 
-def plot_data_tuples( model_name, fss_observable, coupling_string, coupling_value, labels, data_tuples, plot_directory ):
+def plot_data_tuples( model_name, fss_observable, coupling_tuples, labels, data_tuples, plot_directory ):
 
     xlabel = "System Size L"
-    key_string = coupling_string + " = " + "%.3f" % float(coupling_value)
+    key_string = latex_couplings(coupling_tuples)
 
     # Find the index of the FSS variable
     Tlbl = labels.index( "Temperature" )
@@ -186,9 +171,15 @@ def main():
 
     args = setup_args()
 
-    plot_directory = check_for_output(args.coupling_symbol, args.coupling_value)
+    coupling_tuples = parse_couplings( args.coupling_symbol, args.coupling_value )
 
-    labels, data_tuples = collect_observables_and_data( args.data_file_stem, args.fss_observable, args.observable_marker, args.coupling_symbol, args.coupling_value )
+    # Exit the program if the coupling tuples are null
+    if len(coupling_tuples) == 0:
+        return
+
+    plot_directory = check_for_output(coupling_tuples)
+
+    labels, data_tuples = collect_observables_and_data( args.data_file_stem, args.fss_observable, args.observable_marker, coupling_tuples )
 
     if labels == None or data_tuples == None:
         return None
@@ -197,7 +188,7 @@ def main():
         print("\nCannot perform FSS of %s due to too few system sizes. Exiting.\n" % args.fss_observable)
         return
 
-    plot_data_tuples( args.model_name, args.fss_observable, args.coupling_symbol, args.coupling_value, labels, data_tuples, plot_directory )
+    plot_data_tuples( args.model_name, args.fss_observable, coupling_tuples, labels, data_tuples, plot_directory )
 
 
 

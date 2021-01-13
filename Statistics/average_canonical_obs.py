@@ -9,6 +9,7 @@ sys.path.insert(1, "Scripts/Plotting")
 
 import argparse
 from parse_file_header import collect_labels
+import mutliple_couplings
 import numpy as np
 import os
 from pathlib import Path
@@ -25,17 +26,10 @@ def setup_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("input_path", help = "Path to Job Arrays.", type = str)
     parser.add_argument("Lsize", help = "System size to average.", type = str)
-    parser.add_argument("coupling_symbol", help = "The constant value to parse through", type = str)
-    parser.add_argument("coupling_value",  help = "Value of the coupling", type = str)
+    parser.add_argument("coupling_symbol", help = "The constant value(s) to parse through. May be a space separated list.", type = str)
+    parser.add_argument("coupling_value",  help = "Value of the coupling(s). May be a space separated list.", type = str)
 
     return parser.parse_args()
-
-def find_string_value( string_type, file_string ):
-
-    start = file_string.find(string_type + "-") + len(string_type + "-")
-    end = start + file_string[start:].find("_")
-
-    return file_string[start:end]
 
 def extract_file_name( file_string ):
 
@@ -60,14 +54,14 @@ def get_file_header( file_string, comment = "#" ):
 
     return header_lines
 
-def read_in_data( input_path, Lsize, coupling_symbol, coupling_value, file_type, observable_marker, comment = "#" ):
+def read_in_data( input_path, Lsize, coupling_tuples, file_type, observable_marker, comment = "#" ):
 
     file_header = []
     extracted_file = ""
     labels = []
     data_tuples = []
     L_string = "L-" + ("%d" % int(Lsize))
-    key_string = coupling_symbol + "-" + ("%.6f" % float(coupling_value))
+    key_string = get_coupling_string(coupling_tuples, isfloat = True)
 
     for fl in os.listdir( input_path ):
         if not os.path.isdir( fl ) and ( file_type in fl and L_string in fl and key_string in fl ):
@@ -244,12 +238,18 @@ def main():
 
     cl_args = setup_args()
 
+    coupling_tuples = parse_couplings( cl_args.coupling_symbol, cl_args.coupling_value )
+
+    # Exit the program if the coupling tuples are null
+    if len(coupling_tuples) == 0:
+        return
+
     print("="*70, "\nPost-Simulation Inter-Job Statistics Calculator\n" + "="*70 + "\n")
     for type_idx in range(len(file_types)):
 
         print("\nNow analyzing %s data for L = %s\n" % (file_types[type_idx], cl_args.Lsize))
 
-        output_file, header_lines, labels, data_tuples = read_in_data( cl_args.input_path, cl_args.Lsize, cl_args.coupling_symbol, cl_args.coupling_value, file_types[type_idx], observable_markers[type_idx] )
+        output_file, header_lines, labels, data_tuples = read_in_data( cl_args.input_path, cl_args.Lsize, coupling_tuples, file_types[type_idx], observable_markers[type_idx] )
 
         if len(data_tuples) == 0:
             print("\nNo data to average.\n")
