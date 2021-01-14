@@ -1,17 +1,17 @@
 #!/bin/bash
-#SBATCH --nodes=2
+#SBATCH --nodes=16
 #SBATCH --ntasks-per-node=16
 #SBATCH --mem-per-cpu=2gb
-#SBATCH --time=4:00:00
+#SBATCH --time=1:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=meese022@umn.edu
-#SBATCH -p small
+#SBATCH -p large
 #SBATCH -o %j_L-64.out
 #SBATCH -J Ising2d_L-64
 
 JOB=$SLURM_JOBID
 Lsize=64
-NPROCS=32
+NPROCS=256
 MODEL="Ising2d"
 SEARCHSTR="constexpr size_t SYSTEM_SIZE_L = "
 

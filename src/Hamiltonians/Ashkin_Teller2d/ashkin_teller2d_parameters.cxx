@@ -11,13 +11,13 @@
 #include <cmath>
 
 // Linear size of the lattice
-constexpr size_t SYSTEM_SIZE_L = 32;
+constexpr size_t SYSTEM_SIZE_L = 64;
 
 // Exchange constant. J > 0 is ferromagnetic
 constexpr float SYSTEM_EXCHANGE_J = 1.0;
 
 // Mixed spin coupling K > 0 is ferromagnetic
-constexpr float SYSTEM_EXCHANGE_K = 1.;
+constexpr float SYSTEM_EXCHANGE_K = 0.5;
 
 #if RFAT_BAXTER
 // Random field strength

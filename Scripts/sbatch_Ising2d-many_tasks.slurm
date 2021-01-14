@@ -1,18 +1,18 @@
 #!/bin/bash
-#SBATCH --nodes=20
+#SBATCH --nodes=16
 #SBATCH --ntasks-per-node=24
 #SBATCH --mem-per-cpu=2gb
-#SBATCH --time=6:00:00
+#SBATCH --time=1:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=meese022@umn.edu
 #SBATCH -p large
-#SBATCH -o %A_%a_L-120.out
-#SBATCH -J Ising2d_L-120.%a
+#SBATCH -o %A_%a_L-96.out
+#SBATCH -J Ising2d_L-96.%a
 
 JOB=$SLURM_ARRAY_JOB_ID
 TASKID=$SLURM_ARRAY_TASK_ID
-Lsize=120
-NPROCS=480
+Lsize=96
+NPROCS=384
 MODEL="Ising2d_RFIM"
 SEARCHSTR="constexpr size_t SYSTEM_SIZE_L = "
 
