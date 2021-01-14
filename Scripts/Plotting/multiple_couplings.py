@@ -28,15 +28,27 @@ def get_coupling_string( coupling_tuples, isfloat = False ):
         string += "_" + get_key_string( coupling_tuples[i][0], coupling_tuples[i][1], isfloat )
     return string
 
+def get_coupling_string_bash( coupling_tuples ):
+    # Return the coupling string as bash
+    # would see it because I'm lazy
+    string = coupling_tuples[0][0]
+    for i in range(1, len(coupling_tuples)):
+        string += " " + coupling_tuples[i][0]
+    string += "-" + coupling_tuples[0][1]
+    for i in range(1, len(coupling_tuples)):
+        string += " " + coupling_tuples[i][1]
+    return string
+
 def latex_couplings( coupling_tuples ):
     string = ": $%s = %s$" % (coupling_tuples[0][0], coupling_tuples[0][1])
     for i in range(1,len(coupling_tuples)):
         string += ", $%s = %s$" % (coupling_tuples[i][0], coupling_tuples[i][1])
     return string
 
-def check_for_output(coupling_tuples):
+def check_for_output(coupling_tuples, output_path):
     # Create a figure directory in the data folder
-    coupling_string = get_coupling_string(coupling_tuples)
+    #coupling_string = get_coupling_string(coupling_tuples)
+    coupling_string = get_coupling_string_bash( coupling_tuples )
     if not os.path.isdir( os.getcwd() + "/" + output_path + "_" + coupling_string ):
         os.mkdir( os.getcwd() + "/" + output_path + "_" + coupling_string )
 

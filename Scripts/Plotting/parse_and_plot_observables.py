@@ -339,10 +339,10 @@ def plot_data_tuples( model_name, data_file_stem, coupling_tuples, labels, data_
                 ax.plot( float(Tc_val) + 0. * np.linspace(0,1,10), ymin + (ymax - ymin) * np.linspace(0,1,10), color = "gray", lw = 1, ls = "dashed", label = r"$T_c = %s$" % Tc_val )
                 ax.set_ylim([ymin, ymax])
             elif "microcanonical" in data_file_stem and lbl == 1:
-                plot_probability_density( model_name, data_file_stem, coupling_string, coupling_value, labels, data_tuples, plot_directory, Tc_val )
+                plot_probability_density( model_name, data_file_stem, coupling_tuples, labels, data_tuples, plot_directory, Tc_val )
 
         if xmin != None and xmax != None and "nonlinear" in data_file_stem:
-                crossing_temperatures( model_name, data_file_stem, coupling_string, coupling_value, labels[lbl], lbl, data_tuples, plot_directory, (1-0.1)*float(Tc_val), (1+0.05)*float(Tc_val) )
+                crossing_temperatures( model_name, data_file_stem, coupling_tuples, labels[lbl], lbl, data_tuples, plot_directory, (1-0.1)*float(Tc_val), (1+0.05)*float(Tc_val) )
 
         ax.set_xlabel(xlabel, fontsize = 12)
         ax.set_ylabel(labels[lbl], fontsize = 12)
@@ -365,7 +365,7 @@ def main():
     if len(coupling_tuples) == 0:
         return
 
-    plot_directory = check_for_output(coupling_tuples)
+    plot_directory = check_for_output(coupling_tuples, output_path)
 
     labels, data_tuples = collect_observables_and_data( args.data_file_stem, args.observable_marker, coupling_tuples )
 

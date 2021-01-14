@@ -177,7 +177,7 @@ def main():
     if len(coupling_tuples) == 0:
         return
 
-    plot_directory = check_for_output(coupling_tuples)
+    plot_directory = check_for_output(coupling_tuples, output_path)
 
     labels, data_tuples = collect_observables_and_data( args.data_file_stem, args.fss_observable, args.observable_marker, coupling_tuples )
 
