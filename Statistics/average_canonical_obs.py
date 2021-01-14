@@ -9,7 +9,7 @@ sys.path.insert(1, "Scripts/Plotting")
 
 import argparse
 from parse_file_header import collect_labels
-import mutliple_couplings
+from multiple_couplings import *
 import numpy as np
 import os
 from pathlib import Path

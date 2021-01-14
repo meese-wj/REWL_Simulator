@@ -5,7 +5,7 @@ import argparse
 import numpy as np
 import scipy.optimize as opt
 from parse_file_header import collect_labels
-import multiple_couplings
+from multiple_couplings import *
 import matplotlib as mpl
 mpl.use('Agg')  # THIS IS REQUIRED FOR WSL2
 import matplotlib.pyplot as plt
