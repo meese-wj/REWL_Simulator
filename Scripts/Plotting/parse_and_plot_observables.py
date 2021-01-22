@@ -1,6 +1,7 @@
-# Plot the observables
-# for many system sizes at some fixed
-# coupling.
+# Plot the observables for some fixed
+# couplings over a range of changed
+# values (e.g. energy vs temperature
+# for may different system sizes).
 
 import argparse
 import numpy as np
@@ -32,22 +33,24 @@ def setup_args():
 
     return parser.parse_args()
 
-def collect_observables_and_data( data_file_stem, observable_marker, coupling_tuples, comment = "#"):
+def collect_observables_and_data( data_file_stem, observable_marker, sifter_coupling, coupling_tuples, comment = "#"):
 
     labels = []
 
     data_tuples = []
 
     coupling_string = get_coupling_string( coupling_tuples, isfloat = True )
-    print("\nCoupling String:", coupling_string)
+    print("\nCoupling String:", coupling_string, data_file_stem, coupling_tuples)
 
     for fl in os.listdir( os.getcwd() ):
         if not os.path.isdir( fl ) and ( data_file_stem in fl and couplings_in_file(coupling_tuples, fl) and "stderr" not in fl ):
 
             if len(labels) == 0:
                 labels = collect_labels( fl, observable_marker, comment )
+                print(labels)
 
-            Lvalue = find_string_value("L", fl)
+            sifter = find_string_value(sifter_coupling, fl)
+            print(sifter)
 
             data = np.loadtxt(fl, delimiter = "  ", dtype="float64", comments = comment)
             errs = np.zeros((0,0))
@@ -56,13 +59,13 @@ def collect_observables_and_data( data_file_stem, observable_marker, coupling_tu
                 err_file = fl[ : fl.find("job_mean") ] + "job_stderr"
                 errs = np.loadtxt( err_file, delimiter = "  ", dtype="float64", comments = comment )
 
-            print(fl, Lvalue)
+            print(fl, sifter)
 
-            data_tuples.append( (Lvalue, data, errs) )
+            data_tuples.append( (sifter, data, errs) )
 
     print(labels)
 
-    data_tuples.sort(key = lambda tup: int(tup[0]) )
+    data_tuples.sort(key = lambda tup: float(tup[0]) )
 
     return labels, data_tuples
 
@@ -143,8 +146,8 @@ def plot_probability_density( model_name, data_file_stem, coupling_tuples, label
 
         for Ldx in range(0, len(data_tuples)):
 
-            Lvalue = data_tuples[Ldx][0]
-            Lfloat = float(Lvalue)
+            sifter = data_tuples[Ldx][0]
+            sFloat = float(sifter)
 
             # TODO: This will break in higher dimensions
             Nfloat = Lfloat ** 2
@@ -285,7 +288,7 @@ def get_y_range( yvalues, xvalues, xmin, xmax, extension=0.05 ):
     yrange = ymax - ymin
     return ymin - extension * yrange, ymax + extension * yrange
 
-def plot_data_tuples( model_name, data_file_stem, coupling_tuples, labels, data_tuples, plot_directory, Tc_val = None ):
+def plot_data_tuples( model_name, data_file_stem, sifter_coupling, coupling_tuples, labels, data_tuples, plot_directory, Tc_val = None ):
 
     xlabel = labels[0]
     key_string = latex_couplings(coupling_tuples)
@@ -303,8 +306,8 @@ def plot_data_tuples( model_name, data_file_stem, coupling_tuples, labels, data_
 
         for Ldx in range(0, len(data_tuples)):
 
-            Lvalue = data_tuples[Ldx][0]
-            lines = ax.plot(data_tuples[Ldx][1][:,0], data_tuples[Ldx][1][:,lbl], label = r"$L = %s$" % Lvalue)
+            sifter = data_tuples[Ldx][0]
+            lines = ax.plot(data_tuples[Ldx][1][:,0], data_tuples[Ldx][1][:,lbl], label = r"%s" % pretty_label_string(sifter_coupling, sifter))
 
             if data_tuples[Ldx][2].shape != (0,0):
                 ax.errorbar(data_tuples[Ldx][1][::error_incrementer, 0], data_tuples[Ldx][1][::error_incrementer, lbl],
@@ -338,10 +341,10 @@ def plot_data_tuples( model_name, data_file_stem, coupling_tuples, labels, data_
                 ymin, ymax = ax.get_ylim()
                 ax.plot( float(Tc_val) + 0. * np.linspace(0,1,10), ymin + (ymax - ymin) * np.linspace(0,1,10), color = "gray", lw = 1, ls = "dashed", label = r"$T_c = %s$" % Tc_val )
                 ax.set_ylim([ymin, ymax])
-            elif "microcanonical" in data_file_stem and lbl == 1:
+            elif sifter_coupling == "L" and "microcanonical" in data_file_stem and lbl == 1:
                 plot_probability_density( model_name, data_file_stem, coupling_tuples, labels, data_tuples, plot_directory, Tc_val )
 
-        if xmin != None and xmax != None and "nonlinear" in data_file_stem:
+        if sifter_coupling == "L" and xmin != None and xmax != None and "nonlinear" in data_file_stem:
                 crossing_temperatures( model_name, data_file_stem, coupling_tuples, labels[lbl], lbl, data_tuples, plot_directory, (1-0.1)*float(Tc_val), (1+0.05)*float(Tc_val) )
 
         ax.set_xlabel(xlabel, fontsize = 12)
@@ -359,17 +362,17 @@ def main():
 
     args = setup_args()
 
-    coupling_tuples = parse_couplings( args.coupling_symbol, args.coupling_value )
+    sifter_coupling, coupling_tuples = parse_couplings( args.coupling_symbol, args.coupling_value )
 
     # Exit the program if the coupling tuples are null
     if len(coupling_tuples) == 0:
         return
 
-    plot_directory = check_for_output(coupling_tuples, output_path)
+    plot_directory = check_for_output(sifter_coupling, coupling_tuples, output_path)
 
-    labels, data_tuples = collect_observables_and_data( args.data_file_stem, args.observable_marker, coupling_tuples )
+    labels, data_tuples = collect_observables_and_data( args.data_file_stem, args.observable_marker, sifter_coupling, coupling_tuples )
 
-    plot_data_tuples( args.model_name, args.data_file_stem, coupling_tuples, labels, data_tuples, plot_directory, args.Tc )
+    plot_data_tuples( args.model_name, args.data_file_stem, sifter_coupling, coupling_tuples, labels, data_tuples, plot_directory, args.Tc )
 
     return None
 

@@ -171,13 +171,13 @@ def main():
 
     args = setup_args()
 
-    coupling_tuples = parse_couplings( args.coupling_symbol, args.coupling_value )
+    sifter_coupling, coupling_tuples = parse_couplings( args.coupling_symbol, args.coupling_value )
 
     # Exit the program if the coupling tuples are null
     if len(coupling_tuples) == 0:
         return
 
-    plot_directory = check_for_output(coupling_tuples, output_path)
+    plot_directory = check_for_output(sifter_coupling, coupling_tuples, output_path)
 
     labels, data_tuples = collect_observables_and_data( args.data_file_stem, args.fss_observable, args.observable_marker, coupling_tuples )
 
