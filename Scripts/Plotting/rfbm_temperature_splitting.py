@@ -95,18 +95,19 @@ def plot_Tc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, su
         label = susc_labels[ldx][1]
         if label == "Susceptibility":
             label = "Two-Component " + label
-        ax.plot( sifter_values[0,:], Tc_values[ldx,:], label = r"%s" % label,
+        ax.plot( Tc_values[ldx,:], sifter_values[0,:], label = r"%s" % label,
                  marker = "o", ms = markersize, mec = marker_edge_color,
                  mew = marker_edge_width, ls = None )
 
-    const_Tc = float(clean_Tc) + 0. * sifter_values
-    xmin, xmax = ax.get_xlim()
-    ax.plot( sifter_values[0,:], const_Tc[0,:], color = "gray", lw = 1, ls = "dashed", label = r"Clean $T_c = %s$" % clean_Tc )
-    ax.set_xlim( (xmin, xmax) )
+    ymin, ymax = ax.get_ylim()
+    const_h_values = np.linspace(ymin, ymax, 10)
+    const_Tc = float(clean_Tc) + 0. * const_h_values
+    ax.plot( const_Tc, const_h_values, color = "gray", lw = 1, ls = "dashed", label = r"Clean $T_c = %s$" % clean_Tc )
+    ax.set_ylim( (ymin, ymax) )
 
     if sifter_coupling == "h":
-        ax.set_xlabel(r"Random Field Strength $%s$" % sifter_coupling)
-    ax.set_ylabel(r"Susceptibility Pseudo-$T_c$")
+        ax.set_ylabel(r"Random Field Strength $%s$" % sifter_coupling)
+    ax.set_xlabel(r"Susceptibility Pseudo-$T_c$")
     ax.legend()
     ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples) )
 
