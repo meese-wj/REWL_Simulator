@@ -28,6 +28,7 @@ capsize = 2
 markersize = 5
 marker_edge_color = "black"
 marker_edge_width = 1
+fontsize = 12
 
 
 def setup_args():
@@ -62,6 +63,33 @@ def find_pseudo_Tc( Tmin, Tmax, temperatures, susceptibility ):
     max_index = Tmin_idx + np.argmax(susceptibility[Tmin_idx:Tmax_idx])
     return (max_index, temperatures[max_index])
 
+def find_Tc_error( max_index, temperatures, susceptibility, susc_err ):
+    '''
+    Define the Tc error as the half width of the peak
+    in the susceptibility where the width is taken
+    along the line at
+        susceptibility(Tc) - susceptibility_error(Tc).
+    '''
+    lower_susc = susceptibility[max_index] - susc_err[max_index]
+    if lower_susc <= 0.:
+        # If the lower susceptibility is negative
+        # then return the largest reasonable
+        # interval.
+        return temperatures[max_index] - temperatures[0]
+
+    lower_temp, upper_temp = None, None
+    for i in range(1, min(max_index, len(temperatures) - max_index)):
+        if susceptibility[max_index - i] - lower_susc < 0. and lower_temp == None:
+            lower_temp = temperatures[max_index - i]
+        if susceptibility[max_index + i] - lower_susc < 0. and upper_temp == None:
+            upper_temp = temperatures[max_index + i]
+        if lower_temp != None and upper_temp != None:
+            break;
+    # Return half the range of temperatures
+    # as the error.
+    return 0.5 * ( upper_temp - lower_temp )
+
+
 def find_all_Tc( T_label_index, Tmin, Tmax, susc_labels, data_tuples ):
     '''
     Iterate through the data tuples and extract all
@@ -74,6 +102,7 @@ def find_all_Tc( T_label_index, Tmin, Tmax, susc_labels, data_tuples ):
     susc_values = np.zeros((len(susc_labels), len(data_tuples)))
     susc_errs = np.zeros((len(susc_labels), len(data_tuples)))
     Tc_values = np.zeros((len(susc_labels), len(data_tuples)))
+    Tc_errors = np.zeros((len(susc_labels), len(data_tuples)))
 
     for idx in range(len(data_tuples)):
         sifter_values[0,idx] = float( data_tuples[idx][0] )
@@ -83,10 +112,12 @@ def find_all_Tc( T_label_index, Tmin, Tmax, susc_labels, data_tuples ):
             susc_values[ldx, idx] = data_tuples[idx][1][index, susc_labels[ldx][0]]
             susc_errs[ldx, idx] = data_tuples[idx][2][index, susc_labels[ldx][0]]
             Tc_values[ldx, idx] = Tc_val
-    print(Tc_values)
-    return sifter_values, susc_values, susc_errs, Tc_values
+            Tc_errors[ldx, idx] = find_Tc_error( index, data_tuples[idx][1][:, T_label_index],
+                                                 data_tuples[idx][1][:, susc_labels[ldx][0] ], data_tuples[idx][2][:, susc_labels[ldx][0] ]  )
+    print(Tc_values, "\n", Tc_errors)
+    return sifter_values, susc_values, susc_errs, Tc_values, Tc_errors
 
-def plot_Tc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, susc_labels, sifter_values, Tc_values ):
+def plot_Tc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, susc_labels, sifter_values, Tc_values, Tc_errors ):
     '''
     Plot the Tc values for all susceptibilities.
     '''
@@ -95,9 +126,14 @@ def plot_Tc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, su
         label = susc_labels[ldx][1]
         if label == "Susceptibility":
             label = "Two-Component " + label
-        ax.plot( Tc_values[ldx,:], sifter_values[0,:], label = r"%s" % label,
-                 marker = "o", ms = markersize, mec = marker_edge_color,
-                 mew = marker_edge_width, ls = None )
+        lines = ax.plot( Tc_values[ldx,:], sifter_values[0,:], label = r"%s" % label,
+                         marker = "o", ms = markersize, mec = marker_edge_color,
+                         mew = marker_edge_width, ls = None )
+        ax.errorbar( Tc_values[ldx,:], sifter_values[0,:], xerr = Tc_errors[ldx,:],
+                     label = None, color = "None", ecolor = lines[-1].get_color(),
+                     marker = "o", ms = markersize, mec = marker_edge_color,
+                     mew = marker_edge_width, mfc = lines[-1].get_color(),
+                     ls = None, capsize=capsize )
 
     ymin, ymax = ax.get_ylim()
     const_h_values = np.linspace(ymin, ymax, 10)
@@ -106,10 +142,10 @@ def plot_Tc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, su
     ax.set_ylim( (ymin, ymax) )
 
     if sifter_coupling == "h":
-        ax.set_ylabel(r"Random Field Strength $%s$" % sifter_coupling)
-    ax.set_xlabel(r"Susceptibility Pseudo-$T_c$")
-    ax.legend()
-    ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples) )
+        ax.set_ylabel(r"Random Field Strength $%s$" % sifter_coupling, fontsize = fontsize)
+    ax.set_xlabel(r"Susceptibility Pseudo-$T_c$", fontsize = fontsize)
+    ax.legend(fontsize = fontsize)
+    ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
 
     plotname = "Susceptibility Pseudo-Tc Splitting.png"
     plt.savefig( plot_directory + "/" + plotname )
@@ -136,10 +172,10 @@ def plot_susc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, 
                      ls = None, capsize=capsize )
 
     if sifter_coupling == "h":
-        ax.set_xlabel(r"Random Field Strength $%s$" % sifter_coupling)
-    ax.set_ylabel(r"Peak Susceptibility")
-    ax.legend()
-    ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples) )
+        ax.set_xlabel(r"Random Field Strength $%s$" % sifter_coupling, fontsize = fontsize )
+    ax.set_ylabel(r"Peak Susceptibility", fontsize = fontsize )
+    ax.legend(fontsize = fontsize)
+    ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
 
     plotname = "Peak Susceptibility Splitting.png"
     plt.savefig( plot_directory + "/" + plotname )
@@ -167,9 +203,9 @@ def main():
     Tindex, susc_labels = gather_susc_labels( susc_string, labels )
     print(susc_labels,"\n", len(data_tuples))
 
-    sifter_values, susc_values, susc_errs, Tc_values = find_all_Tc( Tindex, Tmin_value, Tmax_value, susc_labels, data_tuples )
+    sifter_values, susc_values, susc_errs, Tc_values, Tc_errors = find_all_Tc( Tindex, Tmin_value, Tmax_value, susc_labels, data_tuples )
 
-    plot_Tc_data( plot_directory, sifter_coupling, args.Tc, coupling_tuples, susc_labels, sifter_values, Tc_values )
+    plot_Tc_data( plot_directory, sifter_coupling, args.Tc, coupling_tuples, susc_labels, sifter_values, Tc_values, Tc_errors )
     plot_susc_data( plot_directory, sifter_coupling, args.Tc, coupling_tuples, susc_labels, sifter_values, susc_values, susc_errs )
 
 
