@@ -7,7 +7,7 @@
 
 struct REWL_Parameter_String
 {
-    const std::string num_walkers         = std::to_string(REWL_Parameters::num_walkers);
+    std::string num_walkers               = std::to_string(REWL_Parameters::num_walkers);
     const std::string replicas_per_window = std::to_string(REWL_Parameters::replicas_per_window);
     const std::string window_overlap      = std::to_string(REWL_Parameters::window_overlap);
 
@@ -20,9 +20,20 @@ struct REWL_Parameter_String
     REWL_Parameter_String();
 
     ~REWL_Parameter_String(){}
+
+    void recreate_parameter_string();
 };
 
 REWL_Parameter_String::REWL_Parameter_String()
+{
+#if MPI_ON
+    // Wait to get the number of walkers from MPI
+#else
+    recreate_parameter_string();
+#endif
+}
+
+void REWL_Parameter_String::recreate_parameter_string()
 {
     file_header  = "# REWL Parameters";
     file_header += "\n#    num_walkers = " + num_walkers; 

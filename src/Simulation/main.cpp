@@ -103,6 +103,9 @@ int main(int argc, char * argv[])
     sys_strings.update_file_header();
     
     REWL_Parameter_String rewl_strings = REWL_Parameter_String();
+    // Update the parameter string with the world size
+    rewl_strings.num_walkers = std::to_string(world_size);
+    rewl_strings.recreate_parameter_string();
     std::filesystem::path data_path;
     std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
     if ( world_rank == REWL_MASTER_PROC )

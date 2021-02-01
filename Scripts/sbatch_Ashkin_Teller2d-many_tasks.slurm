@@ -2,7 +2,7 @@
 #SBATCH --nodes=8
 #SBATCH --ntasks-per-node=20
 #SBATCH --mem-per-cpu=2gb
-#SBATCH --time=33:00:00
+#SBATCH --time=10:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=meese022@umn.edu
 #SBATCH -p small
@@ -15,7 +15,7 @@ hsize=0
 Ksize=0.1
 Lsize=40
 NPROCS=160
-NJOBS=64
+NJOBS=4
 TIMELIMIT="30m"
 KILLAFTER="31m"
 MODEL="Ashkin_Teller2d_RFBM"
