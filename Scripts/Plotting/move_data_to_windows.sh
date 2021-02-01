@@ -74,7 +74,7 @@ cd $DATE
 # Check if the Figures folder is present
 if [ ! -d "Figures_${COUPLING}-${VALUE}" ]
 then
-    echo "\nNo Figures_${COUPLING}-${VALUE} to copy to Windows\n"
+    echo -e "\nNo Figures_${COUPLING}-${VALUE} to copy to Windows\n"
     exit 1
 fi
 
