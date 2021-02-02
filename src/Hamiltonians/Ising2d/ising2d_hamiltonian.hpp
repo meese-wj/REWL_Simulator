@@ -93,6 +93,9 @@ struct Ising2d
     {
         delete [] spin_array;
         delete [] neighbor_array;
+#if RFIM
+        delete [] field_array;
+#endif
     }
 
     void switch_flavor_to_update() { return; };

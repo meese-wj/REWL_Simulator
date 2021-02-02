@@ -1,5 +1,8 @@
 #!/bin/bash
 
+model="Ashkin_Teller2d"
+RANDFIELD="RFAT_Baxter"
+
 cd /home/joe/Linux_Code_Dev/REWL_Simulator/build
 echo
 pwd
@@ -8,7 +11,7 @@ ls
 echo
 echo "Building and running code."
 rm -rf /home/joe/Linux_Code_Dev/REWL_Simulator/build/*
-cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
+cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo "-D${model^^}=ON" "-D${RANDFIELD^^}=ON" "-DSIMULATED_ANNEALING=OFF"
 
 # *******************************
 # Set MPI variables from CMake
