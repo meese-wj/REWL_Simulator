@@ -161,7 +161,7 @@ def plot_susc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, 
     for ldx in range(len(susc_labels)):
         label = susc_labels[ldx][1]
         if label == "Susceptibility":
-            label = "Two-Component " + label
+            label = "Order Parameter " + label
         lines = ax.plot( sifter_values[0,:], susc_values[ldx,:], label = r"%s" % label,
                          marker = "o", ms = markersize, mec = marker_edge_color,
                          mew = marker_edge_width, ls = None )
