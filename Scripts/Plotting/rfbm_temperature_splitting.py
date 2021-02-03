@@ -203,6 +203,13 @@ def main():
     Tindex, susc_labels = gather_susc_labels( susc_string, labels )
     print(susc_labels,"\n", len(data_tuples))
 
+    for i in range(len(data_tuples)):
+        temperatures = data_tuples[i][1][:,Tindex]
+        for si in range(len(susc_labels)):
+            s = susc_labels[si][0]
+            data_tuples[i][1][:,s] = data_tuples[i][1][:,s] * temperatures
+            data_tuples[i][2][:,s] = data_tuples[i][2][:,s] * temperatures
+
     sifter_values, susc_values, susc_errs, Tc_values, Tc_errors = find_all_Tc( Tindex, Tmin_value, Tmax_value, susc_labels, data_tuples )
 
     plot_Tc_data( plot_directory, sifter_coupling, args.Tc, coupling_tuples, susc_labels, sifter_values, Tc_values, Tc_errors )
