@@ -109,6 +109,9 @@ struct Ashkin_Teller2d
     {
         delete [] spin_array;
         delete [] neighbor_array;
+#if RFAT_BAXTER
+        delete [] field_array;
+#endif
     }
 
     void switch_flavor_to_update() 
