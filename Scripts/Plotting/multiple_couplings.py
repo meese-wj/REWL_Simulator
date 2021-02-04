@@ -14,6 +14,7 @@ def parse_couplings(coupling_symbols, coupling_values):
     sifter_coupling = coupling_list[0]
     coupling_list = coupling_list[1:]
     values_list = coupling_values.split()
+    print(coupling_list, values_list)
     if len(coupling_list) != len(values_list):
         print("\nCoupling mismatch.\nCoupling list = ", coupling_symbols, "\nCoupling values = ", coupling_values)
         return []

@@ -2,20 +2,20 @@
 #SBATCH --nodes=8
 #SBATCH --ntasks-per-node=20
 #SBATCH --mem-per-cpu=2gb
-#SBATCH --time=10:00:00
+#SBATCH --time=33:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=meese022@umn.edu
 #SBATCH -p small
-#SBATCH -o RFBM_K-0.1_h-0.out
-#SBATCH -J K-0.1_h-0
+#SBATCH -o RFBM_K-0.25_h-0.9.out
+#SBATCH -J K-0.25_h-0.9
 
 JOB=$SLURM_ARRAY_JOB_ID
 TASKID=$SLURM_ARRAY_TASK_ID
-hsize=0
-Ksize=0.1
+hsize=0.9
+Ksize=0.25
 Lsize=40
 NPROCS=160
-NJOBS=4
+NJOBS=64
 TIMELIMIT="30m"
 KILLAFTER="31m"
 MODEL="Ashkin_Teller2d_RFBM"
