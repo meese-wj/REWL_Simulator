@@ -1,8 +1,10 @@
 #!/bin/bash
-#SBATCH --ntasks=40
+#SBATCH --nodes=8
+#SBATCH --ntasks-per-node=20
 #SBATCH --cpus-per-task=1
+#SBATCH --ntasks=160
 #SBATCH --mem-per-cpu=2gb
-#SBATCH --time=00:25:00
+#SBATCH --time=66:25:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=meese022@umn.edu
 #SBATCH --account=fernand7
@@ -14,7 +16,8 @@ hsize=0.5
 Ksize=0.5
 Lsize=40
 NPROCS=$SLURM_NTASKS
-NJOBS=1
+NJOBS=192
+NSLOTS=$SLURM_NTASKS_PER_NODE
 TIMELIMIT="20m"
 KILLAFTER="21m"
 MODEL="Ashkin_Teller2d_RFBM"
@@ -34,12 +37,16 @@ cd $SRCDIR; echo; pwd; echo
 MYHOSTS="${SRCDIR}/${JOB}.hostfile"
 HOSTNAMES=$(scontrol show hostnames)
 echo $HOSTNAMES
-while IFS= read -r HOST;
+while IFS= read -r HOSTS;
 do
-	echo "host ${HOST}"
-	echo "${HOST}" >> $MYHOSTS
-done <<< $HOSTNAMES
+	for name in $HOSTS;
+	do
+		echo "host ${name}"
+		echo -e "${name} slots=${NSLOTS}" >> $MYHOSTS
+	done
+done <<< $HOSTNAMES 
 
+echo -e "\nHostfile generated:\n"
 cat $MYHOSTS
 
 cd $BLDDIR; pwd
