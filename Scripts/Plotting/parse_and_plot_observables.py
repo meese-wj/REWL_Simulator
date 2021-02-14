@@ -349,7 +349,7 @@ def plot_data_tuples( model_name, data_file_stem, sifter_coupling, coupling_tupl
 
         ax.set_xlabel(xlabel, fontsize = 12)
         ax.set_ylabel(labels[lbl], fontsize = 12)
-        ax.set_title(model_name + ": " + key_string, fontsize = 12)
+        ax.set_title(model_name + key_string, fontsize = 12)
         ax.legend(fontsize = 12)
 
         plotname = "%s" % (labels[lbl] + "_vs_" + xlabel + ".png")
