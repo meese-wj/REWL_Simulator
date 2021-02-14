@@ -3,7 +3,7 @@
 
 // Include the parameters 
 #include "ising2d_parameters.cxx"
-einclude "ising2d_parameter_string.hpp"
+#include "ising2d_parameter_string.hpp"
 
 // Include the observables enum class
 #include "ising2d_observables.hpp"

@@ -5,7 +5,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --ntasks=256
 #SBATCH --mem-per-cpu=2gb
-#SBATCH --time=24:00:00
+#SBATCH --time=12:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=meese022@umn.edu
 #SBATCH --account=fernand7
