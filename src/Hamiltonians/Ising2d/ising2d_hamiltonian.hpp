@@ -3,7 +3,7 @@
 
 // Include the parameters 
 #include "ising2d_parameters.cxx"
-#include "ising2d_parameter_string.hpp"
+einclude "ising2d_parameter_string.hpp"
 
 // Include the observables enum class
 #include "ising2d_observables.hpp"
@@ -172,7 +172,11 @@ void Ising2d<data_t>::recalculate_state()
        temp_magnetization += spin_array[idx];
        // First term is necessary to account for h field loss
        // when 0.5 multiplies the energy to avoid double counting.
+#if RFIM
+       temp_energy += -0.5 * field_array[idx] * static_cast<float>(spin_array[idx]) + 0.5 * local_energy(idx, spin_array[idx]);
+#else
        temp_energy += -0.5 * Ising2d_Parameters::h * static_cast<float>(spin_array[idx]) + 0.5 * local_energy(idx, spin_array[idx]);
+#endif
     }
 
     current_state.energy = temp_energy;
