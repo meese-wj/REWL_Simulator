@@ -2,6 +2,6 @@ build*
 tags
 Simulation_Data
 __pycache__
-hostfile
+*hostfile
 logs
 *.out

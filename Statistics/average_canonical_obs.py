@@ -238,7 +238,7 @@ def main():
 
     cl_args = setup_args()
 
-    coupling_tuples = parse_couplings( cl_args.coupling_symbol, cl_args.coupling_value )
+    Lvalue, coupling_tuples = parse_couplings( cl_args.coupling_symbol, cl_args.coupling_value )
 
     # Exit the program if the coupling tuples are null
     if len(coupling_tuples) == 0:
