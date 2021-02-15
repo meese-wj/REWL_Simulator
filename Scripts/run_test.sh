@@ -1,7 +1,7 @@
 #!/bin/bash
 
-model="Ashkin_Teller2d"
-RANDFIELD="RFAT_Baxter"
+model="Ising2d"
+RANDFIELD="RFIM"
 
 cd /home/joe/Linux_Code_Dev/REWL_Simulator/build
 echo
