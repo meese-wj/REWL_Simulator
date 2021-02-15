@@ -13,6 +13,10 @@
 #include <rewl_parameter_string.hpp>
 #include <mpi_rewl_comm_setup.hpp>
 
+#if AT_DENSITIES
+#include <Ashkin_Teller2d/Density_Plots/density_averaging.cpp>
+#endif
+
 struct REWL_simulation
 {
 #if MPI_ON
@@ -695,7 +699,10 @@ void REWL_simulation::simulate(
     // Finally average the results within a single window
     // Only the 0-processor in each window will communicate 
     // with the master processor at the end
-    average_and_redistribute_window( simulation_incomplete, my_ids_per_comm, my_comm_ids, window_communicators ); 
+    average_and_redistribute_window( simulation_incomplete, my_ids_per_comm, my_comm_ids, window_communicators );
+#if AT_DENSITIES
+    average_density_in_window<Observables_t<OBS_TYPE> >( my_ids_per_comm, &( my_walker -> system_obs ), my_comm_ids, window_communicators );
+#endif
 }
 #endif
 
