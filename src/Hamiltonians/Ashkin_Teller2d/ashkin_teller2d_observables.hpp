@@ -10,6 +10,13 @@
 #include "../Correlations/fourier_correlator.hpp"
 #endif
 
+#if AT_DENSITIES
+// Include the 2d histograms for 
+// sigma and tau
+#include "Density_Plots/ashkin_teller_densities_parameters.cxx"
+#include "Density_Plots/ashkin_teller_densities.hpp"
+#endif
+
 static constexpr float DATA_INITIALIZER = 0.;
 
 // Set up an observables enum class.
@@ -101,6 +108,10 @@ struct Ashkin_Teller2d_Obs
     Fourier_Correlator<data_t> correlator;
 #endif
 
+#if AT_DENSITIES
+    density_int * density_histograms = nullptr;
+#endif
+
 #if CORRELATION_LENGTHS
     Ashkin_Teller2d_Obs(const size_t nbins) : num_bins(nbins), correlator( Ashkin_Teller2d_Parameters::L )
 #else
@@ -118,9 +129,19 @@ struct Ashkin_Teller2d_Obs
                 obs_array[ idx * convert(Obs::enum_names::NUM_OBS) + ob ] = static_cast<data_t> (DATA_INITIALIZER);
 
         }
+
+#if AT_DENSITIES
+        density_histograms = new density_int [ nbins * AT_Density_Parameters::total_bins ]();
+#endif
     }
 
-    ~Ashkin_Teller2d_Obs(){ delete [] obs_array; }
+    ~Ashkin_Teller2d_Obs()
+    { 
+        delete [] obs_array; 
+#if AT_DENSITIES
+        delete [] density_histograms;
+#endif
+    }
 
     // Set the data pointed to by the observable array
     void set_observable(const data_t value, const Obs::enum_names ob, const size_t bin) const

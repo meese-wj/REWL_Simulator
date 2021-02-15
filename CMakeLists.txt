@@ -85,6 +85,10 @@ if (ASHKIN_TELLER2D)
     add_definitions(-DASHKIN_TELLER2D)
 endif()
 
+if (AT_DENSITIES)
+    add_definitions(-DAT_DENSITIES)
+endif()
+
 if (RFAT_BAXTER)
     add_definitions(-DRFAT_BAXTER)
     add_definitions(-DRANDOM_DISORDER)

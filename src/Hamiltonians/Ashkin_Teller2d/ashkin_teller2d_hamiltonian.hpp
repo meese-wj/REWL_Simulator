@@ -25,9 +25,15 @@
 #endif
 #endif
 
+#if AT_DENSITIES
+#include "Density_Plots/ashkin_teller_densities.hpp"
+#endif
+
 #if SIMULATED_ANNEALING
 #include <random_number_generators.hpp>
 #endif
+
+constexpr float divisor = 1./static_cast<float>( Ashkin_Teller2d_Parameters::N );
 
 enum spin_type
 {
@@ -278,6 +284,10 @@ void Ashkin_Teller2d<data_t>::update_observables(const size_t bin, Ashkin_Teller
     obs_ptr -> update_observable_average(baxter_val, Obs::enum_names::baxter_mag, bin);
     obs_ptr -> update_observable_average(baxter_val * baxter_val, Obs::enum_names::baxter_mag2, bin);
     obs_ptr -> update_observable_average(baxter_val * baxter_val * baxter_val * baxter_val, Obs::enum_names::baxter_mag4, bin);
+
+#if AT_DENSITIES
+    update_densities( obs_ptr -> density_histograms, bin, divisor * current_state.sigma_magnetization, divisor * current_state.tau_magnetization );
+#endif
 
 #if CORRELATION_LENGTHS
     if ( static_cast<size_t> (obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin)) % counts_per_transform == 0 )
