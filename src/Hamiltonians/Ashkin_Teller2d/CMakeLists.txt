@@ -5,5 +5,6 @@ add_library(ashkin_teller2d
             ashkin_teller2d_hamiltonian.hpp)
 
 add_subdirectory(source)
+add_subdirectory(Density_Plots)
 
-target_link_libraries(ashkin_teller2d ashkin_teller2d_source)
+target_link_libraries(ashkin_teller2d ashkin_teller2d_source AT_densities)
