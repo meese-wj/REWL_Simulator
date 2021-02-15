@@ -29,6 +29,10 @@ const std::string DELIMITER = "  ";
 #include <Simulated_Annealer/simulated_annealer.hpp>
 #endif
 
+#if AT_DENSITIES
+#include <Ashkin_Teller2d/Density_Plots/ashkin_teller_densities_parameters.cxx>
+#endif
+
 
 
 #endif
