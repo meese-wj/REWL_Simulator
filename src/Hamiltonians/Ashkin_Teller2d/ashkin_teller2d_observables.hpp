@@ -110,6 +110,7 @@ struct Ashkin_Teller2d_Obs
 
 #if AT_DENSITIES
     density_int * density_histograms = nullptr;
+    density_float * density_float_data = nullptr;
 #endif
 
 #if CORRELATION_LENGTHS
@@ -132,6 +133,7 @@ struct Ashkin_Teller2d_Obs
 
 #if AT_DENSITIES
         density_histograms = new density_int [ nbins * AT_Density_Parameters::total_bins ]();
+        density_float_data = new density_float [ nbins * AT_Density_Parameters::total_bins ]();
 #endif
     }
 
@@ -140,6 +142,7 @@ struct Ashkin_Teller2d_Obs
         delete [] obs_array; 
 #if AT_DENSITIES
         delete [] density_histograms;
+        delete [] density_float_data;
 #endif
     }
 

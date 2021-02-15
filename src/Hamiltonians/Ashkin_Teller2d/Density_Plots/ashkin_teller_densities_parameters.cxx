@@ -7,6 +7,7 @@
 #include <cstdint>
 using density_int = std::uint32_t;  // This maxes out at 2^31 - 1 = 4.29e9
                                     // If more counts are needed, use 64 bits
+using density_float = double;
 
 namespace AT_Density_Parameters
 {
@@ -21,9 +22,9 @@ namespace AT_Density_Parameters
     // Define the maximum and minimum values
     // in the 2d plane. This should probably
     // just be +/- 1. 
-    constexpr float sigma_tau_max = 1.;
-    constexpr float sigma_tau_min = -1.;
-    constexpr float density_binwidth = ( sigma_tau_max - sigma_tau_min ) / static_cast<float>( axis_bins );
+    constexpr density_float sigma_tau_max = 1.;
+    constexpr density_float sigma_tau_min = -1.;
+    constexpr density_float density_binwidth = ( sigma_tau_max - sigma_tau_min ) / static_cast<density_float>( axis_bins );
 
 
     /* Store the density parameters in a 
