@@ -191,7 +191,12 @@ struct Ashkin_Teller2d_Obs
 #if AT_DENSITIES
     // Export the density floats from the observables
     void export_density_plots( std::vector<std::vector<density_float> > & export_vectors )
-    {    
+    {
+        // Resize the export vectors
+        export_vectors.resize( num_bins );
+        for ( auto &v : export_vectors )
+            v.resize( AT_Density_Parameters::total_bins );
+        
         // Now export the density plots
         for ( size_t idx = 0; idx != num_bins; ++idx )
         {

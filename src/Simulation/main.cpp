@@ -273,7 +273,7 @@ int main(int argc, char * argv[])
             ( REWL_Parameters::window_overlap == static_cast<float>( single_bin_overlap ),
               convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),
               convert<System_Obs_enum_t>(System_Obs_enum_t::counts_per_bin),
-              energy_table, logdos_table, observable_table, dens_table,
+              energy_table, logdos_table, observable_table, density_table,
               final_energy_vector, final_logdos_vector, final_observable_vector,
               final_density_plot_vector );
 #else
