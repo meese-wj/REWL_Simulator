@@ -187,6 +187,18 @@ struct Ashkin_Teller2d_Obs
                 data_array[ bin * convert(Obs::enum_names::NUM_OBS) + ob ] = get_observable(ob, bin);
         }
     }
+
+#if AT_DENSITIES
+    // Export the density floats from the observables
+    void export_density_plots( std::vector<std::vector<density_float> > & export_vectors )
+    {    
+        // Now export the density plots
+        for ( size_t idx = 0; idx != num_bins; ++idx )
+        {
+            export_vectors[ idx ] = std::vector<density_float> ( density_float_data + energy_bin_density_pointer(idx), density_float_data + energy_bin_density_pointer( idx + 1 ) );
+        }
+    }
+#endif
 };
 
 template<typename data_t>

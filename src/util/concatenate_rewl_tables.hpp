@@ -205,7 +205,7 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
                                           obs_table, final_energy_values, final_logdos_values, 
                                           final_obs_values );
 #if AT_DENSITIES
-        final_density_table[ bin ] =  density_table[0][bin];
+        final_density_table.push_back( density_table[0][bin] );
 #endif
  
         overlapping_windows.push_back(1);
@@ -290,7 +290,7 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
                                               final_obs_values );
 
 #if AT_DENSITIES
-        final_density_table[ idx ] =  density_table[window][idx];
+        final_density_table.push_back( density_table[window][idx] );
 #endif
  
             overlapping_windows.push_back(1);

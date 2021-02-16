@@ -211,6 +211,10 @@ int main(int argc, char * argv[])
     simulation -> my_walker -> export_energy_bins( final_energy_array );
     simulation -> my_walker -> wl_walker.wl_histograms.export_logdos( final_logdos_array );
     simulation -> my_walker -> system_obs.export_observables( final_observable_array );
+#if AT_DENSITIES
+    std::vector<std::vector<density_float> > final_density_plots;
+    simulation -> my_walker -> system_obs.export_density_plots( final_density_plots );
+#endif
 
     // Adjust the logdos by the ground state degeneracy
     array_shift_by_value( System_Parameters::ground_state_degeneracy - final_logdos_array[0], final_num_bins, final_logdos_array );
@@ -228,7 +232,7 @@ int main(int argc, char * argv[])
     if ( world_rank == REWL_MASTER_PROC )
     {
 
-                // Send arrays to master for concatenation
+        // Send arrays to master for concatenation
         table<ENERGY_TYPE> energy_table  ( world_size / REWL_Parameters::replicas_per_window );
         table<LOGDOS_TYPE> logdos_table  ( world_size / REWL_Parameters::replicas_per_window );
         table<OBS_TYPE> observable_table ( world_size / REWL_Parameters::replicas_per_window );
@@ -236,6 +240,11 @@ int main(int argc, char * argv[])
         energy_table[ world_rank ] = std::vector<ENERGY_TYPE> ( final_energy_array, final_energy_array + final_num_bins ); 
         logdos_table[ world_rank ] = std::vector<LOGDOS_TYPE> ( final_logdos_array, final_logdos_array + final_num_bins );
         observable_table[ world_rank ] = std::vector<OBS_TYPE> ( final_observable_array, final_observable_array + final_num_obs_values );
+       
+#if AT_DENSITIES
+        dens_table<density_float> density_table ( world_size / REWL_Parameters::replicas_per_window ); 
+        density_table[ world_rank ] = final_density_plots;
+#endif
 
         for ( int proc = 0; proc != world_size; ++proc )
         {
@@ -247,19 +256,34 @@ int main(int argc, char * argv[])
                 mpi_recv_array_to_vector<ENERGY_TYPE>( proc,  energy_table[window_idx], MPI_FLOAT, final_energy_tag, MPI_COMM_WORLD, &status );
                 mpi_recv_array_to_vector<LOGDOS_TYPE>( proc,  logdos_table[window_idx], MPI_LOGDOS_TYPE, final_logdos_tag, MPI_COMM_WORLD, &status );
                 mpi_recv_array_to_vector<OBS_TYPE>( proc, observable_table[window_idx], MPI_OBS_TYPE, final_obs_tag, MPI_COMM_WORLD, &status );
+
+#if AT_DENSITIES
+                // Receive the density plots from the 0-processors
+                mpi_recv_table_to_table<density_float>( proc, density_table[window_idx], MPI_DOUBLE, final_density_plot_tag, MPI_COMM_WORLD, &status ); 
+#endif
             }
         }
 
         std::vector<ENERGY_TYPE> final_energy_vector;
         std::vector<LOGDOS_TYPE> final_logdos_vector;
         std::vector<OBS_TYPE>    final_observable_vector;
-        // TODO: Concatenate microcanonical observables
+#if AT_DENSITIES
+        std::vector<std::vector<density_float> > final_density_plot_vector;
+        concatenate_tables<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE>
+            ( REWL_Parameters::window_overlap == static_cast<float>( single_bin_overlap ),
+              convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),
+              convert<System_Obs_enum_t>(System_Obs_enum_t::counts_per_bin),
+              energy_table, logdos_table, observable_table, dens_table,
+              final_energy_vector, final_logdos_vector, final_observable_vector,
+              final_density_plot_vector );
+#else
         concatenate_tables<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE>
             ( REWL_Parameters::window_overlap == static_cast<float>( single_bin_overlap ),
               convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),
               convert<System_Obs_enum_t>(System_Obs_enum_t::counts_per_bin),
               energy_table, logdos_table, observable_table,
               final_energy_vector, final_logdos_vector, final_observable_vector );
+#endif
  
         // Finally, after concatenation, reset the final number of bins
         final_num_bins = final_energy_vector.size();
@@ -314,6 +338,12 @@ int main(int argc, char * argv[])
         mpi_send_array<ENERGY_TYPE>( REWL_MASTER_PROC, final_num_bins, final_energy_array, MPI_FLOAT, final_energy_tag, MPI_COMM_WORLD );  
         mpi_send_array<LOGDOS_TYPE>( REWL_MASTER_PROC, final_num_bins, final_logdos_array, MPI_LOGDOS_TYPE, final_logdos_tag, MPI_COMM_WORLD );  
         mpi_send_array<OBS_TYPE>( REWL_MASTER_PROC, final_num_obs_values, final_observable_array, MPI_OBS_TYPE, final_obs_tag, MPI_COMM_WORLD );  
+
+#if AT_DENSITIES
+        // Send the density plot vector of vector
+        // to the master process
+        mpi_send_table<density_float>( REWL_MASTER_PROC, final_density_plots, MPI_DOUBLE, final_density_plot_tag, MPI_COMM_WORLD );
+#endif
     }
     // else { I'm a processor that's now bored... }
     MPI_Barrier(MPI_COMM_WORLD);
