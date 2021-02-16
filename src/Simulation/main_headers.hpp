@@ -31,6 +31,7 @@ const std::string DELIMITER = "  ";
 
 #if AT_DENSITIES
 #include <Ashkin_Teller2d/Density_Plots/ashkin_teller_densities_parameters.cxx>
+#include <Ashkin_Teller2d/Density_Plots/write_density_plots.cpp>
 #endif
 
 

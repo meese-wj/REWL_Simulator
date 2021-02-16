@@ -9,12 +9,11 @@ AT_Density_Parameters::Strings::Strings()
     header += "#\n";
     header += "# Density Plot Parameters:\n";
     header += "#\n";
-    header += "#     axis bins    = " + axis_bins;
-    header += "#     total bins   = " + total_bins;
-    header += "#     axis maximum = " + sigma_tau_max;
-    header += "#     axis minimum = " + sigma_tau_min;
-    header += "#     binwidth     = " + density_binwidth;
-    header += "#\n";
+    header += "#     axis bins    = " + axis_bins + "\n";
+    header += "#     total bins   = " + total_bins + "\n";
+    header += "#     axis maximum = " + sigma_tau_max + "\n";
+    header += "#     axis minimum = " + sigma_tau_min + "\n";
+    header += "#     binwidth     = " + density_binwidth + "\n";
 }
 
 #endif

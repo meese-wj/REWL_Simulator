@@ -5,20 +5,21 @@
  * density plots per energy bin. */
 
 #include <string>
+#include <vector>
 #include <fstream>
 #include <filesystem>
 #include "ashkin_teller_densities_parameters.cxx"
 #include "ashkin_teller_densities.hpp"
 
-void write_density_plots( const density_int nbins,
-                          const std::filesystem::path & density_path,
-                          const density_float * const float_data,
+void write_density_plots( const std::filesystem::path & density_path,
+                          const std::vector<std::vector<density_float> > & float_data,
                           const std::string & file_string,
                           const std::string & density_header )
 {
+    const density_int nbins = float_data.size();
     for ( density_int energy_bin = 0; energy_bin != nbins; ++energy_bin )
     {
-        const std::string file_name = "density_plots_bin-" + std::to_string( energy_bin ) + file_string + ".txt";
+        const std::string file_name = "density_plots_bin-" + std::to_string( energy_bin ) + "_" + file_string + ".txt";
         std::ofstream output_file;
         output_file.open( density_path / file_name );
 
@@ -28,7 +29,7 @@ void write_density_plots( const density_int nbins,
         for ( density_int idx = 0; idx != AT_Density_Parameters::total_bins; ++idx )
         {
             output_file << std::setprecision(std::numeric_limits<density_float>::digits10) << std::scientific;
-            output_file << float_data[ energy_bin_density_pointer( energy_bin ) + idx ];
+            output_file << float_data[ energy_bin ][ idx ];
             
             if ( (idx + 1) % AT_Density_Parameters::axis_bins == 0 )
             {

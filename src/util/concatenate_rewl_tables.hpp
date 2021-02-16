@@ -205,10 +205,7 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
                                           obs_table, final_energy_values, final_logdos_values, 
                                           final_obs_values );
 #if AT_DENSITIES
-        std::cout << "\nPushing back density table\n";
-        final_density_table.push_back( std::vector<obs_t> () );
-        final_density_table.back() = density_table[0][bin];
-        std::cout << "\nPushed back density table\n";
+        final_density_table.push_back( density_table[0][bin] );
 #endif
  
         overlapping_windows.push_back(1);
@@ -255,9 +252,7 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
             }
             
 #if AT_DENSITIES
-                std::cout << "\nleft_obs_bin " << left_obs_bin << " density table size " << final_density_table.size() << " final obs size " << final_obs_values.size() << "\n";
-                std::cout << "Updating density table in window " << window << " at bin " << idx << "\n";
-                final_density_table[ left_idx ] = (1./( 1. + overlapping_windows[ left_idx ] )) * ( (1. * overlapping_windows[ left_idx ]) * final_density_table[ left_idx ] + density_table[window][right_idx] );
+            final_density_table[ left_idx ] = (1./( 1. + overlapping_windows[ left_idx ] )) * ( (1. * overlapping_windows[ left_idx ]) * final_density_table[ left_idx ] + density_table[window][right_idx] );
 #endif
             // Increment the number of overlapping
             // windows at this bin.
@@ -294,10 +289,7 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
                                               final_obs_values );
 
 #if AT_DENSITIES
-            std::cout << "\nPushing back density table in the final window\n";
-            final_density_table.push_back( std::vector<obs_t> () );
-            final_density_table.back() = density_table[window][idx];
-            std::cout << "\nPushed back density table in the final window\n";
+            final_density_table.push_back( density_table[window][idx] );
 #endif
  
             overlapping_windows.push_back(1);

@@ -108,15 +108,26 @@ int main(int argc, char * argv[])
     rewl_strings.recreate_parameter_string();
     std::filesystem::path data_path;
     std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
+#if AT_DENSITIES
+    AT_Density_Parameters::Strings density_strings = AT_Density_Parameters::Strings();
+    std::filesystem::path density_path = data_path;
+#endif
     if ( world_rank == REWL_MASTER_PROC )
     {
         std::cout << "\n**************************************************************************************\n";
         std::cout << "\n" << todays_date << "\n\n" << data_file_header; 
+#if AT_DENSITIES
+        std::cout << "\n#\n" << density_strings.header;
+#endif
         std::cout << "\n**************************************************************************************\n";
 #if JOB_ARRAYS
         data_path = create_output_path( sys_strings.model_name, todays_date, sys_strings.size_string, job_id_string );
 #else
-        data_path = create_output_path( sys_strings.model_name, todays_date, sys_strings.size_string ); 
+        data_path = create_output_path( sys_strings.model_name, todays_date, sys_strings.size_string );
+#endif
+
+#if AT_DENSITIES
+        density_path = data_path / std::string("Density_Plots");
 #endif
     }
 
@@ -294,6 +305,12 @@ int main(int argc, char * argv[])
                                                                               convert<System_Obs_enum_t>(System_Obs_enum_t::counts_per_bin),
                                                                               sys_strings.file_name_base, data_file_header, System_Obs::string_names,
                                                                               data_path, final_energy_vector.data(), final_logdos_vector.data(), final_observable_vector.data() ); 
+
+#if AT_DENSITIES
+        // Print out the density plots before thermally averaging. 
+        // THESE PLOTS WILL NOT BE THERMALLY AVERAGED!
+        write_density_plots( density_path, final_density_plot_vector, sys_strings.file_name_base, density_strings.header );
+#endif
 
         thermo_t * thermo = new thermo_t ( final_num_bins, Tmin, Tmax, num_T );
         
