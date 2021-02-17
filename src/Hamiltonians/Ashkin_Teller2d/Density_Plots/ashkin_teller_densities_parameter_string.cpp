@@ -14,6 +14,7 @@ AT_Density_Parameters::Strings::Strings()
     header += "#     axis maximum = " + sigma_tau_max + "\n";
     header += "#     axis minimum = " + sigma_tau_min + "\n";
     header += "#     binwidth     = " + density_binwidth + "\n";
+    header += "#";
 }
 
 #endif

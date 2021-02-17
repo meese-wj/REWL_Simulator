@@ -14,7 +14,7 @@ namespace AT_Density_Parameters
     // Number of bins along the sigma or tau axis
     // For memory reasons it would be best to keep this
     // a power of 2.
-    constexpr density_int axis_bins = 16;
+    constexpr density_int axis_bins = 32;
 
     // Total number of bins in the 2d plot
     constexpr density_int total_bins = axis_bins * axis_bins;
