@@ -3,6 +3,7 @@
     density plot pngs.
 """
 
+import argparse
 import numpy as np
 import os
 import matplotlib as mpl
@@ -10,6 +11,26 @@ mpl.use('Agg')  # THIS IS REQUIRED FOR WSL2
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from multiple_couplings import *
+
+def setup_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("micro_dir", help = "The directory of the microcanonical data.", type = str)
+    parser.add_argument("sifter_value", help = "The value of the sifting coupling (usually system size).", type = str )
+    parser.add_argument("coupling_symbol", help = "The constant value(s) to parse through. May be a space separated list.", type = str)
+    parser.add_argument("coupling_value",  help = "Value of the coupling(s). May be a space separated list.", type = str)
+    parser.add_argument("peak_T", default = None, help = "Temperature to center the temperature array around.", type = str)
+
+    return parser.parse_args()
+
+def make_temperatures( peak_T ):
+    """
+        Define the temperature array here.
+    """
+    temps = np.array([ 0.250, 0.500, 0.750, 0.800, 0.850, 0.900,
+                       0.925, 0.950, 0.975, 1.000, 1.025, 1.050,
+                       1.075, 1.100, 1.150, 1.200, 1.250, 1.500,
+                       1.750, 2.000 ])
+    return float(peak_T) * temps
 
 def get_file_bin( file_string, key_string = "bin-" ):
     """
@@ -361,16 +382,44 @@ def plot_final_thermo_densities( plot_dir, density_params, sifter_coupling, sift
         plot_name = "density T %.3f %s %s %s" % ( temp_array[Tdx], sifter_coupling, sifter_value, get_coupling_string(coupling_tuples) )
         if interpolation != 'None':
             plot_name = interpolation + " " + plot_name
-        if plot_dir[-1] == "/":
-            plot_name = "/" + plot_name
-        plt.savefig( plot_dir + plot_name + ".png", facecolor="black", edgecolor="none", dpi=300 )
+
+        plt.savefig( correct_directory( plot_dir ) + plot_name + ".png", facecolor="black", edgecolor="none", dpi=300 )
         plt.close()
 
 
 def main():
 
-    return None
+    args = setup_args()
 
+    density_dir = correct_directory( args.micro_dir ) + "Density_Plots"
+    if not os.path.isdir( density_dir ):
+        print("\n%s does not exist. Exiting.\n" % density_dir)
+        return 1
+
+    plot_dir = os.path.join( os.pardir( args.micro_dir ), "Density_Figures" )
+    if not os.path.isdir( plot_dir ):
+        print("\n%s does not exits. Creating directory now.\n" % plot_dir.abspath())
+        os.mkdir( plot_dir )
+
+    sifter_coupling, coupling_tuples = parse_couplings( args.coupling_symbol, args.coupling_value )
+
+    temperature_array = make_temperatures( args.peak_T )
+
+    # Gather all job data
+    jobnames, all_job_bins, all_job_density, density_params = collect_all_jobs( density_dir, coupling_tuples )
+
+    # Compute all thermodynamic averages
+    all_thermo_densities = collect_all_thermo_densities(  all_job_density, temp_array, args.micro_dir, sifter_coupling, args.sifter_value, coupling_tuples )
+
+    # Average the thermodynamic densities
+    # over all jobs
+    final_density_averages = compute_multiple_job_average( all_thermo_densities ):
+
+    # Plot the job averaged densities
+    plot_final_thermo_densities( plot_dir, density_params, sifter_coupling, args.sifter_value, coupling_tuples, temp_array, final_density_averages, interpolation = 'None' )
+    plot_final_thermo_densities( plot_dir, density_params, sifter_coupling, args.sifter_value, coupling_tuples, temp_array, final_density_averages, interpolation = 'gaussian' )
+
+    return 0
 
 if __name__ == "__main__":
 
