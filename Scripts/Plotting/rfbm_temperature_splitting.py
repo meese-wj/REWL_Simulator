@@ -117,14 +117,14 @@ def find_all_Tc( T_label_index, Tmin, Tmax, susc_labels, data_tuples ):
     print(Tc_values, "\n", Tc_errors)
     return sifter_values, susc_values, susc_errs, Tc_values, Tc_errors
 
-def plot_Tc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, susc_labels, sifter_values, Tc_values, Tc_errors ):
+def plot_Tc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, susc_labels, sifter_values, Tc_values, Tc_errors, ashkin_teller ):
     '''
     Plot the Tc values for all susceptibilities.
     '''
     fig, ax = plt.subplots(1,1)
     for ldx in range(len(susc_labels)):
         label = susc_labels[ldx][1]
-        if label == "Susceptibility":
+        if ashkin_teller and label == "Susceptibility":
             label = "Two-Component " + label
         lines = ax.plot( Tc_values[ldx,:], sifter_values[0,:], label = r"%s" % label,
                          marker = "o", ms = markersize, mec = marker_edge_color,
@@ -153,15 +153,53 @@ def plot_Tc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, su
 
     return
 
-def plot_susc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, susc_labels, sifter_values, susc_values, susc_errs ):
+def plot_Tc_data_inverted( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, susc_labels, sifter_values, Tc_values, Tc_errors, ashkin_teller ):
+    '''
+    Plot the Tc values for all susceptibilities.
+    '''
+    fig, ax = plt.subplots(1,1)
+    for ldx in range(len(susc_labels)):
+        label = susc_labels[ldx][1]
+        if ashkin_teller and label == "Susceptibility":
+            label = "Two-Component " + label
+        lines = ax.plot( sifter_values[0,:], Tc_values[ldx,:], label = r"%s" % label,
+                         marker = "o", ms = markersize, mec = marker_edge_color,
+                         mew = marker_edge_width, ls = None )
+        ax.errorbar( sifter_values[0,:], Tc_values[ldx,:], yerr = Tc_errors[ldx,:],
+                     label = None, color = "None", ecolor = lines[-1].get_color(),
+                     marker = "o", ms = markersize, mec = marker_edge_color,
+                     mew = marker_edge_width, mfc = lines[-1].get_color(),
+                     ls = None, capsize=capsize )
+
+    xmin, xmax = ax.get_xlim()
+    const_h_values = np.linspace(xmin, xmax, 10)
+    const_Tc = float(clean_Tc) + 0. * const_h_values
+    ax.plot( const_h_values, const_Tc, color = "gray", lw = 1, ls = "dashed", label = r"Clean $T_c = %s$" % clean_Tc )
+    ax.set_xlim( (xmin, xmax) )
+
+    if sifter_coupling == "h":
+        ax.set_xlabel(r"Random Field Strength $%s$" % sifter_coupling, fontsize = fontsize)
+    ax.set_ylabel(r"Susceptibility Pseudo-$T_c$", fontsize = fontsize)
+    ax.legend(fontsize = fontsize)
+    ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
+
+    plotname = "Susceptibility Pseudo-Tc Splitting inverted.png"
+    plt.savefig( plot_directory + "/" + plotname )
+    plt.close()
+
+    return
+
+
+
+def plot_susc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, susc_labels, sifter_values, susc_values, susc_errs, ashkin_teller ):
     '''
     Plot the max susceptibilities values for all susceptibilities.
     '''
     fig, ax = plt.subplots(1,1)
     for ldx in range(len(susc_labels)):
         label = susc_labels[ldx][1]
-        if label == "Susceptibility":
-            label = "Two-Component " + label
+        if ashkin_teller and label == "Susceptibility":
+            label = "Order Parameter " + label
         lines = ax.plot( sifter_values[0,:], susc_values[ldx,:], label = r"%s" % label,
                          marker = "o", ms = markersize, mec = marker_edge_color,
                          mew = marker_edge_width, ls = None )
@@ -183,6 +221,55 @@ def plot_susc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, 
 
     return
 
+def plot_anomalous_susc( plot_directory, Tindex, susc_labels, sifter_coupling, clean_Tc, coupling_tuples, labels, data_tuples ):
+    '''
+    Plot the anomalous diagmetic susceptibility given by
+    chi_a = chi_order_parameter - chi_sigma - chi_tau
+    '''
+    order_idx = 0
+    sigma_idx = 0
+    tau_idx = 0
+    for i in range(len(susc_labels)):
+        if "Susceptibility" == susc_labels[i][1]:
+            order_idx = susc_labels[i][0]
+        elif "Sigma" in susc_labels[i][1]:
+            sigma_idx = susc_labels[i][0]
+        elif "Tau" in susc_labels[i][1]:
+            tau_idx = susc_labels[i][0]
+
+    error_inc = 100
+    fig, ax = plt.subplots(1,1)
+    for i in range(len(data_tuples)):
+        anom_susc_values = data_tuples[i][1][:,order_idx] - ( data_tuples[i][1][:,sigma_idx] + data_tuples[i][1][:,tau_idx] )
+        anom_errs = np.sqrt( data_tuples[i][2][:,order_idx] ** 2 +  data_tuples[i][2][:,sigma_idx] ** 2 + data_tuples[i][2][:,tau_idx] ** 2 )
+        lines = ax.plot( data_tuples[i][1][:,Tindex], anom_susc_values, label = r"$%s = %.2f$" % (sifter_coupling, float(data_tuples[i][0]) ) )
+        ax.errorbar( data_tuples[i][1][::error_inc,Tindex], anom_susc_values[::error_inc], yerr = anom_errs[::error_inc],
+                     label = None, color = "None", ecolor = lines[-1].get_color(),
+                     marker = "o", ms = markersize, mec = marker_edge_color,
+                     mew = marker_edge_width, mfc = lines[-1].get_color(),
+                     ls = None, capsize=capsize )
+
+
+
+    epsilon_range = .25
+    ax.set_xlim( float(clean_Tc) * (1-epsilon_range), float(clean_Tc) * (1 + epsilon_range) )
+
+    ymin, ymax = ax.get_ylim()
+    const_Tc = float(clean_Tc) + 0. * np.linspace(ymin, ymax, 10)
+    ax.plot( const_Tc, np.linspace(ymin, ymax, 10), color = "gray", lw = 1, ls = "dashed", label = r"Clean $T_c = %s$" % clean_Tc )
+    ax.set_ylim( (ymin, ymax) )
+
+    ax.set_xlabel("%s" % labels[Tindex], fontsize = fontsize)
+    ax.set_ylabel("Anomalous Susceptibility", fontsize = fontsize)
+    ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
+    ax.legend()
+
+    plotname = "Anomalous Susceptibility.png"
+    plt.savefig( plot_directory + "/" + plotname )
+    plt.close()
+    return
+
+
 def main():
 
     args = setup_args()
@@ -199,14 +286,30 @@ def main():
     plot_directory = check_for_output(sifter_coupling, coupling_tuples, output_path)
 
     labels, data_tuples = collect_observables_and_data( data_file_stem, observable_marker, sifter_coupling, coupling_tuples )
+    ashkin_teller = False
+    if "Tau Susceptibility" in labels:
+        ashkin_teller = True
 
     Tindex, susc_labels = gather_susc_labels( susc_string, labels )
     print(susc_labels,"\n", len(data_tuples))
 
+    ''' Convert susceptibility into correlator by multiplying by temperature
+    for i in range(len(data_tuples)):
+        temperatures = data_tuples[i][1][:,Tindex]
+        for si in range(len(susc_labels)):
+            s = susc_labels[si][0]
+            data_tuples[i][1][:,s] = data_tuples[i][1][:,s] * temperatures
+            data_tuples[i][2][:,s] = data_tuples[i][2][:,s] * temperatures
+    '''
+
     sifter_values, susc_values, susc_errs, Tc_values, Tc_errors = find_all_Tc( Tindex, Tmin_value, Tmax_value, susc_labels, data_tuples )
 
-    plot_Tc_data( plot_directory, sifter_coupling, args.Tc, coupling_tuples, susc_labels, sifter_values, Tc_values, Tc_errors )
-    plot_susc_data( plot_directory, sifter_coupling, args.Tc, coupling_tuples, susc_labels, sifter_values, susc_values, susc_errs )
+    if ashkin_teller:
+        plot_anomalous_susc(  plot_directory, Tindex, susc_labels, sifter_coupling, args.Tc, coupling_tuples, labels, data_tuples )
+
+    plot_Tc_data( plot_directory, sifter_coupling, args.Tc, coupling_tuples, susc_labels, sifter_values, Tc_values, Tc_errors, ashkin_teller )
+    plot_Tc_data_inverted( plot_directory, sifter_coupling, args.Tc, coupling_tuples, susc_labels, sifter_values, Tc_values, Tc_errors, ashkin_teller )
+    plot_susc_data( plot_directory, sifter_coupling, args.Tc, coupling_tuples, susc_labels, sifter_values, susc_values, susc_errs, ashkin_teller )
 
 
     return

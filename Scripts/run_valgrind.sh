@@ -11,7 +11,7 @@ ls
 echo
 echo "Building and running code."
 rm -rf /home/joe/Linux_Code_Dev/REWL_Simulator/build/*
-cmake .. -DCMAKE_BUILD_TYPE=Debug "-D${model^^}=ON" "-D${RANDFIELD^^}=ON" "-DSIMULATED_ANNEALING=OFF"
+cmake .. -DCMAKE_BUILD_TYPE=Debug "-D${model^^}=ON" "-D${RANDFIELD^^}=OFF" "-DSIMULATED_ANNEALING=OFF"
 
 # *******************************
 # Set MPI variables from CMake

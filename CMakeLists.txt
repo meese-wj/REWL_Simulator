@@ -29,6 +29,7 @@ option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice
 # Additions to Hamiltonians
 option(RFIM "Include random fields for the Ising model." OFF)
 option(RFAT_BAXTER "Include random fields for the Baxter spin in the Ashkin-Teller model." OFF)
+option(AT_DENSITIES "Keep track of sigma and tau densities per energy bin." ON)
 
 # *********************************************************************
 # Add consequences of the options below.
@@ -63,6 +64,11 @@ endif()
 if (RFAT_BAXTER AND ISING2D)
     message(FATAL_ERROR "RFAT_BAXTER was activated for the Ising model.")
 endif()
+
+# Error out if AT_DENSITIES and Ising model
+if (AT_DENSITIES AND ISING2D)
+    message(FATAL_ERROR "AT_DENSITIES was activated for the Ising model.")
+endif()
 # *********************************************************************
 
 if (ISING2D)
@@ -77,6 +83,10 @@ endif()
 
 if (ASHKIN_TELLER2D)
     add_definitions(-DASHKIN_TELLER2D)
+endif()
+
+if (AT_DENSITIES)
+    add_definitions(-DAT_DENSITIES)
 endif()
 
 if (RFAT_BAXTER)

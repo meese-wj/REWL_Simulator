@@ -82,6 +82,14 @@ FS::path create_output_path( const std::string & model_name, const std::string &
     // Subpath = build parent / OUTPUT_DATA_PATH / model_name / today's date / HISTOGRAM_SUBFOLDER / size_string_subfolder
     sub_path /= size_string;
     create_directory( sub_path.string() );
+
+#if AT_DENSITIES 
+    // Add a folder to house the density plots.
+    // Path = build parent / OUTPUT_DATA_PATH / model_name / today's date 
+    // density_path = Path / Density_Plots
+    FS::path density_path = output_path / std::string("Density_Plots");
+    create_directory( density_path.string() );
+#endif
  
     return output_path;
 }

@@ -12,6 +12,32 @@
 template <typename data_t>
 using table = std::vector<std::vector<data_t> >;
 
+// Make a density table that is organized by
+// windows --> energy bins --> values
+template <typename data_t>
+using dens_table = std::vector<std::vector<std::vector<data_t> > >;
+
+template<typename data_t>
+std::vector<data_t> operator + ( const std::vector<data_t> & a, const std::vector<data_t> & b )
+{
+    // This assumes a and b have the same dimension
+    const size_t sze = a.size();
+    std::vector<data_t> output (sze);
+    for ( size_t idx = 0; idx != sze; ++idx )
+        output[idx] = a[idx] + b[idx];
+    return output;
+}
+
+template<typename data_t>
+std::vector<data_t> operator * ( const data_t scalar, const std::vector<data_t> & a )
+{
+    const size_t sze = a.size();
+    std::vector<data_t> output (a);
+    for ( size_t idx = 0; idx != sze; ++idx )
+        output[idx] = scalar * a[idx];
+    return output;
+}
+
 // Compute the overlap averages 
 template<typename data_t>
 inline data_t average_two_windows( const data_t obs1, const data_t obs2, const size_t num1, const size_t num2 )
@@ -139,6 +165,18 @@ void concatenate_tables_single_overlap( const size_t num_obs,
 // from a single window have had their 
 // measurements averaged.
 template<typename energy_t, typename logdos_t, typename obs_t>
+#if AT_DENSITIES
+void concatenate_tables_multiple_overlap( const size_t num_obs, 
+                                          const size_t counts_index,
+                                          const table<energy_t>      & energy_table,
+                                          const table<logdos_t>      & logdos_table,
+                                          const table<obs_t>         & obs_table,
+                                          const dens_table<obs_t>    & density_table,
+                                          std::vector<energy_t>      & final_energy_values,
+                                          std::vector<logdos_t>      & final_logdos_values,
+                                          std::vector<obs_t>         & final_obs_values,
+                                          table<obs_t>               & final_density_table)
+#else
 void concatenate_tables_multiple_overlap( const size_t num_obs, 
                                           const size_t counts_index,
                                           const table<energy_t> & energy_table,
@@ -147,6 +185,7 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
                                           std::vector<energy_t> & final_energy_values,
                                           std::vector<logdos_t> & final_logdos_values,
                                           std::vector<obs_t>    & final_obs_values )
+#endif
 {
     const size_t num_windows = energy_table.size();
     logdos_t logdos_shifter = 0;
@@ -165,6 +204,10 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
                                  obs_t> ( 0, bin, num_obs, logdos_shifter, energy_table, logdos_table,
                                           obs_table, final_energy_values, final_logdos_values, 
                                           final_obs_values );
+#if AT_DENSITIES
+        final_density_table.push_back( density_table[0][bin] );
+#endif
+ 
         overlapping_windows.push_back(1);
     }
 
@@ -208,6 +251,9 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
                 final_obs_values[ left_obs_bin + ob ] = ( obs_value );
             }
             
+#if AT_DENSITIES
+            final_density_table[ left_idx ] = (1./( 1. + overlapping_windows[ left_idx ] )) * ( (1. * overlapping_windows[ left_idx ]) * final_density_table[ left_idx ] + density_table[window][right_idx] );
+#endif
             // Increment the number of overlapping
             // windows at this bin.
             ++overlapping_windows[ left_idx ];
@@ -242,6 +288,10 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
                                               final_energy_values, final_logdos_values, 
                                               final_obs_values );
 
+#if AT_DENSITIES
+            final_density_table.push_back( density_table[window][idx] );
+#endif
+ 
             overlapping_windows.push_back(1);
         }
     }
@@ -388,6 +438,20 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
 // observable tables after the REWL process
 // depending on the degree of overlap
 template<typename energy_t, typename logdos_t, typename obs_t>
+#if AT_DENSITIES
+void concatenate_tables( const bool single_overlap,
+                         const size_t num_obs, 
+                         const size_t counts_index,
+                         const table<energy_t>      & energy_table,
+                         const table<logdos_t>      & logdos_table,
+                         const table<obs_t>         & obs_table,
+                         const dens_table<obs_t>    & density_table,
+                         std::vector<energy_t>      & final_energy_values,
+                         std::vector<logdos_t>      & final_logdos_values,
+                         std::vector<obs_t>         & final_obs_values,
+                         table<obs_t>               & final_density_table )
+
+#else
 void concatenate_tables( const bool single_overlap,
                          const size_t num_obs, 
                          const size_t counts_index,
@@ -397,6 +461,7 @@ void concatenate_tables( const bool single_overlap,
                          std::vector<energy_t> & final_energy_values,
                          std::vector<logdos_t> & final_logdos_values,
                          std::vector<obs_t>    & final_obs_values )
+#endif
 {
 
     switch( single_overlap )
@@ -411,10 +476,17 @@ void concatenate_tables( const bool single_overlap,
         }
         case false:
         {
+#if AT_DENSITIES
+            concatenate_tables_multiple_overlap<energy_t,
+                                                logdos_t,
+                                                obs_t>( num_obs, counts_index, energy_table, logdos_table, obs_table, density_table,
+                                                        final_energy_values, final_logdos_values, final_obs_values, final_density_table );
+#else            
             concatenate_tables_multiple_overlap<energy_t,
                                                 logdos_t,
                                                 obs_t>( num_obs, counts_index, energy_table, logdos_table, obs_table,
                                                         final_energy_values, final_logdos_values, final_obs_values );
+#endif
             break;
         }
     }

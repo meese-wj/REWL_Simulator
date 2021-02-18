@@ -10,7 +10,7 @@ echo
 ls
 echo
 echo "Building and running code."
-cmake .. "-D${model^^}=ON" "-D${RANDFIELD^^}=ON" "-DSIMULATED_ANNEALING=OFF"
+cmake .. "-D${model^^}=ON" "-D${RANDFIELD^^}=OFF" "-DSIMULATED_ANNEALING=OFF"
 
 # *******************************
 # Set MPI variables from CMake

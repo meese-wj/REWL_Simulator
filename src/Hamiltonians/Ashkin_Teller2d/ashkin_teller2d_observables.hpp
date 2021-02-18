@@ -10,6 +10,13 @@
 #include "../Correlations/fourier_correlator.hpp"
 #endif
 
+#if AT_DENSITIES
+// Include the 2d histograms for 
+// sigma and tau
+#include "Density_Plots/ashkin_teller_densities_parameters.cxx"
+#include "Density_Plots/ashkin_teller_densities.hpp"
+#endif
+
 static constexpr float DATA_INITIALIZER = 0.;
 
 // Set up an observables enum class.
@@ -101,6 +108,11 @@ struct Ashkin_Teller2d_Obs
     Fourier_Correlator<data_t> correlator;
 #endif
 
+#if AT_DENSITIES
+    density_int * density_histograms = nullptr;
+    density_float * density_float_data = nullptr;
+#endif
+
 #if CORRELATION_LENGTHS
     Ashkin_Teller2d_Obs(const size_t nbins) : num_bins(nbins), correlator( Ashkin_Teller2d_Parameters::L )
 #else
@@ -118,9 +130,21 @@ struct Ashkin_Teller2d_Obs
                 obs_array[ idx * convert(Obs::enum_names::NUM_OBS) + ob ] = static_cast<data_t> (DATA_INITIALIZER);
 
         }
+
+#if AT_DENSITIES
+        density_histograms = new density_int [ nbins * AT_Density_Parameters::total_bins ]();
+        density_float_data = new density_float [ nbins * AT_Density_Parameters::total_bins ]();
+#endif
     }
 
-    ~Ashkin_Teller2d_Obs(){ delete [] obs_array; }
+    ~Ashkin_Teller2d_Obs()
+    { 
+        delete [] obs_array; 
+#if AT_DENSITIES
+        delete [] density_histograms;
+        delete [] density_float_data;
+#endif
+    }
 
     // Set the data pointed to by the observable array
     void set_observable(const data_t value, const Obs::enum_names ob, const size_t bin) const
@@ -163,6 +187,23 @@ struct Ashkin_Teller2d_Obs
                 data_array[ bin * convert(Obs::enum_names::NUM_OBS) + ob ] = get_observable(ob, bin);
         }
     }
+
+#if AT_DENSITIES
+    // Export the density floats from the observables
+    void export_density_plots( std::vector<std::vector<density_float> > & export_vectors )
+    {
+        // Resize the export vectors
+        export_vectors.resize( num_bins );
+        for ( auto &v : export_vectors )
+            v.resize( AT_Density_Parameters::total_bins );
+        
+        // Now export the density plots
+        for ( size_t idx = 0; idx != num_bins; ++idx )
+        {
+            export_vectors[ idx ] = std::vector<density_float> ( density_float_data + energy_bin_density_pointer(idx), density_float_data + energy_bin_density_pointer( idx + 1 ) );
+        }
+    }
+#endif
 };
 
 template<typename data_t>
