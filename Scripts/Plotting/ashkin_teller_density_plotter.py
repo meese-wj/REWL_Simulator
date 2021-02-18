@@ -208,7 +208,7 @@ def canonical_average( observable, logDoS, energy, temperature ):
     """
     probs = probability_per_bin( logDoS, energy, temperature )
     output = probs[0] * observable[0]
-    for endx in range( 1, observable.shape[0] ):
+    for endx in range( 1, observable.shape[0], 1 ):
         output += probs[endx] * observable[endx]
     # Normalize by the dividing out the maximum
     return output/np.max(output)
@@ -235,7 +235,7 @@ def load_job_logDoS_data( data_dir, sifter_coupling, sifter_value, coupling_tupl
         extract = "microcanonical" in filepath
         extract = extract and couplings_in_file(coupling_tuples, filepath)
         if jobname != 'None':
-            extract = extract and ('JOBID-%s_' % jobname)
+            extract = extract and ('JOBID-%s_' % jobname in filepath)
         if extract:
             Lsize = 0
             if sifter_coupling == 'L':
@@ -254,8 +254,15 @@ def collect_all_jobs( density_dir, coupling_tuples ):
         for each job.
 
         The data structures returned are the
-        jobname dictionary, two ndarrays, and
+        jobname dictionary, one ndarray,
+        one job density dictionary, and
         then the parameter dictionary.
+
+        The job density output needed to be
+        changed to a dictionary since the jobs
+        may have different numbers of energy
+        bins and so they cannot be broadcast
+        together.
 
         all_job_bins =
             ( num_jobs, num_bins, energy or logdos )
@@ -265,7 +272,7 @@ def collect_all_jobs( density_dir, coupling_tuples ):
     """
     jobnames = identify_jobs( density_dir, coupling_tuples )
     all_job_bins = []
-    all_job_density = []
+    all_job_density = {}
     density_params = {}
     print_params = True
     if len(jobnames) > 0:
@@ -277,19 +284,19 @@ def collect_all_jobs( density_dir, coupling_tuples ):
             if print_params:
                 print_params = False
                 density_params = temp_dict
-                all_job_density = np.zeros( ( len(jobnames), density_data.shape[0], density_data.shape[1], density_data.shape[2] ) )
+                #all_job_density = np.zeros( ( len(jobnames), dens_data.shape[0], dens_data.shape[1], dens_data.shape[2] ) )
             all_job_bins = bin_data
-            all_job_density[int(jobid),:,:,:] = dens_data
+            all_job_density[int(jobid)] = dens_data
 
     else:
         print("\nNo job data found. Assuming you then mean to consider a single job...\n")
         all_job_bins = [0]
-        all_job_density = [0]
+        all_job_density = {0:''}
         all_job_energy_logDoS = [0]
         all_job_bins[0], all_job_density[0], density_params = collect_single_job( density_dir, coupling_tuples, print_params = print_params )
 
         all_job_bins = np.array(all_job_bins)
-        all_job_density = np.array(all_job_density)
+        #all_job_density = np.array(all_job_density)
 
     return jobnames, all_job_bins, all_job_density, density_params
 
@@ -327,12 +334,12 @@ def collect_all_thermo_densities(  all_job_density, temp_array, micro_dir, sifte
             ( num_jobs, num_temps, axis_bins, axis_bins )
     """
     all_thermo_densities = []
-    njobs = all_job_density.shape[0]
+    njobs = len( all_job_density )
     for jobid in range(njobs):
         job = 'None'
         if njobs > 1:
             job = str(jobid)
-        temp_densities = compute_single_job_average( all_job_density[ jobid, :, :, : ], temp_array, micro_dir, sifter_coupling, sifter_value, coupling_tuples, jobname = job )
+        temp_densities = compute_single_job_average( all_job_density[ jobid ], temp_array, micro_dir, sifter_coupling, sifter_value, coupling_tuples, jobname = job )
 
         if len(all_thermo_densities) == 0:
             all_thermo_densities = np.zeros( ( njobs, len(temp_array), temp_densities.shape[1], temp_densities.shape[2] ) )
@@ -359,6 +366,8 @@ def compute_multiple_job_average( all_thermo_densities ):
         for jdx in range(njobs):
             final_density_averages[Tdx,:,:] += all_thermo_densities[jdx,Tdx,:,:]
         final_density_averages[Tdx,:,:] *= 1./njobs
+        # Normalize by the maximum
+        final_density_averages[Tdx,:,:] *= 1./np.max(final_density_averages[Tdx,:,:])
     return final_density_averages
 
 def plot_final_thermo_densities( plot_dir, density_params, sifter_coupling, sifter_value, coupling_tuples, temp_array, final_density_averages, interpolation = 'None' ):
@@ -372,7 +381,8 @@ def plot_final_thermo_densities( plot_dir, density_params, sifter_coupling, sift
 
     for Tdx in range( len(temp_array) ):
         fig, ax = plt.subplots(1,1, figsize = (6,5))
-        image = ax.imshow( final_density_averages[Tdx], extent = [axis_min, axis_max, axis_min, axis_max], cmap = "magma", interpolation=interpolation)
+        image = ax.imshow( final_density_averages[Tdx], extent = [axis_min, axis_max, axis_min, axis_max],
+                           cmap = "magma", vmin = 0., vmax = 1, interpolation=interpolation)
         cbar = fig.colorbar(image, ax=ax)
     #     cbar.ax.set_ylabel("Normalized Occurences", rotation=-90)
         ax.set_xlabel(r"$\frac{1}{N} \sum_i \sigma_i$",fontsize=14)
