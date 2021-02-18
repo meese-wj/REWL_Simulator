@@ -22,8 +22,8 @@ namespace AT_Density_Parameters
     // Define the maximum and minimum values
     // in the 2d plane. This should probably
     // just be +/- 1. 
-    constexpr density_float sigma_tau_max = 1.;
-    constexpr density_float sigma_tau_min = -1.;
+    constexpr density_float sigma_tau_max = 1.05;
+    constexpr density_float sigma_tau_min = -sigma_tau_max;
     constexpr density_float density_binwidth = ( sigma_tau_max - sigma_tau_min ) / static_cast<density_float>( axis_bins );
 
 
