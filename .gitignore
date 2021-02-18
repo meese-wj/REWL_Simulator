@@ -5,3 +5,4 @@ __pycache__
 *hostfile
 logs
 *.out
+average_h*
