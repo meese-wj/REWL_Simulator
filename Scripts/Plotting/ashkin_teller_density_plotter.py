@@ -263,7 +263,7 @@ def collect_all_jobs( density_dir, coupling_tuples ):
         all_job_density.shape =
             ( num_jobs, num_bins, axis_bins, axis_bins )
     """
-    jobnames = identify_jobs( data_dir, coupling_tuples )
+    jobnames = identify_jobs( density_dir, coupling_tuples )
     all_job_bins = []
     all_job_density = []
     density_params = {}
@@ -330,14 +330,14 @@ def collect_all_thermo_densities(  all_job_density, temp_array, micro_dir, sifte
     njobs = all_job_density.shape[0]
     for jobid in range(njobs):
         job = 'None'
-        if len(jobnames) > 0:
+        if njobs > 1:
             job = str(jobid)
         temp_densities = compute_single_job_average( all_job_density[ jobid, :, :, : ], temp_array, micro_dir, sifter_coupling, sifter_value, coupling_tuples, jobname = job )
 
         if len(all_thermo_densities) == 0:
             all_thermo_densities = np.zeros( ( njobs, len(temp_array), temp_densities.shape[1], temp_densities.shape[2] ) )
 
-        all_thermo_densities[ job, :, :, : ] = temp_densities
+        all_thermo_densities[ jobid, :, :, : ] = temp_densities
 
     return all_thermo_densities
 
@@ -371,18 +371,19 @@ def plot_final_thermo_densities( plot_dir, density_params, sifter_coupling, sift
     axis_max = density_params["axis_max"]
 
     for Tdx in range( len(temp_array) ):
-        fig, ax = plt.subplots(1,1, figsize = (6,4))
+        fig, ax = plt.subplots(1,1, figsize = (6,5))
         image = ax.imshow( final_density_averages[Tdx], extent = [axis_min, axis_max, axis_min, axis_max], cmap = "magma", interpolation=interpolation)
         cbar = fig.colorbar(image, ax=ax)
     #     cbar.ax.set_ylabel("Normalized Occurences", rotation=-90)
-        ax.set_xlabel(r"$\langle\sigma\rangle$",fontsize=16)
-        ax.set_ylabel(r"$\langle\tau\rangle$",fontsize=16)
+        ax.set_xlabel(r"$\frac{1}{N} \sum_i \sigma_i$",fontsize=14)
+        ax.set_ylabel(r"$\frac{1}{N} \sum_i \tau_i$",fontsize=14)
         ax.set_title(r"$T = %.3f$, $%s = %s$, %s" % (temp_array[Tdx], sifter_coupling, sifter_value, latex_couplings(coupling_tuples)[1:]))
 
         plot_name = "density T %.3f %s %s %s" % ( temp_array[Tdx], sifter_coupling, sifter_value, get_coupling_string(coupling_tuples) )
         if interpolation != 'None':
             plot_name = interpolation + " " + plot_name
 
+        plt.tight_layout()
         plt.savefig( correct_directory( plot_dir ) + plot_name + ".png", facecolor="black", edgecolor="none", dpi=300 )
         plt.close()
 
@@ -396,28 +397,39 @@ def main():
         print("\n%s does not exist. Exiting.\n" % density_dir)
         return 1
 
-    plot_dir = os.path.join( os.pardir( args.micro_dir ), "Density_Figures" )
-    if not os.path.isdir( plot_dir ):
-        print("\n%s does not exits. Creating directory now.\n" % plot_dir.abspath())
-        os.mkdir( plot_dir )
-
     sifter_coupling, coupling_tuples = parse_couplings( args.coupling_symbol, args.coupling_value )
 
-    temperature_array = make_temperatures( args.peak_T )
+    temp_array = make_temperatures( args.peak_T )
 
     # Gather all job data
     jobnames, all_job_bins, all_job_density, density_params = collect_all_jobs( density_dir, coupling_tuples )
 
     # Compute all thermodynamic averages
+    print("Computing all thermodynamic densities...")
     all_thermo_densities = collect_all_thermo_densities(  all_job_density, temp_array, args.micro_dir, sifter_coupling, args.sifter_value, coupling_tuples )
+    print("Densities computed.")
 
     # Average the thermodynamic densities
     # over all jobs
-    final_density_averages = compute_multiple_job_average( all_thermo_densities ):
+    print("\nComputing job-averages...")
+    final_density_averages = compute_multiple_job_average( all_thermo_densities )
+    print("Job-averages computed.")
 
     # Plot the job averaged densities
+    print("\nPlotting densities...")
+    plot_dir = ''
+    if len(jobnames) > 0:
+        plot_dir = correct_directory( args.micro_dir ) + "../Density_Figures"
+    else:
+        plot_dir = correct_directory( args.micro_dir ) + "Density_Figures"
+    if not os.path.isdir( plot_dir ):
+        print("%s does not exist. Creating directory now." % plot_dir)
+        os.mkdir( plot_dir )
+
+
     plot_final_thermo_densities( plot_dir, density_params, sifter_coupling, args.sifter_value, coupling_tuples, temp_array, final_density_averages, interpolation = 'None' )
     plot_final_thermo_densities( plot_dir, density_params, sifter_coupling, args.sifter_value, coupling_tuples, temp_array, final_density_averages, interpolation = 'gaussian' )
+    print("Densities plotted in", plot_dir)
 
     return 0
 
