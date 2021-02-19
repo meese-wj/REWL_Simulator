@@ -145,7 +145,10 @@ def plot_Tc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, su
         ax.set_ylabel(r"Random Field Strength $%s$" % sifter_coupling, fontsize = fontsize)
     ax.set_xlabel(r"Susceptibility Pseudo-$T_c$", fontsize = fontsize)
     ax.legend(fontsize = fontsize)
-    ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
+    if ashkin_teller:
+        ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
+    else:
+        ax.set_title(r"Ising2d_RFIM%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
 
     plotname = "Susceptibility Pseudo-Tc Splitting.png"
     plt.savefig( plot_directory + "/" + plotname )
@@ -181,7 +184,10 @@ def plot_Tc_data_inverted( plot_directory, sifter_coupling, clean_Tc, coupling_t
         ax.set_xlabel(r"Random Field Strength $%s$" % sifter_coupling, fontsize = fontsize)
     ax.set_ylabel(r"Susceptibility Pseudo-$T_c$", fontsize = fontsize)
     ax.legend(fontsize = fontsize)
-    ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
+    if ashkin_teller:
+        ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
+    else:
+        ax.set_title(r"Ising2d_RFIM%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
 
     plotname = "Susceptibility Pseudo-Tc Splitting inverted.png"
     plt.savefig( plot_directory + "/" + plotname )
@@ -213,7 +219,10 @@ def plot_susc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, 
         ax.set_xlabel(r"Random Field Strength $%s$" % sifter_coupling, fontsize = fontsize )
     ax.set_ylabel(r"Peak Susceptibility", fontsize = fontsize )
     ax.legend(fontsize = fontsize)
-    ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
+    if ashkin_teller:
+        ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
+    else:
+        ax.set_title(r"Ising2d_RFIM%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
 
     plotname = "Peak Susceptibility Splitting.png"
     plt.savefig( plot_directory + "/" + plotname )
