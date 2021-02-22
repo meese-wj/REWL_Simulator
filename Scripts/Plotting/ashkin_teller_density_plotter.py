@@ -30,7 +30,8 @@ def make_temperatures( peak_T ):
                        0.925, 0.950, 0.975, 1.000, 1.025, 1.050,
                        1.075, 1.100, 1.150, 1.200, 1.250, 1.500,
                        1.750, 2.000 ])
-    return float(peak_T) * temps
+    temps = np.linspace( 2.7, 3.3, 60 )
+    return temps
 
 def get_file_bin( file_string, key_string = "bin-" ):
     """
@@ -230,6 +231,7 @@ def load_job_logDoS_data( data_dir, sifter_coupling, sifter_value, coupling_tupl
         directory and find the proper
         data file to read in.
     """
+    energy_logDoS = []
     for f in os.listdir( data_dir ):
         filepath = correct_directory(data_dir) + f
         extract = "microcanonical" in filepath
@@ -323,7 +325,7 @@ def compute_single_job_average( density_data, temp_array, micro_dir, sifter_coup
         thermo_densities[Tdx,:,:] = canonical_average( density_data, energy_logDoS[:,1], energy_logDoS[:,0], temp_array[Tdx] )
     return thermo_densities
 
-def collect_all_thermo_densities(  all_job_density, temp_array, micro_dir, sifter_coupling, sifter_value, coupling_tuples ):
+def collect_all_thermo_densities(  all_job_density, jobnames, temp_array, micro_dir, sifter_coupling, sifter_value, coupling_tuples ):
     """
         From all the job densities, calculate
         the thermodynamic average for each
@@ -335,16 +337,18 @@ def collect_all_thermo_densities(  all_job_density, temp_array, micro_dir, sifte
     """
     all_thermo_densities = []
     njobs = len( all_job_density )
-    for jobid in range(njobs):
+    job_index = 0
+    for jobid in jobnames:
         job = 'None'
         if njobs > 1:
-            job = str(jobid)
-        temp_densities = compute_single_job_average( all_job_density[ jobid ], temp_array, micro_dir, sifter_coupling, sifter_value, coupling_tuples, jobname = job )
+            job = jobid
+        temp_densities = compute_single_job_average( all_job_density[ int( jobid ) ], temp_array, micro_dir, sifter_coupling, sifter_value, coupling_tuples, jobname = job )
 
         if len(all_thermo_densities) == 0:
             all_thermo_densities = np.zeros( ( njobs, len(temp_array), temp_densities.shape[1], temp_densities.shape[2] ) )
 
-        all_thermo_densities[ jobid, :, :, : ] = temp_densities
+        all_thermo_densities[ job_index, :, :, : ] = temp_densities
+        job_index += 1
 
     return all_thermo_densities
 
@@ -416,7 +420,7 @@ def main():
 
     # Compute all thermodynamic averages
     print("Computing all thermodynamic densities...")
-    all_thermo_densities = collect_all_thermo_densities(  all_job_density, temp_array, args.micro_dir, sifter_coupling, args.sifter_value, coupling_tuples )
+    all_thermo_densities = collect_all_thermo_densities(  all_job_density, jobnames, temp_array, args.micro_dir, sifter_coupling, args.sifter_value, coupling_tuples )
     print("Densities computed.")
 
     # Average the thermodynamic densities
@@ -429,13 +433,18 @@ def main():
     print("\nPlotting densities...")
     plot_dir = ''
     if len(jobnames) > 0:
-        plot_dir = correct_directory( args.micro_dir ) + "../Density_Figures"
+        plot_dir = correct_directory( args.micro_dir ) + "../Density_Figures/"
     else:
-        plot_dir = correct_directory( args.micro_dir ) + "Density_Figures"
+        plot_dir = correct_directory( args.micro_dir ) + "Density_Figures/"
+
     if not os.path.isdir( plot_dir ):
         print("%s does not exist. Creating directory now." % plot_dir)
         os.mkdir( plot_dir )
 
+    plot_dir += get_coupling_string( coupling_tuples )
+    if not os.path.isdir( plot_dir ):
+        print("%s does not exist. Creating directory now." % plot_dir)
+        os.mkdir( plot_dir )
 
     plot_final_thermo_densities( plot_dir, density_params, sifter_coupling, args.sifter_value, coupling_tuples, temp_array, final_density_averages, interpolation = 'None' )
     plot_final_thermo_densities( plot_dir, density_params, sifter_coupling, args.sifter_value, coupling_tuples, temp_array, final_density_averages, interpolation = 'gaussian' )
