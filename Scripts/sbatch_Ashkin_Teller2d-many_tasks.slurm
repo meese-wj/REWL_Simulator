@@ -1,27 +1,31 @@
 #!/bin/bash
-#SBATCH --nodes=8
-#SBATCH --ntasks-per-node=20
+#SBATCH --nodes=24
+#SBATCH --partition=large
+#SBATCH --ntasks-per-node=24
 #SBATCH --cpus-per-task=1
-#SBATCH --ntasks=160
+#SBATCH --ntasks=576
 #SBATCH --mem-per-cpu=2gb
-#SBATCH --time=66:25:00
+#SBATCH --exclusive
+#SBATCH --time=13:25:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=meese022@umn.edu
 #SBATCH --account=fernand7
-#SBATCH -o RFBM_K-0.5_h-0.5.out
-#SBATCH --job-name=K-0.5_h-0.5
+#SBATCH -o L-120_K-0.5.out
+#SBATCH --job-name=L-120_K-0.5
 
 JOB=$SLURM_JOB_ID
-hsize=0.5
+hsize=0.
 Ksize=0.5
-Lsize=40
+Lsize=120
 NPROCS=$SLURM_NTASKS
-NJOBS=192
+JOBSTART=0
+JOBEND=32
+NJOBS=32
 NSLOTS=$SLURM_NTASKS_PER_NODE
-TIMELIMIT="20m"
-KILLAFTER="21m"
-MODEL="Ashkin_Teller2d_RFBM"
-COUPLINGS="K-${Ksize}_h-${hsize}"
+TIMELIMIT="30m"
+KILLAFTER="31m"
+MODEL="Ashkin_Teller2d"
+COUPLINGS="L-${Lsize}_K-${Ksize}"
 SEARCHSTR="constexpr size_t SYSTEM_SIZE_L = "
 
 
@@ -57,7 +61,7 @@ module list
 
 echo -e "\n\nRunning code...\n\n"
 
-for ((jobid = 0; jobid<${NJOBS}; jobid++));
+for ((jobid=$JOBSTART; jobid<${JOBEND}; jobid++));
 do
 	TASKID=$jobid
 	echo -e "\nStarting ${TASKID}...\n\n"
