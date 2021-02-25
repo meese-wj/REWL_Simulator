@@ -29,7 +29,7 @@ option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice
 # Additions to Hamiltonians
 option(RFIM "Include random fields for the Ising model." OFF)
 option(RFAT_BAXTER "Include random fields for the Baxter spin in the Ashkin-Teller model." OFF)
-option(AT_DENSITIES "Keep track of sigma and tau densities per energy bin." ON)
+option(AT_DENSITIES "Keep track of sigma and tau densities per energy bin." OFF)
 
 # *********************************************************************
 # Add consequences of the options below.

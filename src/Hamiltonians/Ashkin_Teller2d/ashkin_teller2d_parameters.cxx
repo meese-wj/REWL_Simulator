@@ -11,7 +11,7 @@
 #include <cmath>
 
 // Linear size of the lattice
-constexpr size_t SYSTEM_SIZE_L = 24;
+constexpr size_t SYSTEM_SIZE_L = 16;
 
 // Exchange constant. J > 0 is ferromagnetic
 constexpr float SYSTEM_EXCHANGE_J = 1.0;
@@ -21,7 +21,7 @@ constexpr float SYSTEM_EXCHANGE_K = 0.5;
 
 #if RFAT_BAXTER
 // Random field strength
-constexpr float BAXTER_FIELD_H = 0.9;
+constexpr float BAXTER_FIELD_H = 0.0;
 #endif
 
 // Number of nearest neighbors
