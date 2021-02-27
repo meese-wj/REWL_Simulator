@@ -166,10 +166,11 @@ struct Ashkin_Teller2d
 template<typename data_t>
 float Ashkin_Teller2d<data_t>::local_energy(const size_t idx, const data_t * const spins ) const
 {
+    // Calculate positive energies everywhere because
+    // it will be negated upon return!
     float en = 0.;
     data_t sigma_idx = *(spins + spin_type::sigma);
     data_t tau_idx   = *(spins + spin_type::tau);
-
     size_t neighbor = 0;
     for ( size_t nidx = 0; nidx != Ashkin_Teller2d_Parameters::num_neighbors_i; ++nidx )
     {
@@ -179,8 +180,9 @@ float Ashkin_Teller2d<data_t>::local_energy(const size_t idx, const data_t * con
         en += Ashkin_Teller2d_Parameters::K * static_cast<float>( sigma_idx * tau_idx
                                                                 * (*spin_at_site(neighbor, spin_type::sigma))
                                                                 * (*spin_at_site(neighbor, spin_type::tau)  )   );
+
 #if RFAT_BAXTER
-        en += field_array[idx] * sigma_idx * tau_idx;
+        en += field_array[idx] * static_cast<float>( sigma_idx * tau_idx );
 #endif
     }
     return -en;
@@ -199,6 +201,11 @@ void Ashkin_Teller2d<data_t>::recalculate_state()
        temp_sigma_mag += *spin_at_site(idx, spin_type::sigma);
        temp_tau_mag   += *spin_at_site(idx, spin_type::tau);
        temp_baxter += (*spin_at_site(idx, spin_type::sigma)) * (*spin_at_site(idx, spin_type::tau));
+
+#if RFAT_BAXTER
+       // Subtract out an extra set of fields due to the 1/2 later
+       temp_energy += -2 * field_array[idx] * static_cast<float>( (*spin_at_site(idx, spin_type::sigma)) * (*spin_at_site(idx, spin_type::tau)) );
+#endif
        temp_energy += 0.5 * local_energy(idx, spins_address(idx));
     }
 
