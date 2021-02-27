@@ -150,7 +150,7 @@ def plot_probability_density( model_name, data_file_stem, coupling_tuples, label
             sFloat = float(sifter)
 
             # TODO: This will break in higher dimensions
-            Nfloat = Lfloat ** 2
+            Nfloat = sFloat ** 2
 
             extensive_energy = Nfloat * data_tuples[Ldx][1][:,0]
             extensive_logdos = Nfloat * data_tuples[Ldx][1][:,1]
@@ -171,11 +171,11 @@ def plot_probability_density( model_name, data_file_stem, coupling_tuples, label
 
             # Rescale it by N to plot the normalized
             # density along the intensive energy axis
-            lines1 = ax[1].plot( data_tuples[Ldx][1][:,0], density, label = r"$L = %s$" % Lvalue )
+            lines1 = ax[1].plot( data_tuples[Ldx][1][:,0], density, label = r"$L = %s$" % sifter )
 
             order2_col = labels.index("Order Parameter2")
             #ax[0].plot( data_tuples[Ldx][1][:,order2_col] / Nfloat, Nfloat * density, label = r"$L = %s$" % Lvalue )
-            lines0 = ax[0].plot( data_tuples[Ldx][1][:,order2_col] / Nfloat, density, label = r"$L = %s$" % Lvalue )
+            lines0 = ax[0].plot( data_tuples[Ldx][1][:,order2_col] / Nfloat, density, label = r"$L = %s$" % sifter )
 
             if plt_err and data_tuples[Ldx][2].shape != (0,0):
                 energy_err = Nfloat * data_tuples[Ldx][2][:,0]
