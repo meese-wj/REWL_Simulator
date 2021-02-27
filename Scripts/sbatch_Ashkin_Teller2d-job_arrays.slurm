@@ -1,33 +1,28 @@
 #!/bin/bash
-#SBATCH --nodes=7
-#SBATCH --partition=small
+#SBATCH --nodes=24
+#SBATCH --partition=large
 #SBATCH --ntasks-per-node=24
 #SBATCH --cpus-per-task=1
-#SBATCH --ntasks=160
+#SBATCH --ntasks=576
 #SBATCH --mem-per-cpu=2gb
 #SBATCH --exclusive
-#SBATCH --time=24:25:00
+#SBATCH --time=24:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=meese022@umn.edu
 #SBATCH --account=fernand7
-#SBATCH -o K-0_h-0.8.out
-#SBATCH --job-name=K-0_h-0.8
+#SBATCH -o L-144_K-0.5.%A_%a.out
+#SBATCH --job-name=L-144_K-0.5-%a
 
+# Job array script
 JOB=$SLURM_JOB_ID
-hsize=0.8
-Ksize=0
-Lsize=40
+TASKID=$SLURM_ARRAY_TASK_ID
+hsize=0.
+Ksize=0.5
+Lsize=144
 NPROCS=$SLURM_NTASKS
-JOBSTART=0
-JOBEND=32
-NJOBS=32
 NSLOTS=$SLURM_NTASKS_PER_NODE
-TIMELIMIT="30m"
-KILLAFTER="31m"
-MODEL="Ashkin_Teller2d_RFBM"
-COUPLINGS="L-${Lsize}_K-${Ksize}_h-${hsize}"
-SEARCHSTR="constexpr size_t SYSTEM_SIZE_L = "
-
+MODEL="Ashkin_Teller2d"
+COUPLINGS="L-${Lsize}_K-${Ksize}"
 
 SRCDIR=/home/fernand7/meese022/REWL_Simulator
 #BLDDIR="build_${MODEL}_L-${Lsize}"
@@ -38,7 +33,7 @@ REPLSTR="constexpr size_t SYSTEM_SIZE_L = ${Lsize};"
 
 cd $SRCDIR; echo; pwd; echo
 
-MYHOSTS="${SRCDIR}/${JOB}.hostfile"
+MYHOSTS="${SRCDIR}/${JOB}-${TASKID}.hostfile"
 HOSTNAMES=$(scontrol show hostnames)
 echo $HOSTNAMES
 while IFS= read -r HOSTS;
@@ -61,16 +56,6 @@ module list
 
 echo -e "\n\nRunning code...\n\n"
 
-for ((jobid=$JOBSTART; jobid<${JOBEND}; jobid++));
-do
-	TASKID=$jobid
-	echo -e "\nStarting ${TASKID}...\n\n"
-	timeout -k $KILLAFTER $TIMELIMIT time mpiexec -np $NPROCS --hostfile $MYHOSTS ./bin/REWL_Simulator $TASKID > "${LOGDIR}/${MODEL}_L-${Lsize}_${COUPLINGS}-${TASKID}.rewl"
-	if [ $? == 124 ] || [ $? == 137 ]
-	then
-		echo -e "\n${TASKID} timed out.\n"
-	fi
-	echo -e "\nEnd of ${TASKID}.\n\n"
-done
+echo -e "\nStarting ${TASKID}...\n\n"
+timeout -k $KILLAFTER $TIMELIMIT time mpiexec -np $NPROCS --hostfile $MYHOSTS ./bin/REWL_Simulator $TASKID > "${LOGDIR}/${MODEL}_${COUPLINGS}-${TASKID}.rewl"
 
-echo -e "\nEnd of all $NJOBS runs.\n"
