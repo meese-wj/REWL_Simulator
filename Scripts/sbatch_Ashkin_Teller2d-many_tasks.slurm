@@ -1,26 +1,26 @@
 #!/bin/bash
-#SBATCH --nodes=7
-#SBATCH --partition=small
+#SBATCH --nodes=14
+#SBATCH --partition=large
 #SBATCH --ntasks-per-node=24
 #SBATCH --cpus-per-task=1
-#SBATCH --ntasks=160
+#SBATCH --ntasks=320
 #SBATCH --mem-per-cpu=2gb
 #SBATCH --exclusive
-#SBATCH --time=24:25:00
+#SBATCH --time=1:25:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=meese022@umn.edu
 #SBATCH --account=fernand7
-#SBATCH -o K-0_h-0.8.out
-#SBATCH --job-name=K-0_h-0.8
+#SBATCH -o K-0_h-0.01.out
+#SBATCH --job-name=K-0_h-0.01
 
 JOB=$SLURM_JOB_ID
-hsize=0.8
+hsize=0.01
 Ksize=0
 Lsize=40
 NPROCS=$SLURM_NTASKS
 JOBSTART=0
-JOBEND=32
-NJOBS=32
+JOBEND=96
+NJOBS=96
 NSLOTS=$SLURM_NTASKS_PER_NODE
 TIMELIMIT="30m"
 KILLAFTER="31m"

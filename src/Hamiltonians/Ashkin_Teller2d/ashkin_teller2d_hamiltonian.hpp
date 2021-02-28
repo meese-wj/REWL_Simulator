@@ -145,7 +145,7 @@ struct Ashkin_Teller2d
         std::uint64_t seed = static_cast<std::uint64_t>( std::chrono::high_resolution_clock::now().time_since_epoch().count() );
         random_number_generator<float> rng (seed);
 
-        for ( size_t idx = 0; idx != Ising2d_Parameters::num_DoF; ++idx )
+        for ( size_t idx = 0; idx != Ashkin_Teller2d_Parameters::num_DoF; ++idx )
             spin_array[ idx ] = ( rng() < 0.5 ? 1. : -1. );
 
         recalculate_state();
