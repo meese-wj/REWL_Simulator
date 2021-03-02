@@ -273,7 +273,7 @@ void Ashkin_Teller2d<data_t>::update_observables(const size_t bin, Ashkin_Teller
 {
     const data_t sigma_val  = abs( current_state.sigma_magnetization );
     const data_t tau_val    = abs( current_state.tau_magnetization );
-    const data_t order_val2 = sigma_val * sigma_val + tau_val * tau_val;
+    const data_t phi_val2 = sigma_val * sigma_val + tau_val * tau_val;
     const data_t baxter_val    = abs( current_state.baxter );
     
     obs_ptr -> update_observable_average(sigma_val, Obs::enum_names::sigma_mag, bin);
@@ -284,9 +284,9 @@ void Ashkin_Teller2d<data_t>::update_observables(const size_t bin, Ashkin_Teller
     obs_ptr -> update_observable_average(tau_val * tau_val, Obs::enum_names::tau_mag2, bin);
     obs_ptr -> update_observable_average(tau_val * tau_val * tau_val * tau_val, Obs::enum_names::tau_mag4, bin);
 
-    obs_ptr -> update_observable_average(sqrt(order_val2), Obs::enum_names::order_param, bin);
-    obs_ptr -> update_observable_average(order_val2,  Obs::enum_names::order_param2, bin);
-    obs_ptr -> update_observable_average(order_val2 * order_val2, Obs::enum_names::order_param4, bin);
+    obs_ptr -> update_observable_average(sqrt(phi_val2), Obs::enum_names::phi, bin);
+    obs_ptr -> update_observable_average(phi_val2,  Obs::enum_names::phi2, bin);
+    obs_ptr -> update_observable_average(phi_val2 * phi_val2, Obs::enum_names::phi4, bin);
 
     obs_ptr -> update_observable_average(baxter_val, Obs::enum_names::baxter_mag, bin);
     obs_ptr -> update_observable_average(baxter_val * baxter_val, Obs::enum_names::baxter_mag2, bin);
@@ -309,8 +309,8 @@ void Ashkin_Teller2d<data_t>::update_observables(const size_t bin, Ashkin_Teller
         // Tau correlator
         obs_ptr -> update_qmin_correlator( tau_Gq_value, Obs::enum_names::tau_corr_qmin, bin,
                                            obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin) / counts_per_transform );
-        // Order parameter correlator
-        obs_ptr -> update_qmin_correlator( sigma_Gq_value + tau_Gq_value, Obs::enum_names::order_corr_qmin, bin,
+        // Phi correlator
+        obs_ptr -> update_qmin_correlator( sigma_Gq_value + tau_Gq_value, Obs::enum_names::phi_corr_qmin, bin,
                                            obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin) / counts_per_transform );
         // Baxter correlator
         obs_ptr -> update_qmin_correlator( baxter_Gq_value, Obs::enum_names::baxter_corr_qmin, bin,
