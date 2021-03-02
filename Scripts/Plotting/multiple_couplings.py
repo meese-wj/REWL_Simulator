@@ -3,6 +3,36 @@
 
 import os
 
+def model_titles( model_name ):
+    # Strip the model name for crucial
+    # title information so it becomes
+    # human readable.
+    #
+    # This routine assumes that the
+    # titles are of the following
+    # form:
+    #   Model_Base_Words#d_Extras
+    #   Model_Base_Words_#d_Extras
+    #
+    # Exclude everything after the
+    # dimensionality #d.
+    model_words = model_name.split("_")
+    dimensionality = ""
+    model_base = ""
+    dim_start = 0
+    for word in model_words:
+        if len(dimensionality) == 0 and word[-1] == "d" and word[-2].isdigit():
+            counter = len(word) - 2
+            while counter > 0 and word[counter-1].isdigit():
+                counter -= 1
+            dim_start = counter
+            dimensionality = word[dim_start:len(word)-1]
+            model_base += word[:dim_start]
+            break
+        elif len(dimensionality) == 0 and not (word[-1] == "d" and word[-2].isdigit()):
+            model_base += word + " "
+    return dimensionality + "d " + model_base + " model"
+
 def parse_couplings(coupling_symbols, coupling_values):
     # Strip the space-separated lists and combine into
     # a list of tuples.

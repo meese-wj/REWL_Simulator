@@ -125,7 +125,7 @@ def plot_Tc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, su
     for ldx in range(len(susc_labels)):
         label = susc_labels[ldx][1]
         if ashkin_teller and label == "Susceptibility":
-            label = "Two-Component " + label
+            label = "Phi " + label
         lines = ax.plot( Tc_values[ldx,:], sifter_values[0,:], label = r"%s" % label,
                          marker = "o", ms = markersize, mec = marker_edge_color,
                          mew = marker_edge_width, ls = None )
@@ -146,9 +146,9 @@ def plot_Tc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, su
     ax.set_xlabel(r"Susceptibility Pseudo-$T_c$", fontsize = fontsize)
     ax.legend(fontsize = fontsize)
     if ashkin_teller:
-        ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
+        ax.set_title(r"%s" % (model_titles("Ashkin_Teller2d_RFAT_Baxter") + latex_couplings(coupling_tuples)), fontsize = fontsize )
     else:
-        ax.set_title(r"Ising2d_RFIM%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
+        ax.set_title(r"%s" % (model_titles("Ising2d_RFIM") + latex_couplings(coupling_tuples)), fontsize = fontsize )
 
     plotname = "Susceptibility Pseudo-Tc Splitting.png"
     plt.savefig( plot_directory + "/" + plotname )
@@ -164,7 +164,7 @@ def plot_Tc_data_inverted( plot_directory, sifter_coupling, clean_Tc, coupling_t
     for ldx in range(len(susc_labels)):
         label = susc_labels[ldx][1]
         if ashkin_teller and label == "Susceptibility":
-            label = "Two-Component " + label
+            label = "Phi " + label
         lines = ax.plot( sifter_values[0,:], Tc_values[ldx,:], label = r"%s" % label,
                          marker = "o", ms = markersize, mec = marker_edge_color,
                          mew = marker_edge_width, ls = None )
@@ -185,9 +185,9 @@ def plot_Tc_data_inverted( plot_directory, sifter_coupling, clean_Tc, coupling_t
     ax.set_ylabel(r"Susceptibility Pseudo-$T_c$", fontsize = fontsize)
     ax.legend(fontsize = fontsize)
     if ashkin_teller:
-        ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
+        ax.set_title(r"%s" % (model_titles("Ashkin_Teller2d_RFAT_Baxter") + latex_couplings(coupling_tuples)), fontsize = fontsize )
     else:
-        ax.set_title(r"Ising2d_RFIM%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
+        ax.set_title(r"%s" % (model_titles("Ising2d_RFIM") + latex_couplings(coupling_tuples)), fontsize = fontsize )
 
     plotname = "Susceptibility Pseudo-Tc Splitting inverted.png"
     plt.savefig( plot_directory + "/" + plotname )
@@ -205,7 +205,7 @@ def plot_susc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, 
     for ldx in range(len(susc_labels)):
         label = susc_labels[ldx][1]
         if ashkin_teller and label == "Susceptibility":
-            label = "Order Parameter " + label
+            label = "Phi " + label
         lines = ax.plot( sifter_values[0,:], susc_values[ldx,:], label = r"%s" % label,
                          marker = "o", ms = markersize, mec = marker_edge_color,
                          mew = marker_edge_width, ls = None )
@@ -220,9 +220,9 @@ def plot_susc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, 
     ax.set_ylabel(r"Peak Susceptibility", fontsize = fontsize )
     ax.legend(fontsize = fontsize)
     if ashkin_teller:
-        ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
+        ax.set_title(r"%s" % (model_titles("Ashkin_Teller2d_RFAT_Baxter") + latex_couplings(coupling_tuples)), fontsize = fontsize )
     else:
-        ax.set_title(r"Ising2d_RFIM%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
+        ax.set_title(r"%s" % (model_titles("Ising2d_RFIM") + latex_couplings(coupling_tuples)), fontsize = fontsize )
 
     plotname = "Peak Susceptibility Splitting.png"
     plt.savefig( plot_directory + "/" + plotname )
@@ -270,7 +270,7 @@ def plot_anomalous_susc( plot_directory, Tindex, susc_labels, sifter_coupling, c
 
     ax.set_xlabel("%s" % labels[Tindex], fontsize = fontsize)
     ax.set_ylabel("Anomalous Susceptibility", fontsize = fontsize)
-    ax.set_title(r"Ashkin_Teller2d_RFAT_Baxter%s" % latex_couplings(coupling_tuples), fontsize = fontsize )
+    ax.set_title(r"%s" % (model_titles("Ashkin_Teller2d_RFAT_Baxter") + latex_couplings(coupling_tuples)), fontsize = fontsize )
     ax.legend()
 
     plotname = "Anomalous Susceptibility.png"

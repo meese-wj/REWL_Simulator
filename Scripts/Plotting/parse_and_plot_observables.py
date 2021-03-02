@@ -124,7 +124,7 @@ def crossing_temperatures( model_name, data_file_stem, coupling_tuples, label, l
     midpoint = 0.5 * ( Tmin + Tmax )
     ax.set_ylim([(1-0.1)*Tmin, (1+0.05)*Tmax])
 
-    plottitle = model_name + ": " + latex_couplings(coupling_tuples) + " with $T \in [%.3f, %.3f]$" % (Tmin, Tmax)
+    plottitle = model_titles(model_name) + latex_couplings(coupling_tuples) + " with $T \in [%.3f, %.3f]$" % (Tmin, Tmax)
     ax.set_title(r"%s" % plottitle, fontsize = 12)
 
     plotname = label + " Crossing Temperatures.png"
@@ -202,7 +202,10 @@ def plot_probability_density( model_name, data_file_stem, coupling_tuples, label
         ax[0].set_ylabel(r"Scaled Probability Density $[E^{-1}]$", fontsize = 12)
         ax[0].legend(fontsize = 10)
 
-        fig.suptitle(model_name + " at $T_c = %s$: " % (Tc_val) + key_string, fontsize = 12)
+        if "RF" in model_name:
+            fig.suptitle(model_titles(model_name) + " at $T_c^{(0)} = %s$: " % (Tc_val) + key_string, fontsize = 12)
+        else:
+            fig.suptitle(model_titles(model_name) + " at $T_c = %s$: " % (Tc_val) + key_string, fontsize = 12)
 
         plotname = "%s" % ("probability density vs energy.png")
         plt.savefig(plot_directory + "/" + plotname)
@@ -259,7 +262,10 @@ def plot_probability_density( model_name, data_file_stem, coupling_tuples, label
         ax.set_ylabel(r"Scaled Probability Density $[E^{-1}]$", fontsize = 12)
         ax.legend(fontsize = 10)
 
-        ax.set_title(model_name + " at $T_c = %s$: " % (Tc_val) + key_string, fontsize = 12)
+        if "RF" in model_name:
+            fig.suptitle(model_titles(model_name) + " at $T_c^{(0)} = %s$: " % (Tc_val) + key_string, fontsize = 12)
+        else:
+            fig.suptitle(model_titles(model_name) + " at $T_c = %s$: " % (Tc_val) + key_string, fontsize = 12)
 
         plotname = "%s" % ("probability density vs energy.png")
         plt.savefig(plot_directory + "/" + plotname)
@@ -319,8 +325,8 @@ def plot_data_tuples( model_name, data_file_stem, sifter_coupling, coupling_tupl
             if epsilon_range != None and Tc_val != None and Tc_val != "":
                 if "microcanonical" not in data_file_stem and "Counts" not in labels[lbl]:
                     test_ymin, test_ymax = get_y_range( data_tuples[Ldx][1][:,lbl], data_tuples[Ldx][1][:,0], xmin, xmax )
-                    print("Plot Min = ", plt_ymin, "  Test Min = ", test_ymin)
-                    print("Plot Max = ", plt_ymax, "  Test Max = ", test_ymax)
+                    #print("Plot Min = ", plt_ymin, "  Test Min = ", test_ymin)
+                    #print("Plot Max = ", plt_ymax, "  Test Max = ", test_ymax)
                     #if abs(test_ymin) > abs(plt_ymin):
                     if plt_ymin == None or test_ymin < plt_ymin:
                         plt_ymin = test_ymin
@@ -339,7 +345,10 @@ def plot_data_tuples( model_name, data_file_stem, sifter_coupling, coupling_tupl
                     ax.set_xlim([xmin, xmax])
 
                 ymin, ymax = ax.get_ylim()
-                ax.plot( float(Tc_val) + 0. * np.linspace(0,1,10), ymin + (ymax - ymin) * np.linspace(0,1,10), color = "gray", lw = 1, ls = "dashed", label = r"$T_c = %s$" % Tc_val )
+                if "RF" in model_name:
+                    ax.plot( float(Tc_val) + 0. * np.linspace(0,1,10), ymin + (ymax - ymin) * np.linspace(0,1,10), color = "gray", lw = 1, ls = "dashed", label = r"$T_c^{(0)} = %s$" % Tc_val )
+                else:
+                    ax.plot( float(Tc_val) + 0. * np.linspace(0,1,10), ymin + (ymax - ymin) * np.linspace(0,1,10), color = "gray", lw = 1, ls = "dashed", label = r"$T_c = %s$" % Tc_val )
                 ax.set_ylim([ymin, ymax])
             elif sifter_coupling == "L" and "microcanonical" in data_file_stem and lbl == 1:
                 plot_probability_density( model_name, data_file_stem, coupling_tuples, labels, data_tuples, plot_directory, Tc_val )
@@ -349,7 +358,7 @@ def plot_data_tuples( model_name, data_file_stem, sifter_coupling, coupling_tupl
 
         ax.set_xlabel(xlabel, fontsize = 12)
         ax.set_ylabel(labels[lbl], fontsize = 12)
-        ax.set_title(model_name + key_string, fontsize = 12)
+        ax.set_title( model_titles(model_name) + key_string, fontsize = 12)
         ax.legend(fontsize = 12)
 
         plotname = "%s" % (labels[lbl] + "_vs_" + xlabel + ".png")

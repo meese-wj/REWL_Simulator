@@ -123,7 +123,7 @@ def plot_data_tuples( model_name, fss_observable, coupling_tuples, labels, data_
 
     ax.set_xlabel(xlabel, fontsize = 12)
     ax.set_ylabel("Peak %s" % labels[lbl], fontsize = 12)
-    ax.set_title(model_name + ": " + key_string, fontsize = 12)
+    ax.set_title(model_titles(model_name) + key_string, fontsize = 12)
     ax.legend(fontsize = 12)
 
     plotname = "%s" % ("Peak " + labels[lbl] + " vs " + xlabel + ".png")
@@ -155,7 +155,7 @@ def plot_data_tuples( model_name, fss_observable, coupling_tuples, labels, data_
 
         ax.set_xlabel(r"Scaled System Size $L^{-1/\nu}$", fontsize = 12)
         ax.set_ylabel(ylabel, fontsize = 12)
-        ax.set_title(model_name + ": " + key_string, fontsize = 12)
+        ax.set_title(model_titles(model_name) + key_string, fontsize = 12)
         ax.legend( fontsize = 10 )
 
         plotname = labels[lbl] + " pseudo Tc scaling.png"
