@@ -181,10 +181,11 @@ float Ashkin_Teller2d<data_t>::local_energy(const size_t idx, const data_t * con
                                                                 * (*spin_at_site(neighbor, spin_type::sigma))
                                                                 * (*spin_at_site(neighbor, spin_type::tau)  )   );
 
-#if RFAT_BAXTER
-        en += field_array[idx] * static_cast<float>( sigma_idx * tau_idx );
-#endif
     }
+
+#if RFAT_BAXTER
+    en += field_array[idx] * static_cast<float>( sigma_idx * tau_idx );
+#endif
     return -en;
 }
 
