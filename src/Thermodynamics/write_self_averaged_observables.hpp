@@ -23,7 +23,7 @@ void write_observables_to_file( const size_t num_temps, const size_t num_obs,
 {
     std::string filename = "self_averaged_observables-" + file_string + ".txt";
     std::ofstream output_file; 
-
+    
     output_file.open(file_path / filename);
     output_file << file_header;
     

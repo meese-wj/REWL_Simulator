@@ -143,13 +143,20 @@ template<typename data_t>
 float Ising2d<data_t>::local_field(const size_t idx) const
 {
 #if RFIM
-    float field = field_array[idx];
+    float field = 0.;
 #else
     float field = Ising2d_Parameters::h;
 #endif
     for ( size_t nidx = 0; nidx != Ising2d_Parameters::num_neighbors_i; ++nidx )
     {
         field += Ising2d_Parameters::J * static_cast<float>( spin_array[ neighbor_array[ idx * Ising2d_Parameters::num_neighbors_i + nidx ] ] );
+#if RFIM
+        // TODO: Get rid of this. This is simply
+        // to compare to the Ashkin-Teller bug that
+        // multiplies the RF strength by the 
+        // number of neighbors (4).
+        field += field_array[ idx ];
+#endif
     }
 
     return field;
