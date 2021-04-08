@@ -218,14 +218,17 @@ int main(int argc, char * argv[])
     size_t final_num_bins = simulation -> my_walker -> wl_walker.wl_histograms.num_bins;
     size_t final_num_obs_values = convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS) * final_num_bins;
 
-    if ( world_rank == REWL_MASTER_PROC )
+    if ( world_rank == 1 )
     {
         std::cout << std::scientific << "\n";
         for ( size_t bin = 0; bin != final_num_bins; ++bin )
         {
-            std::cout << simulation -> my_walker -> wl_walker.wl_histograms.min_value + bin * simulation -> my_walker -> wl_walker.wl_histograms.bin_size;
-            std::cout << ", ";
-            std::cout << simulation -> my_walker -> system_obs.obs_array[ bin * convert(Obs::enum_names::NUM_OBS) ];
+            std::cout << ( simulation -> my_walker -> wl_walker.wl_histograms.min_value + bin * simulation -> my_walker -> wl_walker.wl_histograms.bin_size) * System_Parameters::divide_N ;
+            for ( size_t obs = 0; obs != convert(Obs::enum_names::NUM_OBS); ++obs )
+            {
+                std::cout << ", ";
+                std::cout << simulation -> my_walker -> system_obs.obs_array[ bin * convert(Obs::enum_names::NUM_OBS) + obs ];
+            }
             std::cout << "\n";
         }
         std::cout << "\n";
@@ -287,6 +290,23 @@ int main(int argc, char * argv[])
             }
         }
 
+        for ( size_t idx = 0; idx != energy_table.size(); ++idx )
+        {
+            std::cout << std::scientific << "\n\n";
+            for ( size_t bin = 0; bin != energy_table[idx].size(); ++bin )
+            {
+                std::cout << energy_table[ idx ][ bin ] * System_Parameters::divide_N; 
+                for ( size_t obs = 0; obs != convert(Obs::enum_names::NUM_OBS); ++obs )
+                {
+                    std::cout << ", ";
+                    std::cout << observable_table[idx][bin * convert(Obs::enum_names::NUM_OBS) + obs];
+                }
+                std::cout << "\n";
+            }
+            std::cout << "\n";
+
+        }
+
         std::vector<ENERGY_TYPE> final_energy_vector;
         std::vector<LOGDOS_TYPE> final_logdos_vector;
         std::vector<OBS_TYPE>    final_observable_vector;
@@ -315,9 +335,12 @@ int main(int argc, char * argv[])
         std::cout << std::scientific << "\n";
         for ( size_t bin = 0; bin != final_num_bins; ++bin )
         {
-            std::cout << final_energy_vector[ bin ]; 
-            std::cout << ", ";
-            std::cout << final_observable_vector[bin * convert(Obs::enum_names::NUM_OBS) ]; 
+            std::cout << final_energy_vector[ bin ] * System_Parameters::divide_N; 
+            for ( size_t obs = 0; obs != convert(Obs::enum_names::NUM_OBS); ++obs )
+            {
+                std::cout << ", ";
+                std::cout << final_observable_vector[bin * convert(Obs::enum_names::NUM_OBS) + obs];
+            }
             std::cout << "\n";
         }
         std::cout << "\n";
