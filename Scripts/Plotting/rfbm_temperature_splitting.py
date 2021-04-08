@@ -21,7 +21,7 @@ susc_string = "Susceptibility"
 data_file_stem = "nonlinear_observables"
 observable_marker = "Intensive Nonlinear Observable"
 
-Tmin_value = 0.25
+Tmin_value = 0.75
 Tmax_value = 4
 
 capsize = 2
@@ -85,6 +85,13 @@ def find_Tc_error( max_index, temperatures, susceptibility, susc_err ):
             upper_temp = temperatures[max_index + i]
         if lower_temp != None and upper_temp != None:
             break;
+    # If the lower_temp or upper_temp are zero,
+    # manually set them to the maximum range
+    if lower_temp == None:
+        lower_temp = Tmin_value
+    if upper_temp == None:
+        upper_temp = Tmax_value
+
     # Return half the range of temperatures
     # as the error.
     return 0.5 * ( upper_temp - lower_temp )

@@ -5,5 +5,6 @@ add_library(ising2d
             ising2d_hamiltonian.hpp)
 
 add_subdirectory(source)
+add_subdirectory(PM_Dipolar_Interactions)
 
-target_link_libraries(ising2d ising2d_source)
+target_link_libraries(ising2d ising2d_source pmd_interactions)

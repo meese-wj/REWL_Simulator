@@ -309,6 +309,7 @@ def plot_data_tuples( model_name, data_file_stem, sifter_coupling, coupling_tupl
         xmin, xmax, plt_ymin, plt_ymax = None, None, None, None
         if epsilon_range != None and Tc_val != None and Tc_val != "":
             xmin, xmax = (1 - epsilon_range) * float(Tc_val), (1 + epsilon_range) * float(Tc_val)
+            xmin, xmax = 1.5, 1.25 * float(Tc_val)
 
         for Ldx in range(0, len(data_tuples)):
 
