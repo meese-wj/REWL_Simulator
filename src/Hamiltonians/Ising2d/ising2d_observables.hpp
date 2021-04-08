@@ -180,10 +180,10 @@ void calculate_nonlinear_observables( const size_t num_temps, const size_t syste
         const data_t temperature = static_cast<data_t>( thermo -> temperatures[Tidx] );
         
         // Calculate the susceptibility
-        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::susc) ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::mag) ), temperature, system_size ) / static_cast<data_t>(system_size);
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::susc) ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::mag) ), temperature, system_size );
 
         // Calculate the Binder cumulant
-        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::binder) ] = calculate_Binder_cumulant( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::mag4) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::mag2) ), system_size );
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::binder) ] = calculate_Binder_cumulant( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::mag4) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::mag2) ) );
 
 #if CORRELATION_LENGTHS
         // Calculate the correlation length proxy

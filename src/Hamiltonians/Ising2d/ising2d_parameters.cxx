@@ -11,13 +11,13 @@
 #include <cmath>
 
 // Linear size of the lattice
-constexpr size_t SYSTEM_SIZE_L = 40;
+constexpr size_t SYSTEM_SIZE_L = 24;
 
 // Exchange constant. J > 0 is ferromagnetic
 constexpr float SYSTEM_EXCHANGE_J = 1.0;
 
 // External field strength
-constexpr float SYSTEM_FIELD_H = 0.9;
+constexpr float SYSTEM_FIELD_H = 0.0;
 
 // Number of nearest neighbors
 constexpr size_t SYSTEM_NUM_NEAREST_NEIGHBORS_int = 4;
@@ -46,6 +46,7 @@ namespace Ising2d_Parameters
     // Hamiltonian parameters
     constexpr size_t L = SYSTEM_SIZE_L;
     constexpr size_t N = L * L;
+    constexpr double divide_N = 1. / static_cast<double>( N );
     constexpr size_t num_DoF = N;        // Number of independent degrees of freedom
     constexpr float J = SYSTEM_EXCHANGE_J;
     constexpr float h = SYSTEM_FIELD_H;

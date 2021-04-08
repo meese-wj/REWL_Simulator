@@ -17,12 +17,13 @@
 #include "../Correlations/fourier_correlator.hpp"
 #endif
 
-#if RFIM
-// Include the random fields
-#include "../Disorder/random_fields.hpp"
 #if MPI_ON 
 #include <mpi.h>
 #endif
+
+#if RFIM
+// Include the random fields
+#include "../Disorder/random_fields.hpp"
 #endif
 
 #if SIMULATED_ANNEALING
@@ -212,7 +213,11 @@ void Ising2d<data_t>::set_state(const size_t idx, const State<data_t> & _state)
 template<typename data_t>
 void Ising2d<data_t>::update_observables(const size_t bin, Ising2d_Obs<data_t> * obs_ptr) const
 {
-    const data_t mag_val = abs( current_state.magnetization );
+    const data_t mag_val = Ising2d_Parameters::divide_N * abs( current_state.magnetization );
+/*
+    std::cout << "\nmag_val = " << std::scientific << mag_val << ", total magnetization = " << abs(current_state.magnetization) << "\n"; 
+    std::cout << std::scientific << "magnetization / mag_val = " << abs(current_state.magnetization) / mag_val << "\n";
+*/
     obs_ptr -> update_observable_average(mag_val, Obs::enum_names::mag, bin);
     obs_ptr -> update_observable_average(mag_val * mag_val, Obs::enum_names::mag2, bin);
     obs_ptr -> update_observable_average(mag_val * mag_val * mag_val * mag_val, Obs::enum_names::mag4, bin);
@@ -220,7 +225,7 @@ void Ising2d<data_t>::update_observables(const size_t bin, Ising2d_Obs<data_t> *
 #if CORRELATION_LENGTHS
     if ( static_cast<size_t> (obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin)) % counts_per_transform == 0 )
     {
-        data_t Gq_value = obs_ptr -> correlator.compute_correlator( spin_array, 0, 0, 1 );
+        data_t Gq_value = Ising2d_Parameters::divide_N * Ising2d_Parameters::divide_N * ( obs_ptr -> correlator.compute_correlator( spin_array, 0, 0, 1 ) );
         obs_ptr -> update_qmin_correlator( Gq_value, Obs::enum_names::corr_qmin, bin,
                                            obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin) / counts_per_transform );
     }

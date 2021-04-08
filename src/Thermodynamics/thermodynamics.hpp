@@ -227,7 +227,7 @@ void Thermodynamics<energy_t, logdos_t, obs_t,
         for ( size_t ob = 0; ob != convert(Obs_enum_t::NUM_OBS); ++ob )
         {
             if ( ob != convert(Obs_enum_t::counts_per_bin) )
-                *system_obs( current_Tidx, ob ) /= ( system_size * partition );
+                *system_obs( current_Tidx, ob ) /= ( partition );
             else
                 *system_obs( current_Tidx, ob ) /= num_energy_bins;
         }        
@@ -288,7 +288,7 @@ void Thermodynamics<energy_t, logdos_t, obs_t,
         for ( size_t ob = 0; ob != convert(Obs_enum_t::NUM_OBS); ++ob )
         {
             if ( ob != convert(Obs_enum_t::counts_per_bin) )
-                *system_obs( current_Tidx, ob ) /= ( system_size * partition );
+                *system_obs( current_Tidx, ob ) /= ( partition );
             else
                 *system_obs( current_Tidx, ob ) /= num_energy_bins;
         }        

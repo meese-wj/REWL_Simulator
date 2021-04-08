@@ -53,7 +53,7 @@ void write_microcanonical_observables( const size_t system_size,
             if ( ob == counts_per_bin )
                 output_file << system_observables[ bin * num_obs + ob ];
             else
-                output_file << system_observables[ bin * num_obs + ob ] / system_size; 
+                output_file << system_observables[ bin * num_obs + ob ]; 
 
             if ( ob != num_obs - 1 ) output_file << DELIMITER;
         }

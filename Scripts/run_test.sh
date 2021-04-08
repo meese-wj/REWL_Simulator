@@ -1,7 +1,7 @@
 #!/bin/bash
 
-model="Ashkin_Teller2d"
-RANDFIELD="RFAT_Baxter"
+model="Ising2d"
+RANDFIELD="RFIM"
 
 cd /home/joe/Linux_Code_Dev/REWL_Simulator/build
 echo
@@ -10,7 +10,7 @@ echo
 ls
 echo
 echo "Building and running code."
-cmake .. "-D${model^^}=ON" "-D${RANDFIELD^^}=ON" "-DSIMULATED_ANNEALING=OFF" "-DAT_DENSITIES=OFF" "-DJOB_ARRAYS=ON"
+cmake .. "-D${model^^}=ON" "-D${RANDFIELD^^}=OFF" "-DSIMULATED_ANNEALING=OFF" "-DAT_DENSITIES=OFF" "-DJOB_ARRAYS=OFF"
 
 # *******************************
 # Set MPI variables from CMake
@@ -34,7 +34,7 @@ then
     echo "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} \
           ./bin/REWL_Simulator ${MPIEXEC_POSTFLAGS}"
     time ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} \
-         ./bin/REWL_Simulator ${MPIEXEC_POSTFLAGS} 0
+         ./bin/REWL_Simulator ${MPIEXEC_POSTFLAGS}
 else
     echo
     echo "Error in compilation. Exiting."

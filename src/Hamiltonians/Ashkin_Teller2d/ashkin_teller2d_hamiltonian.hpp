@@ -204,8 +204,7 @@ void Ashkin_Teller2d<data_t>::recalculate_state()
        temp_baxter += (*spin_at_site(idx, spin_type::sigma)) * (*spin_at_site(idx, spin_type::tau));
 
 #if RFAT_BAXTER
-       // Subtract out an extra set of fields due to the 1/2 later
-       temp_energy += -2 * field_array[idx] * static_cast<float>( (*spin_at_site(idx, spin_type::sigma)) * (*spin_at_site(idx, spin_type::tau)) );
+       temp_energy += -0.5 * field_array[idx] * static_cast<float>( (*spin_at_site(idx, spin_type::sigma)) * (*spin_at_site(idx, spin_type::tau)) );
 #endif
        temp_energy += 0.5 * local_energy(idx, spins_address(idx));
     }
