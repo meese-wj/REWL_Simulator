@@ -17,12 +17,14 @@ enum disorder_distribution
 };
 
 // Produce a random field value on the 
-// interval [-strength/2, strength/2] for a
+// interval [-strength, strength] for a
 // uniform random number rng() in [0,1].
+// This means the typical field strength 
+// at any site is "strength".
 template<typename data_t>
 data_t uniform_random_field( random_number_generator<data_t> & rng, const data_t strength )
 {
-    return strength * ( -0.5 + rng() );
+    return strength * ( -1. + 2. * rng() );
 }
 
 template<typename data_t>
