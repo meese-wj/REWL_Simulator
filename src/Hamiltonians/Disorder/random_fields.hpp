@@ -7,6 +7,10 @@
 #include <random_number_generators.hpp>
 #include <chrono>
 
+// Generate a set of random values between the fields
+// at each site to make sure they are truly uncorrelated.
+static constexpr size_t WAIT_BETWEEN_FIELD_GENERATION = 20;
+
 enum disorder_distribution
 {
     uniform
@@ -41,6 +45,12 @@ void generate_random_field( const size_t num_sites, const data_t strength,
     // Populate the fields
     for ( size_t idx = 0; idx != num_sites; ++idx )
     {
+        // Generate a bunch of wasted fields to guarantee
+        // the state of the random number generator is 
+        // uncorrelated between sites.
+        for ( size_t reject = 0; reject != WAIT_BETWEEN_FIELD_GENERATION; ++reject )
+            data_t fake_h = field_generator(rng, strength);
+
         data_t h = field_generator(rng, strength);
         field_array[idx] = h;
     }
