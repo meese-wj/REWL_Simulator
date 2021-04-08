@@ -1,28 +1,30 @@
 #!/bin/bash
-#SBATCH --nodes=16
-#SBATCH --partition=large
-#SBATCH --ntasks-per-node=16
+#SBATCH --nodes=1
+#SBATCH --partition=small
+#SBATCH --ntasks-per-node=24
 #SBATCH --cpus-per-task=1
-#SBATCH --ntasks=256
+#SBATCH --ntasks=24
 #SBATCH --mem-per-cpu=2gb
 #SBATCH --exclusive
-#SBATCH --time=24:00:00
+#SBATCH --time=10:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=meese022@umn.edu
 #SBATCH --account=fernand7
-#SBATCH -o RFIM_h-0.9.out
-#SBATCH --job-name=h-0.9
+#SBATCH -o RFIM_h-0.6.out
+#SBATCH --job-name=h-0.6
 
 JOB=$SLURM_JOB_ID
-hsize=0.9
-Lsize=64
+hsize=0.6
+Lsize=40
 NPROCS=$SLURM_NTASKS
-NJOBS=192
+JOBSTART=128
+JOBEND=256 
+NJOBS=128
 NSLOTS=$SLURM_NTASKS_PER_NODE
-TIMELIMIT="20m"
-KILLAFTER="21m"
+TIMELIMIT="25m"
+KILLAFTER="26m"
 MODEL="Ising2d_RFIM"
-COUPLINGS="h-${hsize}"
+COUPLINGS="L-${Lsize}_h-${hsize}"
 
 SRCDIR=/home/fernand7/meese022/REWL_Simulator
 BLDDIR="build_${MODEL}_${COUPLINGS}"
@@ -53,7 +55,7 @@ module list
 
 echo -e "\n\nRunning code...\n\n"
 
-for ((jobid = 0; jobid<${NJOBS}; jobid++));
+for ((jobid = $JOBSTART; jobid<${JOBEND}; jobid++));
 do
 	TASKID=$jobid
 	echo -e "\nStarting ${TASKID}...\n\n"

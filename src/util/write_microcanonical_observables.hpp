@@ -60,6 +60,8 @@ void write_microcanonical_observables( const size_t system_size,
 
         if ( bin != num_bins - 1 ) output_file << "\n";
     }
+
+    output_file.close();
 }
 
 #endif

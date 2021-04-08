@@ -143,7 +143,7 @@ template<typename data_t>
 float Ising2d<data_t>::local_field(const size_t idx) const
 {
 #if RFIM
-    float field = field_array[idx];
+    float field = 0.;
 #else
     float field = Ising2d_Parameters::h;
 #endif
@@ -151,6 +151,10 @@ float Ising2d<data_t>::local_field(const size_t idx) const
     {
         field += Ising2d_Parameters::J * static_cast<float>( spin_array[ neighbor_array[ idx * Ising2d_Parameters::num_neighbors_i + nidx ] ] );
     }
+
+#if RFIM
+    field += field_array[ idx ];
+#endif 
 
     return field;
 }

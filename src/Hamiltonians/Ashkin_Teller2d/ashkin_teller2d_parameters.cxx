@@ -21,7 +21,7 @@ constexpr float SYSTEM_EXCHANGE_K = 0.;
 
 #if RFAT_BAXTER
 // Random field strength
-constexpr float BAXTER_FIELD_H = 0.01;
+constexpr float BAXTER_FIELD_H = 0.8;
 #endif
 
 // Number of nearest neighbors
