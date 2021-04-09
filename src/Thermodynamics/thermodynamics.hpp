@@ -216,13 +216,14 @@ void Thermodynamics<energy_t, logdos_t, obs_t,
         
         // Normalize the result
         *energy_obs( current_Tidx, Energy_Obs::enum_names::internal_energy ) /= ( system_size * partition );
-        *energy_obs( current_Tidx, Energy_Obs::enum_names::internal_energy2 ) /= ( system_size * partition );
+        *energy_obs( current_Tidx, Energy_Obs::enum_names::internal_energy2 ) /= ( system_size * system_size * partition );
         *energy_obs( current_Tidx, Energy_Obs::enum_names::entropy ) /= ( system_size * partition );
 
         // Compute the specific heat
-        obs_t En = static_cast<obs_t>(system_size) * get_energy_obs( current_Tidx, Energy_Obs::enum_names::internal_energy );
-        obs_t En2 = static_cast<obs_t>(system_size) * get_energy_obs( current_Tidx, Energy_Obs::enum_names::internal_energy2 );
-        *energy_obs( current_Tidx, Energy_Obs::enum_names::specific_heat ) = (En2 - En * En) / static_cast<obs_t>( system_size * Tvalue * Tvalue );
+        obs_t En = get_energy_obs( current_Tidx, Energy_Obs::enum_names::internal_energy );
+        obs_t En2 = get_energy_obs( current_Tidx, Energy_Obs::enum_names::internal_energy2 );
+        *energy_obs( current_Tidx, Energy_Obs::enum_names::specific_heat ) = system_size * (En2 - En * En) / static_cast<obs_t>( Tvalue * Tvalue );
+
 
         for ( size_t ob = 0; ob != convert(Obs_enum_t::NUM_OBS); ++ob )
         {
@@ -277,13 +278,13 @@ void Thermodynamics<energy_t, logdos_t, obs_t,
         
         // Normalize the result
         *energy_obs( current_Tidx, Energy_Obs::enum_names::internal_energy ) /= ( system_size * partition );
-        *energy_obs( current_Tidx, Energy_Obs::enum_names::internal_energy2 ) /= ( system_size * partition );
+        *energy_obs( current_Tidx, Energy_Obs::enum_names::internal_energy2 ) /= ( system_size * system_size * partition );
         *energy_obs( current_Tidx, Energy_Obs::enum_names::entropy ) /= ( system_size * partition );
 
         // Compute the specific heat
-        obs_t En = static_cast<obs_t>(system_size) * get_energy_obs( current_Tidx, Energy_Obs::enum_names::internal_energy );
-        obs_t En2 = static_cast<obs_t>(system_size) * get_energy_obs( current_Tidx, Energy_Obs::enum_names::internal_energy2 );
-        *energy_obs( current_Tidx, Energy_Obs::enum_names::specific_heat ) = (En2 - En * En) / static_cast<obs_t>( system_size * Tvalue * Tvalue );
+        obs_t En = get_energy_obs( current_Tidx, Energy_Obs::enum_names::internal_energy );
+        obs_t En2 = get_energy_obs( current_Tidx, Energy_Obs::enum_names::internal_energy2 );
+        *energy_obs( current_Tidx, Energy_Obs::enum_names::specific_heat ) = system_size * (En2 - En * En) / static_cast<obs_t>( Tvalue * Tvalue );
 
         for ( size_t ob = 0; ob != convert(Obs_enum_t::NUM_OBS); ++ob )
         {

@@ -225,17 +225,23 @@ void Ashkin_Teller2d<data_t>::change_state(const size_t idx, State<data_t> & tem
     temp_state.DoF[spin_type::sigma] = *spin_at_site(idx, spin_type::sigma);
     temp_state.DoF[spin_type::tau]   = *spin_at_site(idx, spin_type::tau);
 
+    // This switch can be made into a branchless
+    // pass.
     switch (current_state.which_to_update)
     {
         case spin_type::sigma:
         {
             temp_state.DoF[spin_type::sigma] *= -1.;
+            // TODO: The folliwing line is old and probably 
+            // should go...
             temp_state.which_to_update = spin_type::tau;    // Which spin to switch to IFF a switch is made    
             break;
         }
         case spin_type::tau:
         {
             temp_state.DoF[spin_type::tau]   *= -1.;
+            // TODO: The folliwing line is old and probably 
+            // should go...
             temp_state.which_to_update = spin_type::sigma;  // Which spin to switch to IFF a switch is made
             break;
         }
@@ -248,6 +254,7 @@ void Ashkin_Teller2d<data_t>::change_state(const size_t idx, State<data_t> & tem
     temp_state.energy              = current_state.energy + local_energy(idx, &(temp_state.DoF[0])) - local_energy(idx, spins_address(idx) );
 
     // After a single sweep, switch the spin type being updated
+    // TODO: This can be made branchless too.
     if ( idx == Ashkin_Teller2d_Parameters::N - 1 )
         current_state.which_to_update = temp_state.which_to_update;
         
@@ -271,10 +278,10 @@ void Ashkin_Teller2d<data_t>::set_state(const size_t idx, const State<data_t> & 
 template<typename data_t>
 void Ashkin_Teller2d<data_t>::update_observables(const size_t bin, Ashkin_Teller2d_Obs<data_t> * obs_ptr) const
 {
-    const data_t sigma_val  = abs( current_state.sigma_magnetization );
-    const data_t tau_val    = abs( current_state.tau_magnetization );
-    const data_t phi_val2 = sigma_val * sigma_val + tau_val * tau_val;
-    const data_t baxter_val    = abs( current_state.baxter );
+    const data_t sigma_val  = Ashkin_Teller2d_Parameters::divide_N * abs( current_state.sigma_magnetization );
+    const data_t tau_val    = Ashkin_Teller2d_Parameters::divide_N * abs( current_state.tau_magnetization );
+    const data_t baxter_val = Ashkin_Teller2d_Parameters::divide_N * abs( current_state.baxter );
+    const data_t phi_val2   = sigma_val * sigma_val + tau_val * tau_val;
     
     obs_ptr -> update_observable_average(sigma_val, Obs::enum_names::sigma_mag, bin);
     obs_ptr -> update_observable_average(sigma_val * sigma_val, Obs::enum_names::sigma_mag2, bin);
@@ -293,15 +300,15 @@ void Ashkin_Teller2d<data_t>::update_observables(const size_t bin, Ashkin_Teller
     obs_ptr -> update_observable_average(baxter_val * baxter_val * baxter_val * baxter_val, Obs::enum_names::baxter_mag4, bin);
 
 #if AT_DENSITIES
-    update_densities( obs_ptr -> density_histograms, bin, divisor * current_state.sigma_magnetization, divisor * current_state.tau_magnetization );
+    update_densities( obs_ptr -> density_histograms, bin, Ashkin_Teller2d_Parameters::divide_N * current_state.sigma_magnetization, Ashkin_Teller2d_Parameters::divide_N * current_state.tau_magnetization );
 #endif
 
 #if CORRELATION_LENGTHS
     if ( static_cast<size_t> (obs_ptr -> get_observable(Obs::enum_names::counts_per_bin, bin)) % counts_per_transform == 0 )
     {
-        data_t sigma_Gq_value = obs_ptr -> correlator.compute_correlator( spin_array, spin_type::sigma, spin_type::tau, spin_type::NUM_SPIN_TYPES, false );
-        data_t tau_Gq_value = obs_ptr -> correlator.compute_correlator( spin_array, spin_type::sigma, spin_type::tau, spin_type::NUM_SPIN_TYPES, false );
-        data_t baxter_Gq_value = obs_ptr -> correlator.compute_correlator( spin_array, spin_type::sigma, spin_type::tau, spin_type::NUM_SPIN_TYPES, true );
+        data_t sigma_Gq_value = Ashkin_Teller2d_Parameters::divide_N * Ashkin_Teller2d_Parameters::divide_N * ( obs_ptr -> correlator.compute_correlator( spin_array, spin_type::sigma, spin_type::tau, spin_type::NUM_SPIN_TYPES, false ) );
+        data_t tau_Gq_value =   Ashkin_Teller2d_Parameters::divide_N * Ashkin_Teller2d_Parameters::divide_N * ( obs_ptr -> correlator.compute_correlator( spin_array, spin_type::sigma, spin_type::tau, spin_type::NUM_SPIN_TYPES, false ) );
+        data_t baxter_Gq_value = Ashkin_Teller2d_Parameters::divide_N * Ashkin_Teller2d_Parameters::divide_N * ( obs_ptr -> correlator.compute_correlator( spin_array, spin_type::sigma, spin_type::tau, spin_type::NUM_SPIN_TYPES, true ) );
 
         // Sigma correlator
         obs_ptr -> update_qmin_correlator( sigma_Gq_value, Obs::enum_names::sigma_corr_qmin, bin,

@@ -257,28 +257,28 @@ void calculate_nonlinear_observables( const size_t num_temps, const size_t syste
         const data_t temperature = static_cast<data_t>( thermo -> temperatures[Tidx] );
         
         // Calculate the sigma susceptibility
-        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::sigma_susc) ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::sigma_mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::sigma_mag) ), temperature, system_size ) / static_cast<data_t>(system_size);
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::sigma_susc) ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::sigma_mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::sigma_mag) ), temperature, system_size );
 
         // Calculate the sigma Binder cumulant
-        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::sigma_binder) ] = calculate_Binder_cumulant( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::sigma_mag4) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::sigma_mag2) ), system_size );
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::sigma_binder) ] = calculate_Binder_cumulant( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::sigma_mag4) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::sigma_mag2) ) );
             
         // Calculate the tau susceptibility
-        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::tau_susc) ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::tau_mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::tau_mag) ), temperature, system_size ) / static_cast<data_t>(system_size);
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::tau_susc) ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::tau_mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::tau_mag) ), temperature, system_size );
 
         // Calculate the tau Binder cumulant
-        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::tau_binder) ] = calculate_Binder_cumulant( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::tau_mag4) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::tau_mag2) ), system_size );
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::tau_binder) ] = calculate_Binder_cumulant( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::tau_mag4) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::tau_mag2) ) );
  
         // Calculate the Baxter susceptibility
-        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::baxter_susc) ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::baxter_mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::baxter_mag) ), temperature, system_size ) / static_cast<data_t>(system_size);
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::baxter_susc) ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::baxter_mag2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::baxter_mag) ), temperature, system_size );
 
         // Calculate the Baxter Binder cumulant
-        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::baxter_binder_cumulant) ] = calculate_Binder_cumulant( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::baxter_mag4) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::baxter_mag2) ), system_size );
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::baxter_binder_cumulant) ] = calculate_Binder_cumulant( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::baxter_mag4) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::baxter_mag2) ) );
     
         // Calculate the phi susceptibility
-        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::phi_susc) ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::phi2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::phi) ), temperature, system_size ) / static_cast<data_t>(system_size);
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::phi_susc) ] = calculate_susceptibility<data_t>( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::phi2) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::phi) ), temperature, system_size );
 
         // Calculate the two-component Binder cumulant of phi
-        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::phi_binder_cumulant) ] = calculate_two_component_Binder_cumulant( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::phi4) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::phi2) ), system_size );
+        nonlinear_obs[ Tidx * num_nonlinear_obs + convert(Obs::nonlinear_obs_enum::phi_binder_cumulant) ] = calculate_two_component_Binder_cumulant( thermo -> get_system_obs( Tidx, convert(Obs::enum_names::phi4) ), thermo -> get_system_obs( Tidx, convert(Obs::enum_names::phi2) ) );
 
 #if CORRELATION_LENGTHS
         // Calculate the correlation lengths for all the variables here
