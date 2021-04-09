@@ -17,14 +17,14 @@ enum disorder_distribution
 };
 
 // Produce a random field value on the 
-// interval [-strength, strength] for a
+// interval [-2*strength, 2*strength] for a
 // uniform random number rng() in [0,1].
 // This means the typical field strength 
 // at any site is "strength".
 template<typename data_t>
 data_t uniform_random_field( random_number_generator<data_t> & rng, const data_t strength )
 {
-    return strength * ( -1. + 2. * rng() );
+    return 2. * strength * ( -1. + 2. * rng() );
 }
 
 template<typename data_t>
@@ -50,8 +50,9 @@ void generate_random_field( const size_t num_sites, const data_t strength,
         // Generate a bunch of wasted fields to guarantee
         // the state of the random number generator is 
         // uncorrelated between sites.
+        data_t h = 0.; 
         for ( size_t reject = 0; reject != WAIT_BETWEEN_FIELD_GENERATION; ++reject )
-            data_t fake_h = field_generator(rng, strength);
+            h = field_generator(rng, strength);
 
         data_t h = field_generator(rng, strength);
         field_array[idx] = h;
