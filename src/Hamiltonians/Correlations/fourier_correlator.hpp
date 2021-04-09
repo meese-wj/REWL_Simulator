@@ -85,22 +85,22 @@ obs_t Fourier_Correlator<obs_t>::compute_correlator( const obs_t * const field_a
     for ( size_t idx = 0; idx != L; ++idx )
     {
         temp_corr_x = 0.;
+        temp_kernel_real = 0.;
+        temp_kernel_imag = 0.;
         for ( size_t jdx = 0; jdx != L; ++jdx )
         {
             field_value = field_array[ (idx * L + jdx) * num_types + type_1 ];
             // TODO: This "is_mixed" hack really only works for the n-flavor Ashkin Teller model...
-            if ( is_mixed )
-                field_value = field_array[ (idx * L + jdx) * num_types + type_1 ] * field_array[ (idx * L + jdx) * num_types + type_2 ];
+            field_value *= ( ( !is_mixed ) + ( is_mixed ) * field_array[ (idx * L + jdx) * num_types + type_2 ] );
             
             temp_corr_x += field_value;
             corr_real_y += field_value * kernel.real_part[ jdx ];
             corr_imag_y += field_value * kernel.imag_part[ jdx ];
 
-            if ( idx == jdx )
-            {
-                temp_kernel_real = kernel.real_part[ jdx ];
-                temp_kernel_imag = kernel.imag_part[ jdx ];
-            }
+            // By rotational symmetry, when jdx sweeps idx,
+            // store it in the temp kernel for use later.
+            temp_kernel_real += ( idx == jdx ) * kernel.real_part[ jdx ];
+            temp_kernel_imag += ( idx == jdx ) * kernel.imag_part[ jdx ];
         }
         corr_real_x += temp_corr_x * temp_kernel_real;
         corr_imag_x += temp_corr_x * temp_kernel_imag;

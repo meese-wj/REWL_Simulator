@@ -225,28 +225,18 @@ void Ashkin_Teller2d<data_t>::change_state(const size_t idx, State<data_t> & tem
     temp_state.DoF[spin_type::sigma] = *spin_at_site(idx, spin_type::sigma);
     temp_state.DoF[spin_type::tau]   = *spin_at_site(idx, spin_type::tau);
 
-    // This switch can be made into a branchless
-    // pass.
-    switch (current_state.which_to_update)
-    {
-        case spin_type::sigma:
-        {
-            temp_state.DoF[spin_type::sigma] *= -1.;
-            // TODO: The folliwing line is old and probably 
-            // should go...
-            temp_state.which_to_update = spin_type::tau;    // Which spin to switch to IFF a switch is made    
-            break;
-        }
-        case spin_type::tau:
-        {
-            temp_state.DoF[spin_type::tau]   *= -1.;
-            // TODO: The folliwing line is old and probably 
-            // should go...
-            temp_state.which_to_update = spin_type::sigma;  // Which spin to switch to IFF a switch is made
-            break;
-        }
-    }
+    // Change sigma and tau only if they're supposed 
+    // to according to the current state. 
+    temp_state.DoF[spin_type::sigma] += -2. * temp_state.DoF[spin_type::sigma] * ( current_state.which_to_update == spin_type::sigma );
+    temp_state.DoF[spin_type::tau]   += -2. * temp_state.DoF[spin_type::tau] * ( current_state.which_to_update == spin_type::tau );
 
+    // Store which spin was updated in case they 
+    // need to switch flavors.
+    temp_state.which_to_update =   spin_type::sigma * ( current_state.which_to_update == spin_type::tau ) 
+                                 + spin_type::tau * ( current_state.which_to_update == spin_type::sigma );
+   
+
+    // Update the state now
     temp_state.sigma_magnetization = current_state.sigma_magnetization + temp_state.DoF[spin_type::sigma] - (*spin_at_site(idx, spin_type::sigma));
     temp_state.tau_magnetization   = current_state.tau_magnetization   + temp_state.DoF[spin_type::tau]   - (*spin_at_site(idx, spin_type::tau));
     temp_state.baxter              = current_state.baxter + (temp_state.DoF[spin_type::sigma] * temp_state.DoF[spin_type::tau]) - ( *spin_at_site(idx, spin_type::sigma) * (*spin_at_site(idx, spin_type::tau)) );
@@ -254,10 +244,8 @@ void Ashkin_Teller2d<data_t>::change_state(const size_t idx, State<data_t> & tem
     temp_state.energy              = current_state.energy + local_energy(idx, &(temp_state.DoF[0])) - local_energy(idx, spins_address(idx) );
 
     // After a single sweep, switch the spin type being updated
-    // TODO: This can be made branchless too.
-    if ( idx == Ashkin_Teller2d_Parameters::N - 1 )
-        current_state.which_to_update = temp_state.which_to_update;
-        
+    current_state.which_to_update =   current_state.which_to_update * ( idx != Ashkin_Teller2d_Parameters::N - 1 )
+                                    + temp_state.which_to_update    * ( idx == Ashkin_Teller2d_Parameters::N - 1 ); 
 }
 
 // Set the current state
