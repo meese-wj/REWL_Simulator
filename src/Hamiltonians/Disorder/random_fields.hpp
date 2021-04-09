@@ -54,7 +54,7 @@ void generate_random_field( const size_t num_sites, const data_t strength,
         for ( size_t reject = 0; reject != WAIT_BETWEEN_FIELD_GENERATION; ++reject )
             h = field_generator(rng, strength);
 
-        data_t h = field_generator(rng, strength);
+        h = field_generator(rng, strength);
         field_array[idx] = h;
     }
 }
