@@ -218,22 +218,6 @@ int main(int argc, char * argv[])
     size_t final_num_bins = simulation -> my_walker -> wl_walker.wl_histograms.num_bins;
     size_t final_num_obs_values = convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS) * final_num_bins;
 
-    if ( world_rank == 1 )
-    {
-        std::cout << std::scientific << "\n";
-        for ( size_t bin = 0; bin != final_num_bins; ++bin )
-        {
-            std::cout << ( simulation -> my_walker -> wl_walker.wl_histograms.min_value + bin * simulation -> my_walker -> wl_walker.wl_histograms.bin_size) * System_Parameters::divide_N ;
-            for ( size_t obs = 0; obs != convert(Obs::enum_names::NUM_OBS); ++obs )
-            {
-                std::cout << ", ";
-                std::cout << simulation -> my_walker -> system_obs.obs_array[ bin * convert(Obs::enum_names::NUM_OBS) + obs ];
-            }
-            std::cout << "\n";
-        }
-        std::cout << "\n";
-    }
-
     // Copy out the final logdos and the observables
     simulation -> my_walker -> export_energy_bins( final_energy_array );
     simulation -> my_walker -> wl_walker.wl_histograms.export_logdos( final_logdos_array );
@@ -290,23 +274,6 @@ int main(int argc, char * argv[])
             }
         }
 
-        for ( size_t idx = 0; idx != energy_table.size(); ++idx )
-        {
-            std::cout << std::scientific << "\n\n";
-            for ( size_t bin = 0; bin != energy_table[idx].size(); ++bin )
-            {
-                std::cout << energy_table[ idx ][ bin ] * System_Parameters::divide_N; 
-                for ( size_t obs = 0; obs != convert(Obs::enum_names::NUM_OBS); ++obs )
-                {
-                    std::cout << ", ";
-                    std::cout << observable_table[idx][bin * convert(Obs::enum_names::NUM_OBS) + obs];
-                }
-                std::cout << "\n";
-            }
-            std::cout << "\n";
-
-        }
-
         std::vector<ENERGY_TYPE> final_energy_vector;
         std::vector<LOGDOS_TYPE> final_logdos_vector;
         std::vector<OBS_TYPE>    final_observable_vector;
@@ -331,20 +298,6 @@ int main(int argc, char * argv[])
         // Finally, after concatenation, reset the final number of bins
         final_num_bins = final_energy_vector.size();
         final_num_obs_values = final_observable_vector.size();
-
-        std::cout << std::scientific << "\n";
-        for ( size_t bin = 0; bin != final_num_bins; ++bin )
-        {
-            std::cout << final_energy_vector[ bin ] * System_Parameters::divide_N; 
-            for ( size_t obs = 0; obs != convert(Obs::enum_names::NUM_OBS); ++obs )
-            {
-                std::cout << ", ";
-                std::cout << final_observable_vector[bin * convert(Obs::enum_names::NUM_OBS) + obs];
-            }
-            std::cout << "\n";
-        }
-        std::cout << "\n";
-
 
         // Print out the microcanonical observables before thermally averaging
         write_microcanonical_observables<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE>( System_Parameters::N, final_num_bins, convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),

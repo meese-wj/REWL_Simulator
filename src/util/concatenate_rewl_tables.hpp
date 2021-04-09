@@ -45,8 +45,6 @@ inline data_t average_two_windows( const data_t obs1, const data_t obs2, const s
     // TODO: Weighting by counts seems to systematically favor the lower
     // energy windows...
     // return 0.5 * ( obs1 + obs2 );
-    std::cout << "\nnum1 * obs1 = " << num1 << " * " << obs1 << " = " << num1 * obs1;
-    std::cout << "\nnum2 * obs2 = " << num2 << " * " << obs2 << " = " << num2 * obs2;
     return ( static_cast<data_t>(num1) * obs1 + static_cast<data_t>(num2) * obs2 ) / static_cast<data_t>( num1 + num2 );
 }
 
@@ -212,13 +210,7 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
  
         overlapping_windows.push_back(1);
     }
-    std::cout << "overlapping windows: ";
-    for ( auto w : overlapping_windows )
-    {
-        std::cout << w << " ";
-    }
-    std::cout << "\n";
-
+    
     // Now go through and concatenate with the final
     // vectors.
     for ( size_t window = 1; window != num_windows; ++window )
@@ -263,7 +255,6 @@ void concatenate_tables_multiple_overlap( const size_t num_obs,
                 obs_value = average_two_windows<obs_t>( final_obs_values[ left_obs_bin + ob ],
                                                         obs_table[window][ right_obs_bin + ob ],
                                                         overlapping_windows[ left_idx ], 1);
-                std::cout << "\nobs_value = " << obs_value << "\n";     
                 final_obs_values[ left_obs_bin + ob ] = ( obs_value );
             }
             

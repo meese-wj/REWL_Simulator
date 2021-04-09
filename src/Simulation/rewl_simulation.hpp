@@ -512,69 +512,11 @@ void REWL_simulation::simulate(
 #if PRINT_HISTOGRAM
             my_walker -> wl_walker.wl_histograms.print_histogram_counts(iteration_counter, histogram_path);
 #endif
-            // If the window is flat, average the logdos and observables
-            /*
-            if ( my_comm_ids[ Communicators::window_comm ] == 0 )
-            {
-                OBS_TYPE * obs_arr = nullptr;
-
-                if ( my_ids_per_comm[ Communicators::window_comm ] == 0 )
-                {
-                    obs_arr = new OBS_TYPE [ REWL_Parameters::replicas_per_window ];
-                }
-
-                if ( my_ids_per_comm[ Communicators::window_comm ] == 0 )
-                    printf("\nID %d: Magnetizations before -- ", my_world_rank);
-                for( size_t bin = 0; bin != my_walker -> wl_walker.wl_histograms.num_bins / 50; ++bin )
-                {
-                    MPI_Gather( &( my_walker -> system_obs.obs_array[ bin * convert(System_Obs_enum_t::NUM_OBS) ] ), 1, MPI_OBS_TYPE, obs_arr, 1, MPI_OBS_TYPE, 0, window_communicators[ my_comm_ids[ Communicators::window_comm ] ] );
-
-                    if ( my_ids_per_comm[ Communicators::window_comm ] == 0 )
-                    {
-                        printf("\nBin %ld: ", bin);
-                        for ( size_t replica = 0; replica != REWL_Parameters::replicas_per_window; ++replica )
-                            printf("%e, ", obs_arr[replica]);
-                        printf("\n");
-                    }
-                }
-                printf("\n\n");
-                
-                delete [] obs_arr;
-            }
-            */ 
+            // If the window is flat, average the logdos and observables 
             average_and_redistribute_window( simulation_incomplete, my_ids_per_comm, my_comm_ids, window_communicators );
-            /*            
-            if ( my_comm_ids[ Communicators::window_comm ] == 0 )
-            {
-                OBS_TYPE * obs_arr = nullptr;
-
-                if ( my_ids_per_comm[ Communicators::window_comm ] == 0 )
-                {
-                    obs_arr = new OBS_TYPE [ REWL_Parameters::replicas_per_window ];
-                }
-
-                if ( my_ids_per_comm[ Communicators::window_comm ] == 0 )
-                    printf("\nID %d: Magnetizations after -- ", my_world_rank);
-                for( size_t bin = 0; bin != my_walker -> wl_walker.wl_histograms.num_bins / 50; ++bin )
-                {
-                    MPI_Gather( &( my_walker -> system_obs.obs_array[ bin * convert(System_Obs_enum_t::NUM_OBS) ] ), 1, MPI_OBS_TYPE, obs_arr, 1, MPI_OBS_TYPE, 0, window_communicators[ my_comm_ids[ Communicators::window_comm ] ] );
-
-                    if ( my_ids_per_comm[ Communicators::window_comm ] == 0 )
-                    {
-                        printf("\nBin %ld: ", bin);
-                        for ( size_t replica = 0; replica != REWL_Parameters::replicas_per_window; ++replica )
-                            printf("%e, ", obs_arr[replica]);
-                        printf("\n");
-                    }
-                }
-                printf("\n\n");
-                
-                delete [] obs_arr;
-            }
-            */
+            
             // Reset only the energy histogram and leave
             // the logdos alone.
-
             my_walker -> wl_walker.reset_histogram();
             
             if ( my_world_rank == REWL_MASTER_PROC )
