@@ -21,7 +21,7 @@ susc_string = "Susceptibility"
 data_file_stem = "nonlinear_observables"
 observable_marker = "Intensive Nonlinear Observable"
 
-Tmin_value = 0.75
+Tmin_value = 1.2
 Tmax_value = 4
 
 capsize = 2

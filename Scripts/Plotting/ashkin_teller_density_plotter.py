@@ -30,8 +30,10 @@ def make_temperatures( peak_T ):
                        0.925, 0.950, 0.975, 1.000, 1.025, 1.050,
                        1.075, 1.100, 1.150, 1.200, 1.250, 1.500,
                        1.750, 2.000 ])
-    temps = np.linspace( 2.0, 2.6, 60 )
-    temps = np.linspace( 0.1, 1.9, 38 )
+    #temps = np.linspace( 2.0, 2.6, 60 )
+    #temps = np.linspace( 2.0, 3.6, 60 )
+    #temps = np.linspace( 0.1, 1.9, 38 )
+    temps = np.array([1.609])
     return temps
 
 def get_file_bin( file_string, key_string = "bin-" ):
