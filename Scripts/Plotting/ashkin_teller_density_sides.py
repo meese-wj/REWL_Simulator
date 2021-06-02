@@ -40,11 +40,14 @@ def return_slice( density_plot, axis, off_axis_idx, density_params ):
     num_bins = density_params["axis_bins"]
     result = []
     if ( axis == "sigma" ):
-        result = density_plot[ num_bins // 2, : ]
-    else:
         result = density_plot[ :, num_bins // 2 ]
+    else:
+        result = density_plot[ num_bins // 2, : ]
 
     return result
+
+def axis_value( idx, density_params ):
+    return density_params["axis_min"] + idx * density_params["binwidth"]
 
 def main():
 
@@ -78,6 +81,12 @@ def main():
 
     print(return_slice( final_density_averages[0,:,:], "sigma", density_params["axis_bins"] // 2, density_params ))
     print(return_slice( final_density_averages[1,:,:], "tau", density_params["axis_bins"] // 2, density_params ))
+
+    sigma_slice = return_slice( final_density_averages[1,:,:], "sigma", density_params["axis_bins"] // 2, density_params )
+
+    max_sig_idx = np.argmax( sigma_slice )
+    print()
+    print(max_sig_idx, axis_value( max_sig_idx, density_params ))
 
 
     return 0
