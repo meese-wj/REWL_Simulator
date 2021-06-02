@@ -124,6 +124,30 @@ def find_all_Tc( T_label_index, Tmin, Tmax, susc_labels, data_tuples ):
     print(Tc_values, "\n", Tc_errors)
     return sifter_values, susc_values, susc_errs, Tc_values, Tc_errors
 
+def write_out_peak_values( directory, sifter_values, susc_values, susc_errs, Tc_values, Tc_errors ):
+    '''
+    Write out the peak values into files based on
+    the sifter values
+    '''
+    file_base = 'peak_susceptibility'
+    output = np.zeros(( susc_values.shape[0] + 1, susc_values.shape[1] ))
+
+    output[0,:] = sifter_values[0,:]
+
+    output[1:,:] = susc_values
+    np.savetxt( os.path.join(directory, file_base + "_means.txt"), output, delimiter=',' )
+
+    output[1:,:] = susc_errs
+    np.savetxt( os.path.join(directory, file_base + "_errs.txt"), output, delimiter=',' )
+
+    output[1:,:] = Tc_values
+    np.savetxt( os.path.join(directory, file_base + "pseudo-Tc_means.txt"), output, delimiter=',' )
+
+    output[1:,:] = Tc_errors
+    np.savetxt( os.path.join(directory, file_base + "pseudo-Tc_errs.txt"), output, delimiter=',' )
+
+    return
+
 def plot_Tc_data( plot_directory, sifter_coupling, clean_Tc, coupling_tuples, susc_labels, sifter_values, Tc_values, Tc_errors, ashkin_teller ):
     '''
     Plot the Tc values for all susceptibilities.
@@ -319,6 +343,8 @@ def main():
     '''
 
     sifter_values, susc_values, susc_errs, Tc_values, Tc_errors = find_all_Tc( Tindex, Tmin_value, Tmax_value, susc_labels, data_tuples )
+
+    write_out_peak_values( os.path.dirname(plot_directory), sifter_values, susc_values, susc_errs, Tc_values, Tc_errors )
 
     if ashkin_teller:
         plot_anomalous_susc(  plot_directory, Tindex, susc_labels, sifter_coupling, args.Tc, coupling_tuples, labels, data_tuples )
