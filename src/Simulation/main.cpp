@@ -228,7 +228,7 @@ int main(int argc, char * argv[])
 #endif
 
     // Adjust the logdos by the ground state degeneracy
-    array_shift_by_value( System_Parameters::ground_state_degeneracy - final_logdos_array[0], final_num_bins, final_logdos_array );
+    array_shift_by_value( log(System_Parameters::ground_state_degeneracy) - final_logdos_array[0], final_num_bins, final_logdos_array );
     MPI_Barrier(MPI_COMM_WORLD);
 
     printf("\nBefore thermodynamics with process %d\n", world_rank);
@@ -492,7 +492,7 @@ int main(int argc, char * argv[])
     simulation -> my_walker -> system_obs.export_observables( final_observable_array );
 
     // Adjust the logdos by the ground state degeneracy
-    array_shift_by_value( System_Parameters::ground_state_degeneracy - final_logdos_array[0], final_num_bins, final_logdos_array );
+    array_shift_by_value( log(System_Parameters::ground_state_degeneracy) - final_logdos_array[0], final_num_bins, final_logdos_array );
 
     printf("\nBefore thermodynamics with process %d\n", world_rank);
        
