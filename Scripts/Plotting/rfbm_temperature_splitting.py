@@ -141,10 +141,10 @@ def write_out_peak_values( directory, sifter_values, susc_values, susc_errs, Tc_
     np.savetxt( os.path.join(directory, file_base + "_errs.txt"), output, delimiter=',' )
 
     output[1:,:] = Tc_values
-    np.savetxt( os.path.join(directory, file_base + "pseudo-Tc_means.txt"), output, delimiter=',' )
+    np.savetxt( os.path.join(directory, file_base + "_pseudo-Tc_means.txt"), output, delimiter=',' )
 
     output[1:,:] = Tc_errors
-    np.savetxt( os.path.join(directory, file_base + "pseudo-Tc_errs.txt"), output, delimiter=',' )
+    np.savetxt( os.path.join(directory, file_base + "_pseudo-Tc_errs.txt"), output, delimiter=',' )
 
     return
 

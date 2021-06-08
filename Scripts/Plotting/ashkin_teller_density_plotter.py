@@ -33,7 +33,12 @@ def make_temperatures( peak_T ):
     #temps = np.linspace( 2.0, 2.6, 60 )
     #temps = np.linspace( 2.0, 3.6, 60 )
     #temps = np.linspace( 0.1, 1.9, 38 )
-    temps = np.array([1.609])
+
+    pT, max_T = float(peak_T), 3.2  # 2.6 for K = 0, 3.2 for K = 0.5
+    epsilon = (max_T - pT) / pT
+    temps = np.linspace( (1. - epsilon) * pT, (1. + epsilon) * pT, 25 )
+
+    temps = np.array([pT])
     return temps
 
 def get_file_bin( file_string, key_string = "bin-" ):
@@ -377,6 +382,20 @@ def compute_multiple_job_average( all_thermo_densities ):
         final_density_averages[Tdx,:,:] *= 1./np.max(final_density_averages[Tdx,:,:])
     return final_density_averages
 
+def write_out_density(directory, coupling_string, density, temperature):
+    """
+        Write out the density for a given
+        temperature into the directory
+    """
+    if not os.path.isdir(directory):
+        os.mkdir(directory)
+    if not os.path.isdir( os.path.join(directory, coupling_string) ):
+        os.mkdir( os.path.join(directory, coupling_string) )
+
+    filepath = os.path.join(directory, coupling_string, 'density_plot_T-{:.6f}.txt'.format(temperature))
+    np.savetxt(filepath, density, delimiter=',')
+    return
+
 def plot_final_thermo_densities( plot_dir, density_params, sifter_coupling, sifter_value, coupling_tuples, temp_array, final_density_averages, interpolation = 'None' ):
     """
         Plot the 2d density plots for
@@ -399,6 +418,11 @@ def plot_final_thermo_densities( plot_dir, density_params, sifter_coupling, sift
         plot_name = "density T %.3f %s %s %s" % ( temp_array[Tdx], sifter_coupling, sifter_value, get_coupling_string(coupling_tuples) )
         if interpolation != 'None':
             plot_name = interpolation + " " + plot_name
+
+        if len(temp_array) > 1:
+            write_out_density( os.path.join( os.path.dirname(plot_dir), 'Density_Files'), get_coupling_string(coupling_tuples), final_density_averages[Tdx], temp_array[Tdx] )
+        else:
+            write_out_density( os.path.join( os.path.dirname(plot_dir), 'Single_Density_Files'), get_coupling_string(coupling_tuples), final_density_averages[Tdx], temp_array[Tdx] )
 
         plt.tight_layout()
         plt.savefig( correct_directory( plot_dir ) + plot_name + ".png", facecolor="black", edgecolor="none", dpi=300 )
