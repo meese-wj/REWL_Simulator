@@ -54,6 +54,16 @@ def get_file_header( file_string, comment = "#" ):
 
     return header_lines
 
+def shift_array( arr, shift, idx=0 ):
+    return arr + (shift - arr[idx])
+
+def correct_entropy( entropy_arr, corrector, idx=0 ):
+    value = np.copy(entropy_arr[idx])
+    return shift_array( entropy_arr, corrector, idx ), value
+
+def correct_free_energy( free_energy, entropy_value, corrector, temperature ):
+    return free_energy - ( corrector - entropy_value ) * temperature
+
 def read_in_data( input_path, Lsize, coupling_tuples, file_type, observable_marker, comment = "#" ):
 
     file_header = []
@@ -74,6 +84,18 @@ def read_in_data( input_path, Lsize, coupling_tuples, file_type, observable_mark
             ID = find_string_value(job_id_string, fl)
 
             data = np.loadtxt( input_path + fl, delimiter = "  ", dtype = "float64", comments = comment)
+
+            # Define the entropy corrector for the Ising model
+            # at T = 0. Change this for different models
+            entropy_corrector = np.log(2) / int(Lsize)**2
+            if 'Ashkin_Teller' in input_path:
+                entropy_corrector = np.log(4) / int(Lsize)**4
+
+            if file_type == filename_base:
+                # Only look for entropy and free energy in the self-averaged observables
+                free_energy_idx, entropy_idx = labels.index('Free Energy'), labels.index('Entropy')
+                old_entropy_T0, data[:, entropy_idx] = correct_entropy( data[:,entropy_idx], entropy_corrector )
+                data[:, free_energy_idx] = correct_free_energy( data[:,free_energy_idx], old_entropy_T0, entropy_corrector, data[:, labels.index('Temperature')] )
 
             data_tuples.append( (ID, data) )
 
