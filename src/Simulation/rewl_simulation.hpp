@@ -6,6 +6,7 @@
 #include <string>
 #include <chrono>
 #include <algorithm> // For std::shuffle
+#include <unistd.h> // For usleep
 
 #include <histogram_index.hpp>
 #include <glazier.hpp>
@@ -90,7 +91,11 @@ REWL_simulation::REWL_simulation( const ENERGY_TYPE all_energy_min, const ENERGY
     size_t walker_num_bins = window_maker -> all_windows[my_world_rank].num_bins;
 
 #if DIFFERENT_SEEDS
-    // TODO: How can I guarantee that the seeds are different?
+    // Sleep for my_world_rank * 5 milliseconds
+    // and then check the high resolution clock
+    // for my seed. This should be good enough to
+    // keep all the seeds different.
+    usleep( my_world_rank * 5000 );
     std::uint64_t walker_seed = static_cast<std::uint64_t>( std::chrono::high_resolution_clock::now().time_since_epoch().count() );
 #else
     std::uint64_t walker_seed = static_cast<std::uint64_t> (1);
