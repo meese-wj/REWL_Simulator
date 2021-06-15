@@ -59,7 +59,7 @@ def shift_array( arr, shift, idx=0 ):
 
 def correct_entropy( entropy_arr, corrector, idx=0 ):
     value = np.copy(entropy_arr[idx])
-    return shift_array( entropy_arr, corrector, idx ), value
+    return value, shift_array( entropy_arr, corrector, idx )
 
 def correct_free_energy( free_energy, entropy_value, corrector, temperature ):
     return free_energy - ( corrector - entropy_value ) * temperature
