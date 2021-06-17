@@ -50,7 +50,7 @@ cat $MYHOSTS
 cd $BLDDIR; pwd
 
 module purge
-module load cmake/3.16.2 ompi gcc/9.2.0
+module load cmake/3.16.2 ompi/4.1.1/gnu-9.2.0 gcc/9.2.0
 module list
 
 echo -e "\n\nRunning code...\n\n"

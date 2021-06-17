@@ -36,7 +36,7 @@ fi
 cd $BLDDIR; pwd
 
 module purge
-module load cmake/3.16.2 ompi gcc/9.2.0
+module load cmake/3.16.2 ompi/4.1.1/gnu-9.2.0 gcc/9.2.0
 module list
 
 cmake .. "-D${MODEL^^}"=ON
@@ -45,7 +45,7 @@ if [ $? == 0 ]
 then
 	echo -e "\n\nCompiling code\n\n"
 
-	make -j 
+	make -j
 else
 	echo -e "\nFailure in CMake.\n"
 fi
