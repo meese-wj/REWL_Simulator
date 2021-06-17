@@ -1,4 +1,9 @@
 
+set(input_config "build.config")
+set(output_config "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/build_config.txt")
+configure_file(${input_config} ${output_config})
+
+
 set(INCLUDE_DIRS "${INCLUDE_DIRS}"
     "${CMAKE_CURRENT_SOURCE_DIR}/file_management"
     "${CMAKE_CURRENT_SOURCE_DIR}/Hamiltonians/grid"
