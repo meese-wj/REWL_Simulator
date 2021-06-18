@@ -21,6 +21,7 @@ option(EQUAL_WINDOWS "Construct equally-sized windows in REWL." ON)
 option(JOB_ARRAYS "Allow for job arrays to run without data over-write." OFF)
 option(CORRELATION_LENGTHS "Compute the correlation length periodically in each energy bin." ON)
 option(SIMULATED_ANNEALING "Perform a simulated annealing run to find the ground state configuration at the start." OFF)
+option(ONE_OVER_T_ALGORITHM "Use the 1/t algorithm as the basis for WL updates instead of exponentially decaying updates." ON)
 
 # Add compile-time options to specify the Hamiltonian
 option(ISING2D "Run a 2d Ising model on a periodic square lattice." OFF)
@@ -132,6 +133,10 @@ endif()
 
 if (SIMULATED_ANNEALING)
     add_definitions(-DSIMULATED_ANNEALING)
+endif()
+
+if (ONE_OVER_T_ALGORITHM)
+    add_definitions(-DONE_OVER_T_ALGORITHM)
 endif()
 
 add_subdirectory(src)
