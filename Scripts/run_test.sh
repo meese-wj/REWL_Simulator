@@ -1,7 +1,7 @@
 #!/bin/bash
 
-model="Ashkin_Teller2d"
-RANDFIELD="RFAT_BAXTER"
+model="Ising2d"
+RANDFIELD="RFIM"
 
 cd /home/joe/Linux_Code_Dev/REWL_Simulator/build
 echo
@@ -10,7 +10,7 @@ echo
 ls
 echo
 echo "Building and running code."
-cmake .. "-D${model^^}=ON" "-D${RANDFIELD^^}=OFF" "-DSIMULATED_ANNEALING=OFF" "-DAT_DENSITIES=OFF" "-DJOB_ARRAYS=OFF"
+cmake .. "-D${model^^}=ON" "-D${RANDFIELD^^}=ON" "-DSIMULATED_ANNEALING=OFF" "-DAT_DENSITIES=OFF" "-DJOB_ARRAYS=OFF" "-DONE_OVER_T_ALGORITHM=ON"
 
 # *******************************
 # Set MPI variables from CMake

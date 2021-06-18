@@ -39,7 +39,7 @@ struct Wang_Landau
 #endif
 
 
-    bool is_flat(const float tolerance) const;
+    bool is_flat(const float tolerance, const bool oot_engaged) const;
     void reset_histogram() const;
 };
 
@@ -156,10 +156,14 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
 
 template<typename energy_t, typename logdos_t, class Hamiltonian_t, 
          class Observables_t, class State_t, class histogram_index_functor>
-bool Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::is_flat(const float tolerance) const
+bool Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, histogram_index_functor>::is_flat(const float tolerance, const bool oot_engaged) const
 {
     //printf("\n\nTolerance = %e, histogram flatness = %e", tolerance, wl_histograms.count_flatness());
+#if ONE_OVER_T_ALGORITHM
+    return ( oot_engaged ? true : static_cast<bool>( wl_histograms.count_flatness() ) );
+#else
     return ( wl_histograms.count_flatness() <= tolerance );
+#endif
 }
 
 

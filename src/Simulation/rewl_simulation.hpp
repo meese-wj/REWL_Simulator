@@ -52,7 +52,7 @@ struct REWL_simulation
                                     const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const local_communicators ) const;
 #endif
     void average_and_redistribute_window( const bool simulation_incomplete, const int * const my_ids_per_comm, const int * const my_comm_ids, MPI_Comm * const window_communicators ) const;
-    bool check_if_window_is_flat( const int * my_comm_ids, MPI_Comm * const window_communicators ) const;
+    bool check_if_window_is_flat( const bool oot_engaged, const int * my_comm_ids, MPI_Comm * const window_communicators ) const;
 #endif
 
     void simulate(
@@ -107,7 +107,9 @@ REWL_simulation::REWL_simulation( const ENERGY_TYPE all_energy_min, const ENERGY
     old_counts = new OBS_TYPE [ walker_num_bins ] ();
 }
 
-#if INDEPENDENT_WALKERS /* This will not turn on replica exchange */
+/* ==================================================================================================================== */
+/* This will not turn on replica exchange */
+#if INDEPENDENT_WALKERS 
 
 // Main function for the simulation.
 void REWL_simulation::simulate(
@@ -128,6 +130,11 @@ void REWL_simulation::simulate(
 #if SAMPLE_AFTER
     bool sample_observables = false;
 #endif
+
+    // Always have this defined for readability
+    // although it is only used for the 1/t
+    // algorithm.
+    bool oot_engaged = false;
     
     while (simulation_incomplete)
     {
@@ -146,7 +153,7 @@ void REWL_simulation::simulate(
 #endif
 
         // Now check to see if the histogram is flat
-        if ( my_walker -> wl_walker.is_flat( REWL_Parameters::flatness_criterion ) )
+        if ( my_walker -> wl_walker.is_flat( REWL_Parameters::flatness_criterion, oot_engaged ) )
         {
             // Reset only the energy histogram and leave
             // the logdos alone.
@@ -157,8 +164,17 @@ void REWL_simulation::simulate(
             my_walker -> wl_walker.reset_histogram();
 
             printf("\nID %d: incrementer before = %e", my_world_rank, my_walker -> incrementer);
-            // TODO: Generalize to 1/t algorithm.
-            my_walker -> incrementer *= 0.5;
+#if ONE_OVER_T_ALGORITHM
+            if (!oot_engaged)
+            {
+                oot_engaged = (my_walker -> incrementer <= 1./static_cast<double>(sweep_counter * iteration_counter));
+                if (oot_engaged)
+                    printf("\nID %d: 1/t algorithm engaged at %ld sweeps.", my_world_rank, sweep_counter * iteration_counter);
+            }
+#endif
+
+            // This will work generally even without 1/t
+            my_walker -> incrementer = ( 0.5 * my_walker -> incrementer ) * (!oot_engaged) + 1./static_cast<double>(sweep_counter * iteration_counter) * oot_engaged;
 
             printf("\nID %d: incrementer after = %e", my_world_rank, my_walker -> incrementer);
             
@@ -179,13 +195,16 @@ void REWL_simulation::simulate(
 #endif
 
 #if COLLECT_TIMINGS
-            timer = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<float> time_elapsed = timer - iteration_start;
-            printf("\n\n\nID %d: Iteration %ld complete after %e seconds.", my_world_rank, iteration_counter, time_elapsed.count());
-            printf("\nID %d: Total Sweeps = %ld = %e Wang Landau Updates.", my_world_rank, sweep_counter, static_cast<float>(sweep_counter * System_Parameters::N) );
-            printf("\nID %d: Sweep rate  = %e sweeps per second", my_world_rank, static_cast<float>(sweep_counter)/time_elapsed.count());
-            printf("\nID %d: Update rate = %e updates per second", my_world_rank, static_cast<float>(sweep_counter * System_Parameters::N)/time_elapsed.count());
-            fflush(stdout);
+            if ( (!oot_engaged || iteration_counter % REWL_Parameters::iterations_per_stdout == 0 ) )
+            {
+                timer = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<float> time_elapsed = timer - iteration_start;
+                printf("\n\n\nID %d: Iteration %ld complete after %e seconds.", my_world_rank, iteration_counter, time_elapsed.count());
+                printf("\nID %d: Total Sweeps = %ld = %e Wang Landau Updates.", my_world_rank, sweep_counter, static_cast<float>(sweep_counter * System_Parameters::N) );
+                printf("\nID %d: Sweep rate  = %e sweeps per second", my_world_rank, static_cast<float>(sweep_counter)/time_elapsed.count());
+                printf("\nID %d: Update rate = %e updates per second", my_world_rank, static_cast<float>(sweep_counter * System_Parameters::N)/time_elapsed.count());
+                fflush(stdout);
+            }
             iteration_start = std::chrono::high_resolution_clock::now();
 #endif
             ++iteration_counter;
@@ -199,8 +218,11 @@ void REWL_simulation::simulate(
             printf("\n\nID %d: Total Simulation Time: %e seconds.", my_world_rank, simulation_time.count());
 #endif
 }
+/* ==================================================================================================================== */
 
-#else /* This will turn on replica exchange. */
+/* ==================================================================================================================== */
+/* This will turn on replica exchange. */
+#else 
 
 // Single replica exchange update
 size_t REWL_simulation::replica_exchange_update( int & exchange_direction, const size_t iteration_counter, 
@@ -433,10 +455,10 @@ void REWL_simulation::average_and_redistribute_window( const bool simulation_inc
 
 // Check for flatness within a window
 // The window is only flat if every replica is flat.
-bool REWL_simulation::check_if_window_is_flat( const int * const my_comm_ids, MPI_Comm * const window_communicators ) const
+bool REWL_simulation::check_if_window_is_flat( const bool oot_engaged, const int * const my_comm_ids, MPI_Comm * const window_communicators ) const
 {
     int window_is_flat = false;
-    int replica_is_flat = static_cast<int>( my_walker -> wl_walker.is_flat( REWL_Parameters::flatness_criterion ) );
+    int replica_is_flat = static_cast<int>( my_walker -> wl_walker.is_flat( REWL_Parameters::flatness_criterion, oot_engaged ) );
 
     int comm_id = my_comm_ids[ Communicators::window_comm ];
     MPI_Barrier( window_communicators[comm_id] );
@@ -483,6 +505,11 @@ void REWL_simulation::simulate(
 
     constexpr size_t rewl_updates_per_check = REWL_Parameters::sweeps_per_check / REWL_Parameters::sweeps_per_exchange;
     
+    // Always have this defined for readability
+    // although it is only used for the 1/t
+    // algorithm.
+    bool oot_engaged = false;
+
     while (simulation_incomplete)
     {
         for ( size_t rewl_update = 0; rewl_update != rewl_updates_per_check; ++rewl_update )
@@ -512,7 +539,7 @@ void REWL_simulation::simulate(
         MPI_Barrier(MPI_COMM_WORLD);
 
         // Now check to see if the window is flat
-        if ( check_if_window_is_flat( my_comm_ids, window_communicators ) )
+        if ( check_if_window_is_flat( oot_engaged, my_comm_ids, window_communicators ) )
         {
 #if PRINT_HISTOGRAM
             my_walker -> wl_walker.wl_histograms.print_histogram_counts(iteration_counter, histogram_path);
@@ -524,12 +551,23 @@ void REWL_simulation::simulate(
             // the logdos alone.
             my_walker -> wl_walker.reset_histogram();
             
-            if ( my_world_rank == REWL_MASTER_PROC )
+            if ( my_world_rank == REWL_MASTER_PROC && (!oot_engaged || iteration_counter % REWL_Parameters::iterations_per_stdout == 0 ) )
                 printf("\nID %d: incrementer before = %e", my_world_rank, my_walker -> incrementer);
-            // TODO: Generalize to 1/t algorithm.
-            my_walker -> incrementer *= 0.5;
 
-            if ( my_world_rank == REWL_MASTER_PROC )
+#if ONE_OVER_T_ALGORITHM
+            if (!oot_engaged)
+            {
+                oot_engaged = (my_walker -> incrementer <= 1./static_cast<double>(sweep_counter * iteration_counter));
+                if (oot_engaged)
+                    printf("\nID %d: 1/t algorithm engaged at %ld sweeps.", my_world_rank, sweep_counter * iteration_counter);
+            }
+#endif
+
+            // This will work generally even without 1/t
+            my_walker -> incrementer = ( 0.5 * my_walker -> incrementer ) * (!oot_engaged) + 1./static_cast<double>(iteration_counter * sweep_counter) * oot_engaged;
+
+
+            if ( my_world_rank == REWL_MASTER_PROC && (!oot_engaged || iteration_counter % REWL_Parameters::iterations_per_stdout == 0 ) )
                 printf("\nID %d: incrementer after = %e", my_world_rank, my_walker -> incrementer);
             
 #if SAMPLE_AFTER
@@ -544,7 +582,7 @@ void REWL_simulation::simulate(
                 else
                 {
 #ifndef INDEPENDENT_WALKERS
-                    i_am_done = 1;                  // This walker has finised complete
+                    i_am_done = 1;                  // This walker has completed its run
 #else
                     simulation_incomplete = false;  // Kill the simulation if it is complete after sampling
 #endif
@@ -560,10 +598,10 @@ void REWL_simulation::simulate(
 #endif
 
 #if COLLECT_TIMINGS
-            print_slowpokes = true;
+            print_slowpokes = (!oot_engaged || iteration_counter % REWL_Parameters::iterations_per_stdout == 0 );
             timer = std::chrono::high_resolution_clock::now();
             std::chrono::duration<float> time_elapsed = timer - iteration_start;
-            if ( my_world_rank == REWL_MASTER_PROC )
+            if ( my_world_rank == REWL_MASTER_PROC && ( !oot_engaged || iteration_counter % REWL_Parameters::iterations_per_stdout == 0 ) )
             {
                 printf("\n\n\nID %d: Iteration %ld complete after %e seconds.", my_world_rank, iteration_counter, time_elapsed.count());
                 printf("\nID %d: Total Sweeps = %ld = %e Wang Landau Updates.", my_world_rank, sweep_counter, static_cast<float>(sweep_counter * System_Parameters::N) );
@@ -654,3 +692,4 @@ void REWL_simulation::simulate(
 #endif
 
 #endif
+/* ==================================================================================================================== */

@@ -110,6 +110,23 @@ struct rewl_histograms
 #endif
 };
 
+#if ONE_OVER_T_ALGORITHM
+template<typename data_t>
+float rewl_histograms<data_t>::count_flatness() const
+{
+    // This algorithm is based on that given in
+    // DOI: 10.1103/PhysRevE.75.046701
+    // Here "flatness" corresponds to every state
+    // being sampled at least once.
+    uint64_t sum_bins = ( get_count(0) > 0 );
+    for ( size_t idx = 1; idx != num_bins; ++idx )
+        sum_bins *= ( get_count(idx) > 0 );
+
+    // If every bin has been sampled, then 
+    // sum_bins == 1 otherwise sum_bins == 0.
+    return sum_bins;
+}
+#else
 template<typename data_t>
 float rewl_histograms<data_t>::count_flatness() const
 {
@@ -131,6 +148,7 @@ float rewl_histograms<data_t>::count_flatness() const
     // silly number to check against.
     return ratio_failure;
 }
+#endif
 
 #if PRINT_HISTOGRAM
 template<typename data_t>
