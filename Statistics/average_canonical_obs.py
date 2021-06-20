@@ -185,8 +185,10 @@ def microcanonical_observable_data( labels, final_averages, final_stderr ):
     num_cols = final_averages.shape[1] -2 # Don't include the specific heat or temperature
 
     #micro_rows = int( np.floor( (1 - micro_dilutor) * num_rows )  )
-    micro_rows=20000
-    micro_increment = num_rows // micro_rows
+    #micro_rows=20000
+    micro_rows=num_rows
+    #micro_increment = num_rows // micro_rows
+    micro_increment=1
     micro_avgs = np.zeros((micro_rows, num_cols))
     micro_stderr = np.zeros(micro_avgs.shape)
 
