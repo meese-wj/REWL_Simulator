@@ -26,6 +26,7 @@ const std::string DELIMITER = "  ";
 #include <write_nonlinear_observables.hpp>
 
 #if SIMULATED_ANNEALING
+#include <Simulated_Annealer/simulated_annealing_parameters.cxx>
 #include <Simulated_Annealer/simulated_annealer.hpp>
 #endif
 
