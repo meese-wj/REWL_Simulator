@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 project(REWL VERSION 0.1.0)
 set(CMAKE_BUILD_TYPE Release)
+
+string(TIMESTAMP cmake_time "%Y-%m-%dT%H:%M:%S")
+message(STATUS "CMAKE Configure Time: ${cmake_time}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 message(STATUS "CMAKE_BINARY_DIR = ${CMAKE_BINARY_DIR}")
 
