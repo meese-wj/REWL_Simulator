@@ -17,7 +17,7 @@ namespace SA_Parameters
                                                             // variance between blocks
 
     
-    constexpr SA_energy_t frozen_variance = 0.;             // Defined frozen condition on energy variance
+    constexpr SA_energy_t frozen_criterion = 0.;            // Defined frozen condition on energy variance
 }
 
 #endif

@@ -27,6 +27,7 @@ const std::string DELIMITER = "  ";
 
 #if SIMULATED_ANNEALING
 #include <Simulated_Annealer/simulated_annealing_parameters.cxx>
+#include <Simulated_Annealer/simulated_annealing_parameter_strings.hpp>
 #include <Simulated_Annealer/simulated_annealer.hpp>
 #endif
 

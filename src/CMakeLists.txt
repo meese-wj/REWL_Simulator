@@ -22,6 +22,13 @@ set(model_param_output "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/model_parameters.txt")
 configure_file(${model_parameters} ${model_param_output} COPYONLY)
 message(STATUS "Model Parameter file copied to ${model_param_output}")
 
+if(SIMULATED_ANNEALING)
+    set(sa_parameters "Hamiltonians/Simulated_Annealer/simulated_annealing_parameters.cxx")
+    set(sa_param_output "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/simulated_annealing_parameters.txt")
+    configure_file(${sa_parameters} ${sa_param_output} COPYONLY)
+    message(STATUS "Simulated Annealing Parameter file copied to ${model_param_output}")
+endif()
+
 
 set(INCLUDE_DIRS "${INCLUDE_DIRS}"
     "${CMAKE_CURRENT_SOURCE_DIR}/file_management"

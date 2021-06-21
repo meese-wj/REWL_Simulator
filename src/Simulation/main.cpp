@@ -121,6 +121,12 @@ int main(int argc, char * argv[])
     {
         std::cout << "\n**************************************************************************************\n";
         std::cout << "\n" << todays_date << "\n\n" << data_file_header; 
+#if SIMULATED_ANNEALING
+        SA_Strings SA_Param_Strings = SA_Strings();
+        std::cout << "\n" << SA_Param_Strings.header;
+        data_file_header += "\n" + SA_Param_Strings.header;
+#endif
+
 #if AT_DENSITIES
         std::cout << "\n#\n" << density_strings.header;
 #endif
@@ -465,6 +471,11 @@ int main(int argc, char * argv[])
     std::filesystem::path data_path = create_output_path( sys_strings.model_name, sys_strings.size_string ); 
 #endif
     std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
+
+#if SIMULATED_ANNEALING
+    SA_Strings SA_Param_Strings = SA_Strings();
+    data_file_header += "\n" + SA_Param_Strings.header;
+#endif
 
     /* ****************************************************************************** */
  

@@ -8,7 +8,7 @@
 template<typename energy_t>
 inline bool not_frozen( const energy_t value )
 {
-    return value != SA_Parameters::frozen_variance;
+    return value != SA_Parameters::frozen_criterion;
 }
 
 template<typename energy_t>
