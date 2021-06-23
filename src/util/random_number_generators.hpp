@@ -8,6 +8,8 @@
  * for performance. */
 #include <cmath>
 #include <random>
+#include <limits>
+
 
 template<typename data_t>
 struct random_number_generator
@@ -24,6 +26,30 @@ struct random_number_generator
     data_t operator () () { return u_real(generator); }
     data_t get_real () { return u_real(generator); }
     data_t get_real_modified(const data_t min, const data_t max){ return min + (max - min) * u_real(generator); }
+
+    data_t get_gaussian( const data_t mean, const data_t stdev )
+    {
+        static constexpr data_t machine_epsilon = std::numeric_limits<data_t>::epsilon();
+        static constexpr data_t two_pi = 2.0 * acos(-1.0);
+
+        data_t u_var = get_real();
+        data_t v_var = get_real();
+        while ( u_var <= machine_epsilon )
+        {
+            u_var = get_real();
+            v_var = get_real();
+        }
+
+        // Compute z0 and z1 according to the Box-Muller transform
+        data_t magnitude = stdev * sqrt( -2.0 * log(u_var) );
+        data_t z0 = magnitude * cos( two_pi * v_var ) + mean;
+        data_t z1 = magnitude * sin( two_pi * v_var ) + mean;
+       
+        // Both z0 and z1 are sampled from independent Gaussians
+        // so return either with equal probability.
+        bool return_cos = get_real() < 0.5;
+        return z0 * return_cos + z1 * (!return_cos); 
+    }
     
 };
 
