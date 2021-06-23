@@ -17,12 +17,21 @@
 #include "../Correlations/fourier_correlator.hpp"
 #endif
 
-#if RFAT_BAXTER
-// Include the random fields
-#include "../Disorder/random_fields.hpp"
 #if MPI_ON 
 #include <mpi.h>
 #endif
+
+#if RFAT_BAXTER
+// Include the random fields
+#include "../Disorder/random_fields.hpp"
+    
+    // Define the disorder type
+    #if UNIFORM_DISORDER
+        constexpr disorder_distribution disorder_type = disorder_distribution::uniform;
+    #elif GAUSSIAN_DISORDER
+        constexpr disorder_distribution disorder_type = disorder_distribution::gaussian;
+    #endif
+
 #endif
 
 #if AT_DENSITIES
@@ -101,7 +110,7 @@ struct Ashkin_Teller2d
 #if RFAT_BAXTER
         generate_random_field<float>( Ashkin_Teller2d_Parameters::N, 
                                       Ashkin_Teller2d_Parameters::h, 
-                                      field_array, disorder_distribution::uniform );
+                                      field_array, disorder_type );
 #endif
  
         recalculate_state();

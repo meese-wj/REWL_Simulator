@@ -34,6 +34,8 @@ struct random_number_generator
 
         data_t u_var = get_real();
         data_t v_var = get_real();
+
+        // Make sure the magnitude won't blow up.
         while ( u_var <= machine_epsilon )
         {
             u_var = get_real();

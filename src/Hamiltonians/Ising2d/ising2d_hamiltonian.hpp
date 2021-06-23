@@ -24,6 +24,14 @@
 #if RFIM
 // Include the random fields
 #include "../Disorder/random_fields.hpp"
+   
+    // Define the disorder type
+    #if UNIFORM_DISORDER
+        constexpr disorder_distribution disorder_type = disorder_distribution::uniform;
+    #elif GAUSSIAN_DISORDER
+        constexpr disorder_distribution disorder_type = disorder_distribution::gaussian;
+    #endif
+
 #endif
 
 #if SIMULATED_ANNEALING
@@ -85,7 +93,7 @@ struct Ising2d
                                             neighbor_array);
 #if RFIM
         generate_random_field<float>( Ising2d_Parameters::N, Ising2d_Parameters::h, 
-                                      field_array, disorder_distribution::uniform );
+                                      field_array, disorder_type );
 #endif
         recalculate_state();
     }

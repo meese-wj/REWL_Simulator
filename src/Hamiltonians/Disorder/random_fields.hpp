@@ -13,7 +13,7 @@ static constexpr size_t WAIT_BETWEEN_FIELD_GENERATION = 20;
 
 enum disorder_distribution
 {
-    uniform
+    uniform, gaussian
 };
 
 // Produce a random field value on the 
@@ -25,6 +25,17 @@ template<typename data_t>
 data_t uniform_random_field( random_number_generator<data_t> & rng, const data_t strength )
 {
     return 2. * strength * ( -1. + 2. * rng() );
+}
+
+// Produce a Gaussian random field value
+// with mean 0 and standard deviation equal
+// to strength.
+// TODO: I think 2 * strength is necessary to
+// nearly match the uniform random field...
+template<typename data_t>
+data_t gaussian_random_field( random_number_generator<data_t> & rng, const data_t strength )
+{
+    return rng.get_gaussian(0., strength);
 }
 
 template<typename data_t>
@@ -42,6 +53,10 @@ void generate_random_field( const size_t num_sites, const data_t strength,
     if ( type == disorder_distribution::uniform )
     {
         field_generator = &uniform_random_field<data_t>;
+    }
+    else if ( type == disorder_distribution::gaussian )
+    {
+        field_generator = &gaussian_random_field<data_t>;
     }
 
     // Populate the fields

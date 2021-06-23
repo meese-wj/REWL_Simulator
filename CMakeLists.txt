@@ -33,6 +33,8 @@ option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice
 # Additions to Hamiltonians
 option(RFIM "Include random fields for the Ising model." OFF)
 option(RFAT_BAXTER "Include random fields for the Baxter spin in the Ashkin-Teller model." OFF)
+option(GAUSSIAN_DISORDER "Use a Gaussian random field distribution centered about zero. The default is a uniform distribution." OFF)
+set(UNIFORM_DISORDER OFF)
 option(AT_DENSITIES "Keep track of sigma and tau densities per energy bin." OFF)
 
 # *********************************************************************
@@ -96,6 +98,21 @@ endif()
 if (RFAT_BAXTER)
     add_definitions(-DRFAT_BAXTER)
     add_definitions(-DRANDOM_DISORDER)
+endif()
+
+# Set up the disorder compile-time options
+if (RFIM OR RFAT_BAXTER)
+    if (GAUSSIAN_DISORDER)
+        add_definitions(-DGAUSSIAN_DISORDER)
+        set(UNIFORM_DISORDER OFF)
+    else()
+        add_definitions(-DUNIFORM_DISORDER)
+        set(UNIFORM_DISORDER ON)
+        set(GAUSSIAN_DISORDER OFF)
+    endif()
+else()
+    set(UNIFORM_DISORDER OFF)
+    set(GAUSSIAN_DISORDER OFF)
 endif()
 
 if (COLLECT_TIMINGS)
