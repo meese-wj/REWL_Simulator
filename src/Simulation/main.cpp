@@ -123,8 +123,8 @@ int main(int argc, char * argv[])
         std::cout << "\n" << todays_date << "\n\n" << data_file_header; 
 #if SIMULATED_ANNEALING
         SA_Strings SA_Param_Strings = SA_Strings();
-        std::cout << "\n" << SA_Param_Strings.header;
-        data_file_header += "\n" + SA_Param_Strings.header;
+        std::cout << SA_Param_Strings.header << "\n";
+        data_file_header += SA_Param_Strings.header + "\n";
 #endif
 
 #if AT_DENSITIES
@@ -474,7 +474,7 @@ int main(int argc, char * argv[])
 
 #if SIMULATED_ANNEALING
     SA_Strings SA_Param_Strings = SA_Strings();
-    data_file_header += "\n" + SA_Param_Strings.header;
+    data_file_header += SA_Param_Strings.header + "\n";
 #endif
 
     /* ****************************************************************************** */
