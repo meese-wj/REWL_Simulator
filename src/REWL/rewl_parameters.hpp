@@ -26,7 +26,7 @@ namespace REWL_Parameters
 
     constexpr size_t sweeps_per_check = 1000;
     constexpr size_t sweeps_per_exchange = 1;
-    constexpr LOGDOS_TYPE final_increment = 1e-6;
+    constexpr LOGDOS_TYPE final_increment = 5e-7;
     //constexpr LOGDOS_TYPE final_increment = 0.25;
     
     // This does not matter if the 1/t algorithm is

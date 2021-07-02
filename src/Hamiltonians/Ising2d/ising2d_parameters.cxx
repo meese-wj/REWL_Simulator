@@ -17,7 +17,7 @@ constexpr size_t SYSTEM_SIZE_L = 20;
 constexpr float SYSTEM_EXCHANGE_J = 1.0;
 
 // External field strength
-constexpr float SYSTEM_FIELD_H = 0.8;
+constexpr float SYSTEM_FIELD_H = 0.0;
 
 // Number of nearest neighbors
 constexpr size_t SYSTEM_NUM_NEAREST_NEIGHBORS_int = 4;

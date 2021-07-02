@@ -11,8 +11,8 @@ constexpr int num_args = 1;
 
 using thermo_t = Thermodynamics<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE, System_Obs_enum_t>;
 constexpr ENERGY_TYPE Tmin = 0.01;
-constexpr ENERGY_TYPE Tmax = 20.01;
-constexpr size_t num_T = 20000;
+constexpr ENERGY_TYPE Tmax = 50.01;
+constexpr size_t num_T = 50000;
 
 #if MPI_ON
 int main(int argc, char * argv[])
@@ -238,8 +238,11 @@ int main(int argc, char * argv[])
     simulation -> my_walker -> system_obs.export_density_plots( final_density_plots );
 #endif
 
+#ifndef NORMALIZE_BY_STATES
     // Adjust the logdos by the ground state degeneracy
     array_shift_by_value( log(System_Parameters::ground_state_degeneracy) - final_logdos_array[0], final_num_bins, final_logdos_array );
+#endif
+    
     MPI_Barrier(MPI_COMM_WORLD);
 
     printf("\nBefore thermodynamics with process %d\n", world_rank);
@@ -309,6 +312,12 @@ int main(int argc, char * argv[])
         // Finally, after concatenation, reset the final number of bins
         final_num_bins = final_energy_vector.size();
         final_num_obs_values = final_observable_vector.size();
+#if NORMALIZE_BY_STATES
+        // The values of the energy_min and energy_max are
+        // used to set the logshifter at compile time. It is
+        // not used to actually shift anything.
+        normalize_logDoS<LOGDOS_TYPE, System_Parameters::energy_max == 0. || System_Parameters::energy_max == -System_Parameters::energy_min >( System_Parameters::ground_state_degeneracy, System_Parameters::N, System_Parameters::energy_max, final_num_bins, final_logdos_vector.data() );
+#endif 
 
         // Print out the microcanonical observables before thermally averaging
         write_microcanonical_observables<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE>( System_Parameters::N, final_num_bins, convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),
@@ -512,7 +521,14 @@ int main(int argc, char * argv[])
     simulation -> my_walker -> system_obs.export_observables( final_observable_array );
 
     // Adjust the logdos by the ground state degeneracy
+#if NORMALIZE_BY_STATES
+    // The values of the energy_min and energy_max are
+    // used to set the logshifter at compile time. It is
+    // not used to actually shift anything.
+    normalize_logDoS<LOGDOS_TYPE, System_Parameters::energy_max == 0. || System_Parameters::energy_max == -System_Parameters::energy_min >( System_Parameters::ground_state_degeneracy, System_Parameters::N, System_Parameters::energy_max, final_num_bins, final_logdos_array );
+#else
     array_shift_by_value( log(System_Parameters::ground_state_degeneracy) - final_logdos_array[0], final_num_bins, final_logdos_array );
+#endif
 
     printf("\nBefore thermodynamics with process %d\n", world_rank);
        
