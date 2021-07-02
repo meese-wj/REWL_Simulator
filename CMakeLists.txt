@@ -4,6 +4,26 @@ set(CMAKE_BUILD_TYPE Release)
 
 string(TIMESTAMP cmake_time "%Y-%m-%dT%H:%M:%S")
 message(STATUS "CMAKE Configure Time: ${cmake_time}")
+
+# Get Git information
+execute_process(
+    COMMAND git rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+execute_process(
+    COMMAND git log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+message(STATUS "Git Branch: ${GIT_BRANCH}")
+message(STATUS "Git Commit: ${GIT_COMMIT_HASH}")
+
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 message(STATUS "CMAKE_BINARY_DIR = ${CMAKE_BINARY_DIR}")
 
@@ -25,6 +45,7 @@ option(JOB_ARRAYS "Allow for job arrays to run without data over-write." OFF)
 option(CORRELATION_LENGTHS "Compute the correlation length periodically in each energy bin." ON)
 option(SIMULATED_ANNEALING "Perform a simulated annealing run to find the ground state configuration at the start." OFF)
 option(ONE_OVER_T_ALGORITHM "Use the 1/t algorithm as the basis for WL updates instead of exponentially decaying updates." ON)
+option(NORMALIZE_BY_STATES "Normalize the final logDoS by the total number of states rather than by fixing the ground state degeneracy." ON)
 
 # Add compile-time options to specify the Hamiltonian
 option(ISING2D "Run a 2d Ising model on a periodic square lattice." OFF)
@@ -159,6 +180,11 @@ if (ONE_OVER_T_ALGORITHM)
     add_definitions(-DONE_OVER_T_ALGORITHM)
 endif()
 
+if (NORMALIZE_BY_STATES)
+    add_definitions(-DNORMALIZE_BY_STATES)
+endif()
+
+# Now continue with the build
 add_subdirectory(src)
 
 if (MPI_ON AND MPI_CXX_FOUND)
