@@ -31,6 +31,7 @@ SA_Strings::SA_Strings()
     header += "#     Block Size                = " + block_size + "\n";
     header += "#     Energy Variance Tolerance = " + energy_var_tolerance + "\n";
     header += "#     Frozen Criterion          = " + frozen_criterion + "\n";
+    header += "#";
 }
 
 #endif
