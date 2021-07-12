@@ -85,6 +85,8 @@ def read_in_data( input_path, Lsize, coupling_tuples, file_type, observable_mark
 
             data = np.loadtxt( input_path + fl, delimiter = "  ", dtype = "float64", comments = comment)
 
+            """ TODO: Get rid of this entirely.
+
             # Define the entropy corrector for the Ising model
             # at T = 0. Change this for different models
             entropy_corrector = np.log(2) / int(Lsize)**2
@@ -96,6 +98,8 @@ def read_in_data( input_path, Lsize, coupling_tuples, file_type, observable_mark
                 free_energy_idx, entropy_idx = labels.index('Free Energy'), labels.index('Entropy')
                 old_entropy_T0, data[:, entropy_idx] = correct_entropy( data[:,entropy_idx], entropy_corrector )
                 data[:, free_energy_idx] = correct_free_energy( data[:,free_energy_idx], old_entropy_T0, entropy_corrector, data[:, labels.index('Temperature')] )
+
+            """
 
             data_tuples.append( (ID, data) )
 
