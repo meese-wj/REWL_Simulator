@@ -36,9 +36,9 @@ def make_temperatures( peak_T ):
 
     pT, max_T = float(peak_T), 3.2  # 2.6 for K = 0, 3.2 for K = 0.5
     epsilon = (max_T - pT) / pT
-    temps = np.linspace( (1. - epsilon) * pT, (1. + epsilon) * pT, 25 )
+    temps = np.linspace( (1. - epsilon) * pT, (1. + epsilon) * pT, 15 )
 
-    temps = np.array([pT])
+    #temps = np.array([pT])
     return temps
 
 def get_file_bin( file_string, key_string = "bin-" ):
