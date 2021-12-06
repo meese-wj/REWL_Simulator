@@ -25,6 +25,13 @@ void Ising2d_Parameter_String::update_file_header()
 
     file_name_base += ".dat";
 
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+    model_name += "_PMNI";
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
+#if RFIM
+    model_name += "_RFIM";
+#endif // RFIM
+ 
     file_header = "# REWL " + model_name + " on a Periodic Square Lattice\n#";
     file_header += "\n# Hamiltonian Parameters";
     file_header += "\n#    L = " + L;

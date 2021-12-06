@@ -18,7 +18,7 @@ template<typename energy_t>
 energy_t interaction_value( const pbc_2d_vector<energy_t> & site_1, const pbc_2d_vector<energy_t> site_2, 
                             const std::uint32_t Lx, const std::uint32_t Ly )
 {
-    pbc_2d_vector<energy_t> difference = pbc_subtract<energy_t, energy_t>(Lx, Ly, site_1, site_2);
+    pbc_2d_vector<energy_t> difference = pbc_subtract<energy_t>(Lx, Ly, site_1, site_2);
     if (site_1.x == site_2.x && site_1.y == site_2.y)
         return 0.;
 
@@ -75,7 +75,7 @@ void PMDN_Interactions<energy_t, spin_t>::build_interaction_matrix(const energy_
                     pbc_2d_vector<energy_t> site_2( x2, y2 );
 
                     interaction_matrix[ index_1 * total_sites + index_2 ] = 0.;
-                    if !( x1 == x2 && y1 == y2 )
+                    if ( !( x1 == x2 && y1 == y2 ) )
                         interaction_matrix[ index_1 * total_sites + index_2 ] = phonon_coupling * interaction_value( site_1, site_2, Lx, Ly );
                         
                 }

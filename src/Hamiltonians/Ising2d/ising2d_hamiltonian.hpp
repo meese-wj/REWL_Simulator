@@ -75,7 +75,7 @@ struct Ising2d
     size_t * neighbor_array = nullptr;
 
 #if PHONON_MEDIATED_NEMATIC_INTERACTIONS
-    PMDN_Interactions * pmd_interaction;
+    PMDN_Interactions<float, data_t> * pmd_interaction;
 #endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
 
     // Add some Hamiltonian dependent functions
@@ -107,7 +107,7 @@ struct Ising2d
 #endif
 
 #if PHONON_MEDIATED_NEMATIC_INTERACTIONS
-        pmd_interaction = new PMDN_Interactions<float, data_t>::PMDN_Interactions( Ising2d_Parameters::PMNI_Coupling, Ising2d_Parameters::L, Ising2d_Parameters::L );
+        pmd_interaction = new PMDN_Interactions<float, data_t>( Ising2d_Parameters::PMNI_Coupling, Ising2d_Parameters::L, Ising2d_Parameters::L );
 #endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
         recalculate_state();
     }
@@ -191,7 +191,7 @@ float Ising2d<data_t>::local_energy(const size_t idx, const data_t spin_value) c
 {
     float local_en = -1. * static_cast<float>( spin_value ) * local_field(idx);
 #if PHONON_MEDIATED_NEMATIC_INTERACTIONS
-    local_en += pmd_interaction.calculate_energy_per_spin( idx, spin_value, spin_array );
+    local_en += pmd_interaction -> calculate_energy_per_spin( idx, spin_value, spin_array );
 #endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
     return local_en;
 }

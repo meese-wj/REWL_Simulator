@@ -22,12 +22,6 @@ struct Ising2d_Parameter_String
     std::string num_bins = std::to_string(Ising2d_Parameters::num_bins);
 
     std::string model_name = "Ising2d";
-#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
-    model_name += "_PMNI";
-#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
-#if RFIM
-    model_name += "_RFIM";
-#endif // RFIM
     const std::string size_string = "L-" + L;
 
     std::string file_name_base;
