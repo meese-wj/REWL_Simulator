@@ -38,6 +38,11 @@
 #include <random_number_generators.hpp>
 #endif
 
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+#include "PM_Dipolar_Interactions/pmd_interactions.hpp"
+#include "PM_Dipolar_Interactions/pmd_ising2d_observables.hpp"  // TODO: Not sure if this is necessary...
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
+
 // TODO: Upgrade the energies to allow for 
 // double calculations. 
 template<typename data_t>
@@ -64,9 +69,14 @@ struct Ising2d
 
     data_t * spin_array = nullptr;
 #if RFIM
+    // TODO: change the energies to doubles.
     float * field_array = nullptr;
 #endif
     size_t * neighbor_array = nullptr;
+
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+    PMDN_Interactions * pmd_interaction;
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
 
     // Add some Hamiltonian dependent functions
     float local_field(const size_t idx) const;
@@ -95,6 +105,10 @@ struct Ising2d
         generate_random_field<float>( Ising2d_Parameters::N, Ising2d_Parameters::h, 
                                       field_array, disorder_type );
 #endif
+
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+        pmd_interaction = new PMDN_Interactions<float, data_t>::PMDN_Interactions( Ising2d_Parameters::PMNI_Coupling, Ising2d_Parameters::L, Ising2d_Parameters::L );
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
         recalculate_state();
     }
 
@@ -105,6 +119,10 @@ struct Ising2d
 #if RFIM
         delete [] field_array;
 #endif
+
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+        delete pmd_interaction;
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
     }
 
     void switch_flavor_to_update() { return; };
@@ -171,7 +189,11 @@ float Ising2d<data_t>::local_field(const size_t idx) const
 template<typename data_t>
 float Ising2d<data_t>::local_energy(const size_t idx, const data_t spin_value) const
 {
-    return -1. * static_cast<float>( spin_value ) * local_field(idx);
+    float local_en = -1. * static_cast<float>( spin_value ) * local_field(idx);
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+    local_en += pmd_interaction.calculate_energy_per_spin( idx, spin_value, spin_array );
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
+    return local_en;
 }
 
 template<typename data_t>

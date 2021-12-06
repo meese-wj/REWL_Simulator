@@ -18,7 +18,12 @@ void Ising2d_Parameter_String::update_file_header()
 #if JOB_ARRAYS
     file_name_base += "JOBID-" + job_id + "_"; 
 #endif
-    file_name_base += "REWL_L-" + L + "_J-" + J + "_h-" + h + ".dat";
+    file_name_base += "REWL_L-" + L + "_J-" + J + "_h-" + h;
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+    file_name_base += "_gamma-" + PMNI_Coupling;
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
+
+    file_name_base += ".dat";
 
     file_header = "# REWL " + model_name + " on a Periodic Square Lattice\n#";
     file_header += "\n# Hamiltonian Parameters";
@@ -27,6 +32,9 @@ void Ising2d_Parameter_String::update_file_header()
     file_header += "\n#    num_DoF = " + num_DoF;
     file_header += "\n#    J = " + J;
     file_header += "\n#    h = " + h;
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+    file_header += "\n#    PMNI = " + PMNI_Coupling;
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
     file_header += "\n#    num_neighbors = " + num_neighbors;
     file_header += "\n#";
     file_header += "\n# Wang Landau Parameters";

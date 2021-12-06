@@ -54,9 +54,9 @@ T pbc_subtract_1d( const size_t L_axis, const T ax1, const T ax2 )
 {
     T result = ax1 - ax2;
 
-    while ( result >= static_cast<T>(L_axis / 2) )
+    while ( result >= static_cast<T>(L_axis) / 2. )
         result -= L_axis;
-    while ( result < static_cast<T>(L_axis / 2) )
+    while ( result < static_cast<T>(L_axis) / 2. )
         result += L_axis;
 
     return result;
@@ -76,13 +76,22 @@ pbc_2d_vector<T> pbc_subtract( const size_t Lx, const size_t Ly, const pbc_2d_ve
     return pbc_2d_vector<T>( pbc_subtract_1d(Lx, A.x, B.x), pbc_subtract_1d(Ly, A.y, B.y) );
 }
 
+// Compute the magnitude^2 of the 
+// given vector and possibly 
+// cast it into a different type.
+template<typename O, typename T>
+O square_magnitude( const pbc_2d_vector<T> & A )
+{
+    return static_cast<O>( A.x * A.x + A.y * A.y );
+}
+
 // Compute the magnitude of the 
 // given vector and possibly 
 // cast it into a different type.
 template<typename O, typename T>
 O magnitude( const pbc_2d_vector<T> & A )
 {
-    return sqrt( static_cast<O>( A.x * A.x + A.y * A.y ) );
+    return sqrt( square_magnitude<O, T>( A ) );
 }
 
 // Calculate the distance 

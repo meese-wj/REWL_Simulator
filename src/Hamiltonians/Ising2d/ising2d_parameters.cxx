@@ -19,6 +19,10 @@ constexpr float SYSTEM_EXCHANGE_J = 1.0;
 // External field strength
 constexpr float SYSTEM_FIELD_H = 0.0;
 
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+constexpr float SYSTEM_PMNI_COUPLING = 0.1;
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
+
 // Number of nearest neighbors
 constexpr size_t SYSTEM_NUM_NEAREST_NEIGHBORS_int = 4;
 constexpr float SYSTEM_NUM_NEAREST_NEIGHBORS_float = 4;
@@ -50,6 +54,9 @@ namespace Ising2d_Parameters
     constexpr size_t num_DoF = N;        // Number of independent degrees of freedom
     constexpr float J = SYSTEM_EXCHANGE_J;
     constexpr float h = SYSTEM_FIELD_H;
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+    constexpr float PMNI_Coupling = SYSTEM_PMNI_COUPLING;
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
     constexpr size_t num_neighbors_i = SYSTEM_NUM_NEAREST_NEIGHBORS_int;
     constexpr float num_neighbors_f = SYSTEM_NUM_NEAREST_NEIGHBORS_float; 
     constexpr double ground_state_degeneracy = GROUND_STATE_DEGENERACY;

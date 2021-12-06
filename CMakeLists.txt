@@ -54,6 +54,7 @@ option(ASHKIN_TELLER2D "Run a 2d Askin-Teller model on a periodic square lattice
 # Additions to Hamiltonians
 option(RFIM "Include random fields for the Ising model." OFF)
 option(RFAT_BAXTER "Include random fields for the Baxter spin in the Ashkin-Teller model." OFF)
+option(PMND_INTERACTIONS "Include phonon-mediated dipolar interactions for Ising-nematic degrees of freedom." OFF)
 option(GAUSSIAN_DISORDER "Use a Gaussian random field distribution centered about zero. The default is a uniform distribution." ON)
 set(UNIFORM_DISORDER OFF) # This will be turned on if necessary later on.
 option(AT_DENSITIES "Keep track of sigma and tau densities per energy bin." OFF)
@@ -96,6 +97,11 @@ endif()
 if (AT_DENSITIES AND ISING2D)
     message(FATAL_ERROR "AT_DENSITIES was activated for the Ising model.")
 endif()
+
+# Error out if AT_DENSITIES and PMND_INTERACTIONS
+if (AT_DENSITIES AND PMND_INTERACTIONS)
+    message(FATAL_ERROR "PMND_INTERACTIONS are not implemented for the Ashkin-Teller model.")
+endif()
 # *********************************************************************
 
 if (ISING2D)
@@ -119,6 +125,10 @@ endif()
 if (RFAT_BAXTER)
     add_definitions(-DRFAT_BAXTER)
     add_definitions(-DRANDOM_DISORDER)
+endif()
+
+if (PMND_INTERACTIONS)
+    add_definitions(-DPHONON_MEDIATED_NEMATIC_INTERACTIONS)
 endif()
 
 # Set up the disorder compile-time options

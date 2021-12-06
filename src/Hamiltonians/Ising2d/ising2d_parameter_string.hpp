@@ -11,6 +11,9 @@ struct Ising2d_Parameter_String
     const std::string num_DoF = std::to_string(Ising2d_Parameters::num_DoF);
     const std::string J = std::to_string(Ising2d_Parameters::J);
     const std::string h = std::to_string(Ising2d_Parameters::h);
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+    const std::string PMNI_Coupling = std::to_string(Ising2d_Parameters::PMNI_Coupling);
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
     const std::string num_neighbors = std::to_string(Ising2d_Parameters::num_neighbors_i);
 
     std::string energy_min = std::to_string(Ising2d_Parameters::energy_min);
@@ -18,11 +21,13 @@ struct Ising2d_Parameter_String
     const std::string energy_bin_size = std::to_string(Ising2d_Parameters::energy_bin_size);
     std::string num_bins = std::to_string(Ising2d_Parameters::num_bins);
 
+    std::string model_name = "Ising2d";
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+    model_name += "_PMNI";
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
 #if RFIM
-    const std::string model_name = "Ising2d_RFIM";
-#else
-    const std::string model_name = "Ising2d";
-#endif
+    model_name += "_RFIM";
+#endif // RFIM
     const std::string size_string = "L-" + L;
 
     std::string file_name_base;
@@ -33,7 +38,7 @@ struct Ising2d_Parameter_String
     Ising2d_Parameter_String( const std::string & job_id_string );
 #else
     Ising2d_Parameter_String();
-#endif
+#endif // JOB_ARRAYS
 
     ~Ising2d_Parameter_String(){}
 
