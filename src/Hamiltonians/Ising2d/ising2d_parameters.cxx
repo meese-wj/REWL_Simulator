@@ -11,7 +11,7 @@
 #include <cmath>
 
 // Linear size of the lattice
-constexpr size_t SYSTEM_SIZE_L = 20;
+constexpr size_t SYSTEM_SIZE_L = 8;
 
 // Exchange constant. J > 0 is ferromagnetic
 constexpr float SYSTEM_EXCHANGE_J = 1.0;
@@ -20,7 +20,7 @@ constexpr float SYSTEM_EXCHANGE_J = 1.0;
 constexpr float SYSTEM_FIELD_H = 0.0;
 
 #if PHONON_MEDIATED_NEMATIC_INTERACTIONS
-constexpr float SYSTEM_PMNI_COUPLING = 0.1;
+constexpr float SYSTEM_PMNI_COUPLING = -0.1;  // g < 0 favors ferromagnetism
 #endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
 
 // Number of nearest neighbors

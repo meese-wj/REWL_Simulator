@@ -1,4 +1,5 @@
 #include "../ising2d_parameter_string.hpp"
+#include <iostream>
 
 #if JOB_ARRAYS
 Ising2d_Parameter_String::Ising2d_Parameter_String( const std::string & job_id_string )
@@ -20,17 +21,13 @@ void Ising2d_Parameter_String::update_file_header()
 #endif
     file_name_base += "REWL_L-" + L + "_J-" + J + "_h-" + h;
 #if PHONON_MEDIATED_NEMATIC_INTERACTIONS
-    file_name_base += "_gamma-" + PMNI_Coupling;
+    file_name_base += "_g-" + PMNI_Coupling;
 #endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
 
     file_name_base += ".dat";
 
-#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
-    model_name += "_PMNI";
-#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
-#if RFIM
-    model_name += "_RFIM";
-#endif // RFIM
+    std::cout << "\nCurrent model name: " << model_name << "\n";
+    std::cout << "\nCurrent model name: " << model_name << "\n";
  
     file_header = "# REWL " + model_name + " on a Periodic Square Lattice\n#";
     file_header += "\n# Hamiltonian Parameters";

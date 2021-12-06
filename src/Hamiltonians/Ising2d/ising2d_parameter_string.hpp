@@ -4,6 +4,18 @@
 #include "ising2d_parameters.cxx"
 #include <string>
 
+static std::string change_Ising_model_name( std::string model_name )
+{
+    std::string output_name = model_name;
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+    output_name += "_PMNI";
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
+#if RFIM
+    output_name += "_RFIM";
+#endif // RFIM
+    return output_name;
+}
+
 struct Ising2d_Parameter_String
 {
     const std::string L = std::to_string(Ising2d_Parameters::L);
@@ -21,7 +33,7 @@ struct Ising2d_Parameter_String
     const std::string energy_bin_size = std::to_string(Ising2d_Parameters::energy_bin_size);
     std::string num_bins = std::to_string(Ising2d_Parameters::num_bins);
 
-    std::string model_name = "Ising2d";
+    const std::string model_name = change_Ising_model_name( "Ising2d" );
     const std::string size_string = "L-" + L;
 
     std::string file_name_base;

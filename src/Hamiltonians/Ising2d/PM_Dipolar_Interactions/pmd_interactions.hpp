@@ -109,5 +109,21 @@ energy_t PMDN_Interactions<energy_t, spin_t>::calculate_total_PMDN_energy( const
     return 0.5 * total_energy;
 }
 
+// Use a proxy interaction scheme to calculate 
+// the ground state contribution from these 
+// interactions.
+template<typename energy_t, typename spin_t>
+energy_t PMNI_ground_state_contribution( const energy_t phonon_coupling, const std::uint32_t Lx, const std::uint32_t Ly, const energy_t moment_value=1. )
+{
+    // Assuming everything is ferromagnetic
+    PMDN_Interactions<energy_t, spin_t> pmd_ints( phonon_coupling, Lx, Ly );
+    spin_t * ferromagnetic_ground_state_spins = new spin_t [ Lx * Ly ];
+    for (std::uint32_t site = 0; site != Lx * Ly; ++site )
+        ferromagnetic_ground_state_spins[site] = moment_value;
+
+    energy_t total_energy = pmd_ints.calculate_total_PMDN_energy( ferromagnetic_ground_state_spins );
+    delete [] ferromagnetic_ground_state_spins;
+    return total_energy;
+}
 
 #endif // PMD_INTERACTIONS

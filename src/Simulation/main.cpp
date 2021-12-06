@@ -52,6 +52,10 @@ int main(int argc, char * argv[])
 
         ground_state_energy = toy_model -> current_state.energy;
 
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+        ground_state_energy += PMNI_ground_state_contribution<ENERGY_TYPE, OBS_TYPE>( System_Parameters::PMNI_Coupling, System_Parameters::L, System_Parameters::L );
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
+
 #if SIMULATED_ANNEALING
         Simulated_Annealer<ENERGY_TYPE, Hamiltonian_t<OBS_TYPE>, State_t<OBS_TYPE> > * annealer = new Simulated_Annealer<ENERGY_TYPE, Hamiltonian_t<OBS_TYPE>, State_t<OBS_TYPE> >
                                                                                                   ( SA_Parameters::block_size, SA_Parameters::initial_temperature, 
@@ -62,7 +66,7 @@ int main(int argc, char * argv[])
         ground_state_energy = annealer -> min_energy_found;
 
         delete annealer;
-#endif
+#endif // SIMULATED_ANNEALING
 
         highest_energy = System_Parameters::energy_max;
     }
@@ -245,9 +249,6 @@ int main(int argc, char * argv[])
     
     MPI_Barrier(MPI_COMM_WORLD);
 
-    printf("\nBefore thermodynamics with process %d\n", world_rank);
-    MPI_Barrier(MPI_COMM_WORLD);
-
     // Find out which ranks are 0-processors
     int * window_ids      = new int [ world_size ] ();
     int * window_comm_ids = new int [ world_size ] ();
@@ -384,9 +385,6 @@ int main(int argc, char * argv[])
     // else { I'm a processor that's now bored... }
     MPI_Barrier(MPI_COMM_WORLD);
 
-    printf("\nCleaning up the heap with process %d\n", world_rank);
-    MPI_Barrier(MPI_COMM_WORLD);
-
     /* ************************************************************************************* */
     /* Now it is time to clean up the heap.                                                  */
     /* ************************************************************************************* */
@@ -436,6 +434,10 @@ int main(int argc, char * argv[])
     Hamiltonian_t<OBS_TYPE> * toy_model = new Hamiltonian_t<OBS_TYPE> ();
 
     ground_state_energy = toy_model -> current_state.energy;
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+    ground_state_energy += PMNI_ground_state_contribution<ENERGY_TYPE, OBS_TYPE>( System_Parameters::PMNI_Coupling, System_Parameters::L, System_Parameters::L );
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
+
 #if SIMULATED_ANNEALING
         Simulated_Annealer<ENERGY_TYPE, Hamiltonian_t<OBS_TYPE>, State_t<OBS_TYPE> > * annealer = new Simulated_Annealer<ENERGY_TYPE, Hamiltonian_t<OBS_TYPE>, State_t<OBS_TYPE> >
                                                                                                   ( SA_Parameters::block_size, SA_Parameters::initial_temperature, 
@@ -446,7 +448,7 @@ int main(int argc, char * argv[])
         ground_state_energy = annealer -> min_energy_found;
 
         delete annealer;
-#endif
+#endif // SIMULATED_ANNEALING
 
     highest_energy = System_Parameters::energy_max;
     OBS_TYPE * dof_field_array = new OBS_TYPE [System_Parameters::num_DoF]();
@@ -529,9 +531,7 @@ int main(int argc, char * argv[])
 #else
     array_shift_by_value( log(System_Parameters::ground_state_degeneracy) - final_logdos_array[0], final_num_bins, final_logdos_array );
 #endif
-
-    printf("\nBefore thermodynamics with process %d\n", world_rank);
-       
+ 
     // Print out the microcanonical observables before thermally averaging
     write_microcanonical_observables<ENERGY_TYPE, LOGDOS_TYPE, OBS_TYPE>( System_Parameters::N, final_num_bins,
                                                                           convert<System_Obs_enum_t>(System_Obs_enum_t::NUM_OBS),
