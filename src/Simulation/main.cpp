@@ -108,7 +108,12 @@ int main(int argc, char * argv[])
 #endif
     sys_strings.energy_min = std::to_string(ground_state_energy);
     sys_strings.energy_max = std::to_string(highest_energy);
-    sys_strings.num_bins = std::to_string(static_cast<size_t>((highest_energy - ground_state_energy) / System_Parameters::energy_bin_size));
+    float new_energy_binsize = System_Parameters::energy_bin_size;
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+    new_energy_binsize += ground_state_energy / static_cast<float>(System_Parameters::N);
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
+    sys_strings.energy_bin_size = std::to_string(new_energy_binsize);
+    sys_strings.num_bins = std::to_string(static_cast<size_t>((highest_energy - ground_state_energy) / new_energy_binsize));
     sys_strings.update_file_header();
     
     REWL_Parameter_String rewl_strings = REWL_Parameter_String();
@@ -194,7 +199,7 @@ int main(int argc, char * argv[])
     /* **************************************************************************** */
 #endif
 
-    REWL_simulation * simulation = new REWL_simulation(ground_state_energy, highest_energy);
+    REWL_simulation * simulation = new REWL_simulation(ground_state_energy, highest_energy, new_energy_binsize);
     simulation -> my_walker -> system.import_DoFs( dof_field_array );
     delete dof_field_array;
 

@@ -34,7 +34,7 @@ struct REWL_simulation
 
     OBS_TYPE * old_counts = nullptr;
 
-    REWL_simulation( const ENERGY_TYPE all_energy_min, const ENERGY_TYPE all_energy_max );
+    REWL_simulation( const ENERGY_TYPE all_energy_min, const ENERGY_TYPE all_energy_max, const ENERGY_TYPE all_energy_binsize );
 
     ~REWL_simulation()
     {
@@ -66,7 +66,7 @@ struct REWL_simulation
 };
 
 // Simulation constructor
-REWL_simulation::REWL_simulation( const ENERGY_TYPE all_energy_min, const ENERGY_TYPE all_energy_max  )
+REWL_simulation::REWL_simulation( const ENERGY_TYPE all_energy_min, const ENERGY_TYPE all_energy_max, const ENERGY_TYPE all_energy_binsize  )
 {
 #if MPI_ON
     MPI_Comm_rank( MPI_COMM_WORLD, &my_world_rank );
@@ -77,7 +77,7 @@ REWL_simulation::REWL_simulation( const ENERGY_TYPE all_energy_min, const ENERGY
     // Construct the glazier
     window_maker = new glazier<ENERGY_TYPE, histogram_index<ENERGY_TYPE> >
                         (all_energy_min, all_energy_max,
-                         System_Parameters::energy_bin_size, 
+                         all_energy_binsize, 
                          static_cast<size_t>(REWL_Parameters::num_walkers) / REWL_Parameters::replicas_per_window,
                          REWL_Parameters::replicas_per_window, 
                          static_cast<ENERGY_TYPE>(REWL_Parameters::window_overlap));
@@ -222,7 +222,7 @@ void REWL_simulation::simulate(
 
 /* ==================================================================================================================== */
 /* This will turn on replica exchange. */
-#else 
+#else  // INDEPENDENT_WALKERS
 
 // Single replica exchange update
 size_t REWL_simulation::replica_exchange_update( int & exchange_direction, const size_t iteration_counter, 
@@ -689,7 +689,7 @@ void REWL_simulation::simulate(
     average_density_in_window<Observables_t<OBS_TYPE> >( my_ids_per_comm, &( my_walker -> system_obs ), my_comm_ids, window_communicators );
 #endif
 }
-#endif
+#endif // INDEPENDENT_WALKERS
 
-#endif
+#endif // REWL_SIMULATION
 /* ==================================================================================================================== */
