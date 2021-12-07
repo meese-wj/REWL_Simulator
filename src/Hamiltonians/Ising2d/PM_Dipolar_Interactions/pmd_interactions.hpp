@@ -32,11 +32,12 @@ energy_t interaction_value( const pbc_2d_vector<energy_t> & site_1, const pbc_2d
     energy_t cos_theta = xprojection / magnitude<energy_t, energy_t>( difference );
     energy_t cos_theta_sq = cos_theta * cos_theta;
 
-    if ( site_1.x == 0. && site_1.y && my_id == 0 )
+    if ( site_1.x == 0. && site_1.y == 0. && my_id == 0 )
     {
         std::cout << "\n";
-        std::cout << "\nsite_2      = (" << (int)site_2.x << ", " << (int)site_2.y << ")";
-        std::cout << "\ndiff        = (" << (int)difference.x << ", " << (int)difference.y << ")";
+        std::cout << "\nsite_1      = (" << site_1.x << ", " << site_1.y << ")";
+        std::cout << "\nsite_2      = (" << site_2.x << ", " << site_2.y << ")";
+        std::cout << "\ndiff        = (" << difference.x << ", " << difference.y << ")";
         std::cout << "\ncos(theta)  = " << cos_theta;
         std::cout << "\ncos(4theta)  = " << 1. - 8. * cos_theta_sq + 8. * cos_theta_sq * cos_theta_sq;
         std::cout << "\n";
