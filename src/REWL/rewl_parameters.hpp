@@ -31,7 +31,7 @@ namespace REWL_Parameters
     
     // This does not matter if the 1/t algorithm is
     // used to converge the logDoS
-    constexpr float flatness_criterion = 0.9;
+    constexpr float flatness_criterion = 0.3;
 
     // How many iterations to run through before
     // outputting any data to stdout

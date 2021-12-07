@@ -9,6 +9,7 @@
 #include <cmath>
 #include <random_number_generators.hpp>
 #include "rewl_histograms.hpp"
+#include <mpi.h>
 
 template<typename data_t>
 using rng = random_number_generator<data_t>;
@@ -79,9 +80,20 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
         print(temporary_state);
     }
     */
-
+    int id = 0, token = false;
+    MPI_Comm_rank(MPI_COMM_WORLD, &id);
+    if (id == 0 && temporary_state.energy >= 562.)
+    {
+        std::cout << "\npossible new energy = " << temporary_state.energy << " with mag = " << temporary_state.magnetization;
+        token = true;
+    }
     if ( hist_idx.energy_in_range( temporary_state.energy ) )
     {
+        if (id == 0 && temporary_state.energy <= -522. && token)
+        {
+            std::cout << "\nnew energy = " << temporary_state.energy << " with mag = " << temporary_state.magnetization <<  " in range.\n";
+            token = true;
+        }
         const size_t new_bin = hist_idx(temporary_state.energy);
 
         float entropy_change =   wl_histograms.get_logdos( new_bin )
@@ -162,7 +174,11 @@ bool Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
 #if ONE_OVER_T_ALGORITHM
     return ( oot_engaged ? true : static_cast<bool>( wl_histograms.count_flatness() ) );
 #else
-    return ( wl_histograms.count_flatness() <= tolerance );
+    int id = 0;
+    MPI_Comm_rank(MPI_COMM_WORLD, &id);
+    if (id == 0)
+        std::cout << wl_histograms.count_flatness(id) << "\n";
+    return ( wl_histograms.count_flatness(id) <= tolerance );
 #endif
 }
 

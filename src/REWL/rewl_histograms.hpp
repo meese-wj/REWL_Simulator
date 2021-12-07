@@ -14,6 +14,8 @@
 #include <cmath>
 #include <cstdint>
 #include <cfloat>
+#include <iostream>
+#include <string>
 
 #if PRINT_HISTOGRAM
 #include <string>
@@ -93,7 +95,7 @@ struct rewl_histograms
     }
 
     // Return flatness in the counts
-    float count_flatness() const;
+    float count_flatness(int id) const;
 
     // Export out the density of states as a deep copy
     void export_logdos( data_t *& data_array ) const
@@ -128,18 +130,24 @@ float rewl_histograms<data_t>::count_flatness() const
 }
 #else
 template<typename data_t>
-float rewl_histograms<data_t>::count_flatness() const
+float rewl_histograms<data_t>::count_flatness(int id) const
 {
     uint64_t minimum = get_count(0);
     uint64_t maximum = minimum;    
 
+    std::string printer = "\n" + std::to_string(num_bins) + "\n";
+    printer += "0:" + std::to_string(get_count(0)) + "  ";
     for ( size_t idx = 1; idx != num_bins; ++idx )
     {
+        printer += std::to_string(idx) + ":" + std::to_string(get_count(idx)) + "  ";
         if ( get_count(idx) < minimum )
             minimum = get_count(idx);
         if ( get_count(idx) > maximum )
             maximum = get_count(idx);
     }
+    printer += "\n";
+    // if (id == 0)
+    //     std::cout << printer;
 
     if ( minimum != 0 )
         return (static_cast<float> (maximum - minimum) / static_cast<float> (minimum));

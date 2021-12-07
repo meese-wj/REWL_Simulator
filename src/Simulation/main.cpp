@@ -51,10 +51,7 @@ int main(int argc, char * argv[])
         toy_model -> print_lattice();
 
         ground_state_energy = toy_model -> current_state.energy;
-
-#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
-        ground_state_energy += PMNI_ground_state_contribution<ENERGY_TYPE, OBS_TYPE>( System_Parameters::PMNI_Coupling, System_Parameters::L, System_Parameters::L );
-#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
+        std::cout << "\ntotal energy = " << ground_state_energy << "\n";
 
 #if SIMULATED_ANNEALING
         Simulated_Annealer<ENERGY_TYPE, Hamiltonian_t<OBS_TYPE>, State_t<OBS_TYPE> > * annealer = new Simulated_Annealer<ENERGY_TYPE, Hamiltonian_t<OBS_TYPE>, State_t<OBS_TYPE> >
