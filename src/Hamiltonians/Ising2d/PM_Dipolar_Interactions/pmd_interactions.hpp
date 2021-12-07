@@ -32,16 +32,16 @@ energy_t interaction_value( const pbc_2d_vector<energy_t> & site_1, const pbc_2d
     energy_t cos_theta = xprojection / magnitude<energy_t, energy_t>( difference );
     energy_t cos_theta_sq = cos_theta * cos_theta;
 
-    if ( site_1.x == 0. && site_1.y == 0. && my_id == 0 )
-    {
-        std::cout << "\n";
-        std::cout << "\nsite_1      = (" << site_1.x << ", " << site_1.y << ")";
-        std::cout << "\nsite_2      = (" << site_2.x << ", " << site_2.y << ")";
-        std::cout << "\ndiff        = (" << difference.x << ", " << difference.y << ")";
-        std::cout << "\ncos(theta)  = " << cos_theta;
-        std::cout << "\ncos(4theta)  = " << 1. - 8. * cos_theta_sq + 8. * cos_theta_sq * cos_theta_sq;
-        std::cout << "\n";
-    }
+    // if ( site_1.x == 0. && site_1.y == 0. && my_id == 0 )
+    // {
+    //     std::cout << "\n";
+    //     std::cout << "\nsite_1      = (" << site_1.x << ", " << site_1.y << ")";
+    //     std::cout << "\nsite_2      = (" << site_2.x << ", " << site_2.y << ")";
+    //     std::cout << "\ndiff        = (" << difference.x << ", " << difference.y << ")";
+    //     std::cout << "\ncos(theta)  = " << cos_theta;
+    //     std::cout << "\ncos(4theta)  = " << 1. - 8. * cos_theta_sq + 8. * cos_theta_sq * cos_theta_sq;
+    //     std::cout << "\n";
+    // }
 
     return (1. - 8. * cos_theta_sq + 8. * cos_theta_sq * cos_theta_sq) / square_magnitude<energy_t, energy_t>( difference );
 }
@@ -95,8 +95,8 @@ void PMDN_Interactions<energy_t, spin_t>::build_interaction_matrix(const energy_
                 {    
                     std::uint32_t index_2 = x2 * Lx + y2;
                     pbc_2d_vector<energy_t> site_2( x2, y2 );
-                    if (my_id == 0 && (x1 == 0 && y1 == 0))
-                        std::cout << "\n(" << x2 << ", " << y2 << ") -> " << index_2 << "\n"; 
+                    // if (my_id == 0 && (x1 == 0 && y1 == 0))
+                    //     std::cout << "\n(" << x2 << ", " << y2 << ") -> " << index_2 << "\n"; 
                     interaction_matrix[ index_1 * total_sites + index_2 ] = 0.;
                     if ( !( x1 == x2 && y1 == y2 ) )
                         interaction_matrix[ index_1 * total_sites + index_2 ] = phonon_coupling * interaction_value( site_1, site_2, Lx, Ly );
@@ -106,8 +106,8 @@ void PMDN_Interactions<energy_t, spin_t>::build_interaction_matrix(const energy_
         }
 
     printer += "\n";
-    if ( my_id == 0 )
-        std::cout << printer;
+    // if ( my_id == 0 )
+    //     std::cout << printer;
     return;
 }
 
@@ -149,9 +149,27 @@ energy_t PMNI_ground_state_contribution( const energy_t phonon_coupling, const s
         ferromagnetic_ground_state_spins[site] = moment_value;
 
     energy_t total_energy = pmd_ints.calculate_total_PMDN_energy( ferromagnetic_ground_state_spins );
-    std::cout << "Total energy = " << total_energy << "\n";
+    std::cout << "\nTotal energy = " << total_energy << "\n";
     delete [] ferromagnetic_ground_state_spins;
     return total_energy;
+}
+
+// Use a proxy interaction scheme to calculate 
+// the binsize contribution from these 
+// interactions.
+template<typename energy_t, typename spin_t>
+energy_t PMNI_binsize_contribution( const energy_t phonon_coupling, const std::uint32_t Lx, const std::uint32_t Ly, const energy_t moment_value=1. )
+{
+    // Assuming everything is ferromagnetic
+    PMDN_Interactions<energy_t, spin_t> pmd_ints( phonon_coupling, Lx, Ly );
+    spin_t * ferromagnetic_ground_state_spins = new spin_t [ Lx * Ly ];
+    for (std::uint32_t site = 0; site != Lx * Ly; ++site )
+        ferromagnetic_ground_state_spins[site] = moment_value;
+
+    energy_t binsize = -2 * pmd_ints.calculate_energy_per_spin( 0, ferromagnetic_ground_state_spins[0], ferromagnetic_ground_state_spins );
+    std::cout << "\nbinsize contribution = " << binsize << "\n";
+    delete [] ferromagnetic_ground_state_spins;
+    return binsize;
 }
 
 #endif // PMD_INTERACTIONS

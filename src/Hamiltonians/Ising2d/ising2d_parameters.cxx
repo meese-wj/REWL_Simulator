@@ -38,7 +38,7 @@ constexpr float SYSTEM_ENERGY_MIN = -0.5 * SYSTEM_EXCHANGE_J * SYSTEM_NUM_NEARES
 constexpr float SYSTEM_ENERGY_MAX = 0.;
 
 // Wang Landau Bin Width
-constexpr float SYSTEM_ENERGY_BIN_WIDTH = 2 * SYSTEM_EXCHANGE_J * SYSTEM_NUM_NEAREST_NEIGHBORS_float * 2;
+constexpr float SYSTEM_ENERGY_BIN_WIDTH = SYSTEM_EXCHANGE_J * SYSTEM_NUM_NEAREST_NEIGHBORS_float * 2;
 
 // Wang Landau Bin Number
 constexpr size_t SYSTEM_NUM_BINS = static_cast<size_t>( (SYSTEM_ENERGY_MAX - SYSTEM_ENERGY_MIN) / SYSTEM_ENERGY_BIN_WIDTH );
