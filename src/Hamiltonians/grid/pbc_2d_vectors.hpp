@@ -41,7 +41,7 @@ T pbc_add_1d( const std::uint32_t L_axis, const T ax1, const T ax2 )
 
     while ( result >= static_cast<T>(L_axis) )
         result -= L_axis;
-    while ( result < static_cast<T>(L_axis) )
+    while ( result < -static_cast<T>(L_axis) )
         result += L_axis;
 
     return result;
@@ -57,7 +57,7 @@ T pbc_subtract_1d( const std::uint32_t L_axis, const T ax1, const T ax2 )
 
     while ( result >= static_cast<T>(L_axis) / 2. )
         result -= L_axis;
-    while ( result < static_cast<T>(L_axis) / 2. )
+    while ( result < -static_cast<T>(L_axis) / 2. )
         result += L_axis;
 
     return result;
