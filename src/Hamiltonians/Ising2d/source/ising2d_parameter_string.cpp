@@ -26,9 +26,6 @@ void Ising2d_Parameter_String::update_file_header()
 
     file_name_base += ".dat";
 
-    std::cout << "\nCurrent model name: " << model_name << "\n";
-    std::cout << "\nCurrent model name: " << model_name << "\n";
- 
     file_header = "# REWL " + model_name + " on a Periodic Square Lattice\n#";
     file_header += "\n# Hamiltonian Parameters";
     file_header += "\n#    L = " + L;
