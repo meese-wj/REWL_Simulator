@@ -97,10 +97,9 @@ def find_string_value( string_type, file_string ):
     dat_ender = file_string[start:].find(".dat.")
     underscore_ender = file_string[start:].find("_")
     ender = dat_ender
-    if ender > underscore_ender:
+    if ender > underscore_ender and underscore_ender >= 0:
         ender = underscore_ender
     end = start + ender
-
     return file_string[start:end]
 
 def couplings_in_file( coupling_tuples, file_string ):

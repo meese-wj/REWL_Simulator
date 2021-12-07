@@ -64,7 +64,6 @@ def collect_observables_and_data( data_file_stem, observable_marker, sifter_coup
             data_tuples.append( (sifter, data, errs) )
 
     print(labels)
-
     data_tuples.sort(key = lambda tup: float(tup[0]) )
 
     return labels, data_tuples
