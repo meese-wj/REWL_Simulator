@@ -470,7 +470,12 @@ int main(int argc, char * argv[])
     System_Strings sys_strings = System_Strings();
     sys_strings.energy_min = std::to_string(ground_state_energy);
     sys_strings.energy_max = std::to_string(highest_energy);
-    sys_strings.num_bins = std::to_string(static_cast<size_t>((highest_energy - ground_state_energy) / System_Parameters::energy_bin_size));
+    ENERGY_TYPE new_energy_binsize = System_Parameters::energy_bin_size;
+#if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+    new_energy_binsize += PMNI_binsize_contribution<ENERGY_TYPE, OBS_TYPE>( System_Parameters::PMNI_Coupling, System_Parameters::L, System_Parameters::L );
+#endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
+    sys_strings.energy_bin_size = new_energy_binsize;
+    sys_strings.num_bins = std::to_string(static_cast<size_t>((highest_energy - ground_state_energy) / new_energy_binsize));
     sys_strings.update_file_header();
 
     REWL_Parameter_String rewl_strings = REWL_Parameter_String();
