@@ -123,8 +123,6 @@ energy_t PMNI_ground_state_contribution( const energy_t phonon_coupling, const s
         ferromagnetic_ground_state_spins[site] = moment_value;
 
     energy_t total_energy = pmd_ints.calculate_total_PMDN_energy( ferromagnetic_ground_state_spins );
-    std::cout << "\nTotal energy     = " << total_energy << "\n";
-    std::cout << "\nTotal energy / N = " << total_energy / static_cast<energy_t>(Lx * Ly) << "\n";
     delete [] ferromagnetic_ground_state_spins;
     return total_energy;
 }
@@ -142,7 +140,6 @@ energy_t PMNI_binsize_contribution( const energy_t phonon_coupling, const std::u
         ferromagnetic_ground_state_spins[site] = moment_value;
 
     energy_t binsize = -2 * pmd_ints.calculate_energy_per_spin( 0, ferromagnetic_ground_state_spins[0], ferromagnetic_ground_state_spins );
-    std::cout << "\nbinsize contribution = " << binsize << "\n";
     delete [] ferromagnetic_ground_state_spins;
     return round(binsize);
 }

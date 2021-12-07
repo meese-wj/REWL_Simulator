@@ -51,7 +51,6 @@ int main(int argc, char * argv[])
         toy_model -> print_lattice();
 
         ground_state_energy = toy_model -> current_state.energy;
-        std::cout << "\ntotal energy = " << ground_state_energy << "\n";
 
 #if SIMULATED_ANNEALING
         Simulated_Annealer<ENERGY_TYPE, Hamiltonian_t<OBS_TYPE>, State_t<OBS_TYPE> > * annealer = new Simulated_Annealer<ENERGY_TYPE, Hamiltonian_t<OBS_TYPE>, State_t<OBS_TYPE> >
@@ -107,9 +106,7 @@ int main(int argc, char * argv[])
     sys_strings.energy_max = std::to_string(highest_energy);
     float new_energy_binsize = System_Parameters::energy_bin_size;
 #if PHONON_MEDIATED_NEMATIC_INTERACTIONS
-    std::cout << "\nold binsize" << new_energy_binsize;
     new_energy_binsize += PMNI_binsize_contribution<ENERGY_TYPE, OBS_TYPE>( System_Parameters::PMNI_Coupling, System_Parameters::L, System_Parameters::L );
-    std::cout << "\nnew binsize" << new_energy_binsize << "\n";
 #endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
     sys_strings.energy_bin_size = std::to_string(new_energy_binsize);
     sys_strings.num_bins = std::to_string(static_cast<size_t>((highest_energy - ground_state_energy) / new_energy_binsize));
