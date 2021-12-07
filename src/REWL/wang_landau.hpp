@@ -56,51 +56,18 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
                                                                                     Hamiltonian_t * const ham, Observables_t * const ham_obs, 
                                                                                     rng<double> & random, const histogram_index_functor & hist_idx)
 {
-    //printf("\n\nSite %ld of %ld: spin = %e", idx, System_Parameters::N-1, ham -> spin_array[idx]);
-    //printf("\n\nDoF %ld = %c before", idx, ham -> spin_array[idx] == 1. ? '+' : '-');
-    //ham -> print_lattice();
     State_t temporary_state;
-    //printf("\n\ncurrent state");
-    //print(ham -> current_state);
     ham -> change_state(idx, temporary_state);
-    //printf("\n\ntemporary state");
-    //print(temporary_state);
     
     size_t current_bin = hist_idx(ham -> current_state.energy);
 
-    /*
-    if ( current_bin >= System_Parameters::num_bins -5 )
-    {
-        printf("\n\nSite %ld of %ld: spin = %e", idx, System_Parameters::N-1, ham -> spin_array[idx]);
-        printf("\n\nDoF %ld = %c before", idx, ham -> spin_array[idx] == 1. ? '+' : '-');
-        ham -> print_lattice();
-        printf("\n\ncurrent state");
-        print(ham -> current_state);
-        printf("\n\ntemporary state");
-        print(temporary_state);
-    }
-    */
-    int id = 0, token = false;
-    MPI_Comm_rank(MPI_COMM_WORLD, &id);
-    if (id == 0 && temporary_state.energy >= 562.)
-    {
-        std::cout << "\npossible new energy = " << temporary_state.energy << " with mag = " << temporary_state.magnetization;
-        token = true;
-    }
     if ( hist_idx.energy_in_range( temporary_state.energy ) )
     {
-        if (id == 0 && temporary_state.energy <= -522. && token)
-        {
-            std::cout << "\nnew energy = " << temporary_state.energy << " with mag = " << temporary_state.magnetization <<  " in range.\n";
-            token = true;
-        }
         const size_t new_bin = hist_idx(temporary_state.energy);
 
         float entropy_change =   wl_histograms.get_logdos( new_bin )
                                - wl_histograms.get_logdos( current_bin );
 
-        //printf("\ncurrent energy, new energy = %e, %e", ham -> current_state.energy, temporary_state.energy);
-        //printf("\ncurrent bin, new bin, entropy change = %ld, %ld, %e", current_bin, new_bin, entropy_change);
 
         // Check if the move is allowed
         if ( entropy_change <= 0. || random() < static_cast<double>(exp(-entropy_change)) )
@@ -108,7 +75,6 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
             // If allowed, change the state to the temporary one
             // and change the current bin to the new bin. Note that
             // the state MUST contain the new degree of freedom in it.
-            //printf("\nChanging State...\n");
             ham -> set_state(idx, temporary_state);
             current_bin = new_bin;
         }
@@ -124,18 +90,6 @@ void Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
     ham -> update_observables( current_bin, ham_obs );
 #endif
   
-    /*
-    if ( current_bin >= System_Parameters::num_bins -6)
-    {
-        printf("\n\nDoF %ld = %c after", idx, ham -> spin_array[idx] == 1. ? '+' : '-');
-        ham -> print_lattice();
-
-        printf("\n\n");
-        printf("\n*************************************************************************\n");
-        printf("\n*************************************************************************\n");
-        printf("\n*************************************************************************\n");
-    }
-    */
 }
 
 
@@ -174,11 +128,7 @@ bool Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
 #if ONE_OVER_T_ALGORITHM
     return ( oot_engaged ? true : static_cast<bool>( wl_histograms.count_flatness() ) );
 #else
-    int id = 0;
-    MPI_Comm_rank(MPI_COMM_WORLD, &id);
-    if (id == 0)
-        std::cout << wl_histograms.count_flatness(id) << "\n";
-    return ( wl_histograms.count_flatness(id) <= tolerance );
+    return ( wl_histograms.count_flatness(0) <= tolerance );
 #endif
 }
 
