@@ -128,7 +128,7 @@ bool Wang_Landau<energy_t, logdos_t, Hamiltonian_t, Observables_t, State_t, hist
 #if ONE_OVER_T_ALGORITHM
     return ( oot_engaged ? true : static_cast<bool>( wl_histograms.count_flatness() ) );
 #else
-    return ( wl_histograms.count_flatness(0) <= tolerance );
+    return ( wl_histograms.count_flatness() <= tolerance );
 #endif
 }
 
