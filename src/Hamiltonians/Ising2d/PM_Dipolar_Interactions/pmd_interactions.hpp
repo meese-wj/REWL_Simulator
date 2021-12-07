@@ -143,7 +143,7 @@ energy_t PMNI_binsize_contribution( const energy_t phonon_coupling, const std::u
     energy_t binsize = -2 * pmd_ints.calculate_energy_per_spin( 0, ferromagnetic_ground_state_spins[0], ferromagnetic_ground_state_spins );
     std::cout << "\nbinsize contribution = " << binsize << "\n";
     delete [] ferromagnetic_ground_state_spins;
-    return binsize;
+    return round(binsize);
 }
 
 #endif // PMD_INTERACTIONS
