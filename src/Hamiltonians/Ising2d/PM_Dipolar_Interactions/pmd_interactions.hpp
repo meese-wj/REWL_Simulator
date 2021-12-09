@@ -29,7 +29,7 @@ energy_t interaction_value( const pbc_2d_vector<energy_t> & site_1, const pbc_2d
     energy_t cos_theta = xprojection / magnitude<energy_t, energy_t>( difference );
     energy_t cos_theta_sq = cos_theta * cos_theta;
 
-    return (1. - 8. * cos_theta_sq + 8. * cos_theta_sq * cos_theta_sq) / square_magnitude<energy_t, energy_t>( difference );
+    return -1. + (1. - 8. * cos_theta_sq + 8. * cos_theta_sq * cos_theta_sq) / square_magnitude<energy_t, energy_t>( difference );
 }
 
 // Encapsulate the massive phonon-mediated
@@ -79,7 +79,7 @@ void PMDN_Interactions<energy_t, spin_t>::build_interaction_matrix(const energy_
                     pbc_2d_vector<energy_t> site_2( x2, y2 );
                     interaction_matrix[ index_1 * total_sites + index_2 ] = 0.;
                     if ( !( x1 == x2 && y1 == y2 ) )
-                        interaction_matrix[ index_1 * total_sites + index_2 ] = phonon_coupling * interaction_value( site_1, site_2, Lx, Ly );
+                        interaction_matrix[ index_1 * total_sites + index_2 ] = phonon_coupling * interaction_value( site_1, site_2, Lx, Ly ) / static_cast<energy_t>(system_size);
                 }
         }
     return;
