@@ -18,7 +18,7 @@ struct Ashkin_Teller2d_Parameter_String
 
     std::string energy_min = std::to_string(Ashkin_Teller2d_Parameters::energy_min);
     std::string energy_max = std::to_string(Ashkin_Teller2d_Parameters::energy_max);
-    const std::string energy_bin_size = std::to_string(Ashkin_Teller2d_Parameters::energy_bin_size);
+    std::string energy_bin_size = std::to_string(Ashkin_Teller2d_Parameters::energy_bin_size);
     std::string num_bins = std::to_string(Ashkin_Teller2d_Parameters::num_bins);
 
 #if RFAT_BAXTER
