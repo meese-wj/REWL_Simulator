@@ -21,6 +21,7 @@ nonlinear_base = "nonlinear_observables"
 micro_dilutor = 0.1 # fraction by which to dilute the self-averaged observables for the microcanonical ones
 file_types = [ filename_base, nonlinear_base ]
 observable_markers = [ "Intensive Observable Names by Column", "Intensive Nonlinear Observable Names by Column" ]
+DELIM = ","
 
 def setup_args():
     parser = argparse.ArgumentParser()
@@ -83,7 +84,7 @@ def read_in_data( input_path, Lsize, coupling_tuples, file_type, observable_mark
 
             ID = find_string_value(job_id_string, fl)
 
-            data = np.loadtxt( input_path + fl, delimiter = "  ", dtype = "float64", comments = comment)
+            data = np.loadtxt( input_path + fl, delimiter = DELIM, dtype = "float64", comments = comment)
 
             """ TODO: Get rid of this entirely.
 
@@ -249,16 +250,16 @@ def write_out_data( output_file, input_path, num_jobs, labels, header_lines, fin
         if ldx != len(header_lines)-1:
             header += "\n"
 
-    np.savetxt(output + ".job_mean", final_averages, delimiter="  ", newline="\n", header=header, comments="")
-    np.savetxt(output + ".job_stderr", final_stderr, delimiter="  ", newline="\n", header=header, comments="")
+    np.savetxt(output + ".job_mean", final_averages, delimiter=DELIM, newline="\n", header=header, comments="")
+    np.savetxt(output + ".job_stderr", final_stderr, delimiter=DELIM, newline="\n", header=header, comments="")
 
     if file_type == filename_base:
         # Write out the microcanonical data from the self-averaged data
         micro_labels, micro_avgs, micro_stderr = microcanonical_observable_data( labels, final_averages, final_stderr )
         micro_header = microcanonical_header( micro_labels, header_lines )
         micro_output = str(output_path) + "/" + microname_base + "-" + output_file[ output_file.find("REWL_") :  ]
-        np.savetxt(micro_output + ".job_mean", micro_avgs, delimiter="  ", newline="\n", header=micro_header, comments="")
-        np.savetxt(micro_output + ".job_stderr", micro_stderr, delimiter="  ", newline="\n", header=micro_header, comments="")
+        np.savetxt(micro_output + ".job_mean", micro_avgs, delimiter=DELIM, newline="\n", header=micro_header, comments="")
+        np.savetxt(micro_output + ".job_stderr", micro_stderr, delimiter=DELIM, newline="\n", header=micro_header, comments="")
 
     return None
 

@@ -21,6 +21,7 @@ capsize = 2
 markersize = 5
 marker_edge_color = "black"
 marker_edge_width = 1
+DELIM = ","
 
 def setup_args():
     parser = argparse.ArgumentParser()
@@ -52,12 +53,12 @@ def collect_observables_and_data( data_file_stem, observable_marker, sifter_coup
             sifter = find_string_value(sifter_coupling, fl)
             print(sifter)
 
-            data = np.loadtxt(fl, delimiter = "  ", dtype="float64", comments = comment)
+            data = np.loadtxt(fl, delimiter = DELIM, dtype="float64", comments = comment)
             errs = np.zeros((0,0))
 
             if "job_mean" in fl:
                 err_file = fl[ : fl.find("job_mean") ] + "job_stderr"
-                errs = np.loadtxt( err_file, delimiter = "  ", dtype="float64", comments = comment )
+                errs = np.loadtxt( err_file, delimiter = DELIM, dtype="float64", comments = comment )
 
             print(fl, sifter)
 

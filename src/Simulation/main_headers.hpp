@@ -13,7 +13,7 @@
 #endif
 #endif
 
-const std::string DELIMITER = "  ";
+const std::string DELIMITER = ",";
 
 #include "rewl_simulation.hpp"
 

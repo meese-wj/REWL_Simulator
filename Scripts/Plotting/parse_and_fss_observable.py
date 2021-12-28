@@ -13,6 +13,7 @@ import os
 
 output_path = "Figures"
 dimension = 2
+DELIM=","
 
 def setup_args():
     parser = argparse.ArgumentParser()
@@ -42,11 +43,11 @@ def collect_observables_and_data( data_file_stem, fss_observable, observable_mar
 
             Lvalue = find_string_value("L", fl)
 
-            data = np.loadtxt(fl, delimiter = "  ", dtype = float, comments = comment)
+            data = np.loadtxt(fl, delimiter = DELIM, dtype = float, comments = comment)
             error = np.zeros((0,0))
             if "job_mean" in fl:
                 error_string = fl[:fl.find(".job_mean")] + ".job_stderr"
-                error = np.loadtxt( error_string, delimiter = "  ", dtype = "float64", comments = comment )
+                error = np.loadtxt( error_string, delimiter = DELIM, dtype = "float64", comments = comment )
 
             print(fl, Lvalue)
 
