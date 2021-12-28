@@ -3,6 +3,7 @@
 # subdirectory as an include directory
 # properly for all of the Hamiltonians.
 add_subdirectory(grid)
+add_subdirectory(Address_Books)
 add_subdirectory(Correlations)
 add_subdirectory(Disorder)
 add_subdirectory(Simulated_Annealer)
@@ -18,4 +19,5 @@ target_link_libraries(hamiltonians PUBLIC
                       disorder
                       simulated_annealer
                       ising2d
-                      ashkin_teller2d)
+                      ashkin_teller2d
+                      address_books_for_square_periodic_lattices)
