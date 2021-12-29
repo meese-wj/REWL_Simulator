@@ -59,9 +59,8 @@ void Square_2D_Nearest_Neighbor_Functor<Lx, Ly>::write_address_book() const
 template<Lattice_Address_Book::SiteType Lx, Lattice_Address_Book::SiteType Ly>
 void Square_2D_Nearest_Neighbor_Functor<Lx, Ly>::initialize()
 {
-    _current_site = new SiteType;
-    _neighbors = new SiteType [_num_neighbors]();
-    assign_neighbors( 0 ); // Just a dummy assignment to clear out uninitialized values   
+    update_current_site( 0 );
+    assign_neighbors( _current_site ); // Just a dummy assignment to clear out uninitialized values   
 }
 
 template<Lattice_Address_Book::SiteType Lx, Lattice_Address_Book::SiteType Ly>
@@ -81,13 +80,13 @@ void Square_2D_Nearest_Neighbor_Functor<Lx, Ly>::print() const
 template<Lattice_Address_Book::SiteType Lx, Lattice_Address_Book::SiteType Ly>
 Lattice_Address_Book::SiteType Square_2D_Nearest_Neighbor_Functor<Lx, Ly>::current_site() const 
 {
-    return *_current_site;
+    return _current_site;
 }
 
 template<Lattice_Address_Book::SiteType Lx, Lattice_Address_Book::SiteType Ly>
 void Square_2D_Nearest_Neighbor_Functor<Lx, Ly>::update_current_site( const SiteType site ) const 
 {
-    *_current_site = site;
+    _current_site = site;
 }
 
 template<Lattice_Address_Book::SiteType Lx, Lattice_Address_Book::SiteType Ly>
@@ -102,14 +101,12 @@ template<Lattice_Address_Book::SiteType Lx, Lattice_Address_Book::SiteType Ly>
 typename Square_2D_Nearest_Neighbor_Functor<Lx, Ly>::NeighborIterator Square_2D_Nearest_Neighbor_Functor<Lx, Ly>::neighbor_begin( const SiteType site ) const
 {
     assign_neighbors( site );
-    // return _neighbors.begin();
     return _neighbors;
 }
 
 template<Lattice_Address_Book::SiteType Lx, Lattice_Address_Book::SiteType Ly>
 typename Square_2D_Nearest_Neighbor_Functor<Lx, Ly>::NeighborIterator Square_2D_Nearest_Neighbor_Functor<Lx, Ly>::neighbor_end( const SiteType site ) const
 {
-    // return _neighbors.end();
     return _neighbors + _num_neighbors;
 }
 

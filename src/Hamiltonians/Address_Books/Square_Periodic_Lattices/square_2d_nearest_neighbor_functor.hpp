@@ -39,19 +39,15 @@ public:
     NeighborIterator neighbor_begin( const SiteType site ) const;
     NeighborIterator neighbor_end( const SiteType site ) const;
 
-    virtual ~Square_2D_Nearest_Neighbor_Functor() override 
-    { 
-        delete _current_site;
-        delete [] _neighbors;
-    }
+    virtual ~Square_2D_Nearest_Neighbor_Functor() override {}
 
     void print() const;
 
 private:
     const SiteType _Nxy = Lx * Ly;
     const SiteType _num_neighbors = NUM_NEIGHBORS;
-    SiteType * _current_site = nullptr;
-    NeighborList _neighbors;
+    mutable SiteType _current_site;
+    mutable SiteType _neighbors [NUM_NEIGHBORS];
 };
 
 
