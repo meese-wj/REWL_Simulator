@@ -87,7 +87,6 @@ struct Ashkin_Teller2d
 #if RFAT_BAXTER
     float * field_array = nullptr;
 #endif
-    // size_t * neighbor_array = nullptr;
     
     Square_2D_Nearest_Neighbors address_book;
 
@@ -107,16 +106,7 @@ struct Ashkin_Teller2d
             spin_array[idx] = 1.;
 
         address_book.initialize();
-        /*
-        // TODO: Generalize this to different types 
-        // of grids.
-        // Allocate the neighbor array
-        define_2d_square_periodic_neighbors(Ashkin_Teller2d_Parameters::L,
-                                            Ashkin_Teller2d_Parameters::L,
-                                            Ashkin_Teller2d_Parameters::num_neighbors_i,
-                                            neighbor_array);
-        */
-
+        
 #if RFAT_BAXTER
         generate_random_field<float>( Ashkin_Teller2d_Parameters::N, 
                                       Ashkin_Teller2d_Parameters::h, 
@@ -133,7 +123,6 @@ struct Ashkin_Teller2d
     ~Ashkin_Teller2d()
     {
         delete [] spin_array;
-        //delete [] neighbor_array;
 #if RFAT_BAXTER
         delete [] field_array;
 #endif
@@ -190,17 +179,13 @@ float Ashkin_Teller2d<data_t>::local_energy(const size_t idx, const data_t * con
     float en = 0.;
     data_t sigma_idx = *(spins + spin_type::sigma);
     data_t tau_idx   = *(spins + spin_type::tau);
-    size_t neighbor = 0;
-    //for ( size_t nidx = 0; nidx != Ashkin_Teller2d_Parameters::num_neighbors_i; ++nidx )
     for ( auto nn_itr = address_book.neighbor_begin(idx); nn_itr != address_book.neighbor_end(idx); ++nn_itr )
     {
-        //neighbor = neighbor_array[ idx * Ashkin_Teller2d_Parameters::num_neighbors_i + nidx ];
-        neighbor = *nn_itr; 
-        en += Ashkin_Teller2d_Parameters::J * static_cast<float>( sigma_idx * (*spin_at_site(neighbor, spin_type::sigma)) );
-        en += Ashkin_Teller2d_Parameters::J * static_cast<float>( tau_idx   * (*spin_at_site(neighbor, spin_type::tau)  ) );
+        en += Ashkin_Teller2d_Parameters::J * static_cast<float>( sigma_idx * (*spin_at_site(*nn_itr, spin_type::sigma)) );
+        en += Ashkin_Teller2d_Parameters::J * static_cast<float>( tau_idx   * (*spin_at_site(*nn_itr, spin_type::tau)  ) );
         en += Ashkin_Teller2d_Parameters::K * static_cast<float>( sigma_idx * tau_idx
-                                                                * (*spin_at_site(neighbor, spin_type::sigma))
-                                                                * (*spin_at_site(neighbor, spin_type::tau)  )   );
+                                                                * (*spin_at_site(*nn_itr, spin_type::sigma))
+                                                                * (*spin_at_site(*nn_itr, spin_type::tau)  )   );
 
     }
 

@@ -8,12 +8,6 @@
 // Include the observables enum class
 #include "ising2d_observables.hpp"
 
-// Include the grid setup from the 
-// cmake include directories.
-// TODO: Eliminate this because it's wayyy
-// too specific to 2d square grids.
-#include <grid_setup.hpp>
-
 // Include the address book
 #include "../Address_Books/Square_Periodic_Lattices/square_2d_nearest_neighbors.hpp"
 
@@ -79,7 +73,6 @@ struct Ising2d
 #endif
     
     Square_2D_Nearest_Neighbors address_book;
-    //size_t * neighbor_array = nullptr;
 
 #if PHONON_MEDIATED_NEMATIC_INTERACTIONS
     PMDN_Interactions<float, data_t> * pmd_interaction;
@@ -103,16 +96,6 @@ struct Ising2d
 
         address_book.initialize();
 
-        /*
-        // TODO: Generalize this to different types 
-        // of grids.
-        // Allocate the neighbor array
-        define_2d_square_periodic_neighbors(Ising2d_Parameters::L,
-                                            Ising2d_Parameters::L,
-                                            Ising2d_Parameters::num_neighbors_i,
-                                            neighbor_array);
-        */
-
 #if RFIM
         generate_random_field<float>( Ising2d_Parameters::N, Ising2d_Parameters::h, 
                                       field_array, disorder_type );
@@ -127,7 +110,6 @@ struct Ising2d
     ~Ising2d()
     {
         delete [] spin_array;
-        //delete [] neighbor_array;
 #if RFIM
         delete [] field_array;
 #endif
@@ -186,7 +168,6 @@ float Ising2d<data_t>::local_field(const size_t idx) const
 #else
     float field = Ising2d_Parameters::h;
 #endif
-    //for ( size_t nidx = 0; nidx != Ising2d_Parameters::num_neighbors_i; ++nidx )
     for ( auto nn_itr = address_book.neighbor_begin(idx); nn_itr != address_book.neighbor_end(idx); ++nn_itr )
     {
         field += Ising2d_Parameters::J * static_cast<float>( spin_array[ *nn_itr ] );
