@@ -2,9 +2,8 @@
 // lattice with nearest neighbors only.
 
 #include "square_2d_nearest_neighbors.hpp"
+#include <helpful_global_macros.hpp>   // included from util
 #include <iostream>
-
-#define BRANCHLESS_TERNARY( cond_a, a, b ) ( (cond_a) * (a) + !(cond_a) * (b) )
 
 Square_2D_Nearest_Neighbors::Square_2D_Nearest_Neighbors( const SiteType Lx, const SiteType Ly ) : _Lx(Lx), _Ly(Ly)
 {
@@ -19,23 +18,23 @@ void Square_2D_Nearest_Neighbors::assign_neighbors( SiteType site ) const
 
     // Order of the neighbors is (x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)
     // Neighbor 0:
-    neighbor_x = BRANCHLESS_TERNARY( site_x == 0, _Lx - 1, site_x - 1 );
+    neighbor_x = _BRANCHLESS_TERNARY( site_x == 0, _Lx - 1, site_x - 1 );
     neighbor_y = site_y;
     _site_neighbors[site][0] = site_from_indices( neighbor_x, neighbor_y, _Lx );
     
     // Neighbor 1:
-    neighbor_x = BRANCHLESS_TERNARY( site_x == _Lx - 1, 0, site_x + 1 );
+    neighbor_x = _BRANCHLESS_TERNARY( site_x == _Lx - 1, 0, site_x + 1 );
     neighbor_y = site_y;
     _site_neighbors[site][1] = site_from_indices( neighbor_x, neighbor_y, _Lx );
     
     // Neighbor 2:
     neighbor_x = site_x;
-    neighbor_y = BRANCHLESS_TERNARY( site_y == 0, _Ly - 1, site_y - 1 );
+    neighbor_y = _BRANCHLESS_TERNARY( site_y == 0, _Ly - 1, site_y - 1 );
     _site_neighbors[site][2] = site_from_indices( neighbor_x, neighbor_y, _Lx );
     
     // Neighbor 3:
     neighbor_x = site_x;
-    neighbor_y = BRANCHLESS_TERNARY( site_y == _Ly - 1, 0, site_y + 1 );
+    neighbor_y = _BRANCHLESS_TERNARY( site_y == _Ly - 1, 0, site_y + 1 );
     _site_neighbors[site][3] = site_from_indices( neighbor_x, neighbor_y, _Lx );
 
     return;
@@ -80,6 +79,3 @@ Square_2D_Nearest_Neighbors::NeighborIterator Square_2D_Nearest_Neighbors::neigh
 {
     return _site_neighbors[site].end();
 }
-
-#undef BRANCHLESS_TERNARY
-
