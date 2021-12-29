@@ -20,4 +20,4 @@ target_link_libraries(hamiltonians PUBLIC
                       simulated_annealer
                       ising2d
                       ashkin_teller2d
-                      address_books_for_square_periodic_lattices)
+                      AddressBooks)
