@@ -279,7 +279,7 @@ int main(int argc, char * argv[])
             {
                 int window_idx = window_comm_ids[ proc ];
                 MPI_Status status; 
-                mpi_recv_array_to_vector<ENERGY_TYPE>( proc,  energy_table[window_idx], MPI_FLOAT, final_energy_tag, MPI_COMM_WORLD, &status );
+                mpi_recv_array_to_vector<ENERGY_TYPE>( proc,  energy_table[window_idx], MPI_ENERGY_TYPE, final_energy_tag, MPI_COMM_WORLD, &status );
                 mpi_recv_array_to_vector<LOGDOS_TYPE>( proc,  logdos_table[window_idx], MPI_LOGDOS_TYPE, final_logdos_tag, MPI_COMM_WORLD, &status );
                 mpi_recv_array_to_vector<OBS_TYPE>( proc, observable_table[window_idx], MPI_OBS_TYPE, final_obs_tag, MPI_COMM_WORLD, &status );
 
@@ -373,7 +373,7 @@ int main(int argc, char * argv[])
     else if ( my_ids_per_comm[ Communicators::window_comm ] == 0 ) 
     {
         // Send arrays to the master process for analysis.
-        mpi_send_array<ENERGY_TYPE>( REWL_MASTER_PROC, final_num_bins, final_energy_array, MPI_FLOAT, final_energy_tag, MPI_COMM_WORLD );  
+        mpi_send_array<ENERGY_TYPE>( REWL_MASTER_PROC, final_num_bins, final_energy_array, MPI_ENERGY_TYPE, final_energy_tag, MPI_COMM_WORLD );  
         mpi_send_array<LOGDOS_TYPE>( REWL_MASTER_PROC, final_num_bins, final_logdos_array, MPI_LOGDOS_TYPE, final_logdos_tag, MPI_COMM_WORLD );  
         mpi_send_array<OBS_TYPE>( REWL_MASTER_PROC, final_num_obs_values, final_observable_array, MPI_OBS_TYPE, final_obs_tag, MPI_COMM_WORLD );  
 
