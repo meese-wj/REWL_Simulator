@@ -97,7 +97,6 @@ struct Ising2d
             spin_array[idx] = 1.;
 
         address_book.initialize();
-        address_book.print();
 
 #if RFIM
         generate_random_field<float>( Ising2d_Parameters::N, Ising2d_Parameters::h, 
