@@ -34,6 +34,7 @@ public:
     void initialize() override;
 
     SiteType current_site( ) const; 
+    SiteType total_sites( ) const; 
     void update_current_site( const SiteType site ) const; 
     SiteType neighbor( const SiteType site, const SiteType neighbor ) const;
     NeighborIterator neighbor_begin( const SiteType site ) const;
@@ -44,7 +45,6 @@ public:
     void print() const;
 
 private:
-    const SiteType _Nxy = Lx * Ly;
     const SiteType _num_neighbors = _SQUARE_LATT_2D_NUM_NEIGHBORS;
     mutable SiteType _current_site;
     mutable SiteType _neighbors [_SQUARE_LATT_2D_NUM_NEIGHBORS];

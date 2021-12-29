@@ -67,7 +67,7 @@ template<Lattice_Address_Book::SiteType Lx, Lattice_Address_Book::SiteType Ly>
 void Square_2D_Nearest_Neighbor_Functor<Lx, Ly>::print() const
 {
     std::cout << "\nNearest Neighbor Lists for a " << Lx << " x " << Ly << " periodic square grid\n";
-    for ( SiteType site = 0; site != _Nxy; ++site )
+    for ( SiteType site = 0; site != total_sites(); ++site )
     {
         std::cout << "\nSite " << site << ": ";
         for (NeighborIterator itr = neighbor_begin(site); itr != neighbor_end(site); ++itr)
@@ -81,6 +81,12 @@ template<Lattice_Address_Book::SiteType Lx, Lattice_Address_Book::SiteType Ly>
 Lattice_Address_Book::SiteType Square_2D_Nearest_Neighbor_Functor<Lx, Ly>::current_site() const 
 {
     return _current_site;
+}
+
+template<Lattice_Address_Book::SiteType Lx, Lattice_Address_Book::SiteType Ly>
+Lattice_Address_Book::SiteType Square_2D_Nearest_Neighbor_Functor<Lx, Ly>::total_sites() const 
+{
+    return Lx * Ly;
 }
 
 template<Lattice_Address_Book::SiteType Lx, Lattice_Address_Book::SiteType Ly>
