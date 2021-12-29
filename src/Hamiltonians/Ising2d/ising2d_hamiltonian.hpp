@@ -8,9 +8,8 @@
 // Include the observables enum class
 #include "ising2d_observables.hpp"
 
-// Include the grid setup from the 
-// cmake include directories.
-#include <grid_setup.hpp>
+// Include the address book
+#include "../Address_Books/Square_Periodic_Lattices/square_2d_nearest_neighbors.hpp"
 
 #if CORRELATION_LENGTHS
 // Include the correlation functionality.
@@ -72,7 +71,8 @@ struct Ising2d
     // TODO: change the energies to doubles.
     float * field_array = nullptr;
 #endif
-    size_t * neighbor_array = nullptr;
+    
+    Square_2D_Nearest_Neighbors address_book;
 
 #if PHONON_MEDIATED_NEMATIC_INTERACTIONS
     PMDN_Interactions<float, data_t> * pmd_interaction;
@@ -87,20 +87,15 @@ struct Ising2d
     void update_observables(const size_t bin, Ising2d_Obs<data_t> * obs_ptr) const;
 
     // Finally add the constructor and destructor.
-    Ising2d()
+    Ising2d() : address_book(Ising2d_Parameters::L, Ising2d_Parameters::L)
     {
         spin_array = new data_t [ Ising2d_Parameters::N ];
         // TODO: change this to be randomized?
         for ( size_t idx = 0; idx != Ising2d_Parameters::N; ++idx )
             spin_array[idx] = 1.;
 
-        // TODO: Generalize this to different types 
-        // of grids.
-        // Allocate the neighbor array
-        define_2d_square_periodic_neighbors(Ising2d_Parameters::L,
-                                            Ising2d_Parameters::L,
-                                            Ising2d_Parameters::num_neighbors_i,
-                                            neighbor_array);
+        address_book.initialize();
+
 #if RFIM
         generate_random_field<float>( Ising2d_Parameters::N, Ising2d_Parameters::h, 
                                       field_array, disorder_type );
@@ -115,7 +110,6 @@ struct Ising2d
     ~Ising2d()
     {
         delete [] spin_array;
-        delete [] neighbor_array;
 #if RFIM
         delete [] field_array;
 #endif
@@ -174,9 +168,9 @@ float Ising2d<data_t>::local_field(const size_t idx) const
 #else
     float field = Ising2d_Parameters::h;
 #endif
-    for ( size_t nidx = 0; nidx != Ising2d_Parameters::num_neighbors_i; ++nidx )
+    for ( auto nn_itr = address_book.neighbor_begin(idx); nn_itr != address_book.neighbor_end(idx); ++nn_itr )
     {
-        field += Ising2d_Parameters::J * static_cast<float>( spin_array[ neighbor_array[ idx * Ising2d_Parameters::num_neighbors_i + nidx ] ] );
+        field += Ising2d_Parameters::J * static_cast<float>( spin_array[ *nn_itr ] );
     }
 
 #if RFIM
