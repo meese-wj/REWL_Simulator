@@ -9,7 +9,8 @@
 #include "ising2d_observables.hpp"
 
 // Include the address book
-#include "../Address_Books/Square_Periodic_Lattices/square_2d_nearest_neighbors.hpp"
+// #include "../Address_Books/Square_Periodic_Lattices/square_2d_nearest_neighbors.hpp" 
+#include "../Address_Books/Square_Periodic_Lattices/square_2d_nearest_neighbor_functor.cpp" // need the cpp to avoid linker errors
 
 #if CORRELATION_LENGTHS
 // Include the correlation functionality.
@@ -72,7 +73,7 @@ struct Ising2d
     float * field_array = nullptr;
 #endif
     
-    Square_2D_Nearest_Neighbors address_book;
+    Square_2D_Nearest_Neighbor_Functor<Ising2d_Parameters::L> address_book;
 
 #if PHONON_MEDIATED_NEMATIC_INTERACTIONS
     PMDN_Interactions<float, data_t> * pmd_interaction;
@@ -87,7 +88,8 @@ struct Ising2d
     void update_observables(const size_t bin, Ising2d_Obs<data_t> * obs_ptr) const;
 
     // Finally add the constructor and destructor.
-    Ising2d() : address_book(Ising2d_Parameters::L, Ising2d_Parameters::L)
+    // Ising2d() : address_book(Ising2d_Parameters::L, Ising2d_Parameters::L)
+    Ising2d() : address_book()
     {
         spin_array = new data_t [ Ising2d_Parameters::N ];
         // TODO: change this to be randomized?
@@ -95,6 +97,7 @@ struct Ising2d
             spin_array[idx] = 1.;
 
         address_book.initialize();
+        address_book.print();
 
 #if RFIM
         generate_random_field<float>( Ising2d_Parameters::N, Ising2d_Parameters::h, 
