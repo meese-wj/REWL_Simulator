@@ -19,7 +19,7 @@
 #include "../lattice_address_book.hpp"
 #include <array>
 
-static constexpr Lattice_Address_Book::SiteType NUM_NEIGHBORS = 4;
+#define _SQUARE_LATT_2D_NUM_NEIGHBORS 4
 
 template<Lattice_Address_Book::SiteType Lx, Lattice_Address_Book::SiteType Ly = Lx>
 class Square_2D_Nearest_Neighbor_Functor : public Lattice_Address_Book
@@ -45,10 +45,11 @@ public:
 
 private:
     const SiteType _Nxy = Lx * Ly;
-    const SiteType _num_neighbors = NUM_NEIGHBORS;
+    const SiteType _num_neighbors = _SQUARE_LATT_2D_NUM_NEIGHBORS;
     mutable SiteType _current_site;
-    mutable SiteType _neighbors [NUM_NEIGHBORS];
+    mutable SiteType _neighbors [_SQUARE_LATT_2D_NUM_NEIGHBORS];
 };
 
+#undef _SQUARE_LATT_2D_NUM_NEIGHBORS
 
 #endif /* SQUARE_2D_NEAREST_NEIGHBOR_FUNCTOR_H */

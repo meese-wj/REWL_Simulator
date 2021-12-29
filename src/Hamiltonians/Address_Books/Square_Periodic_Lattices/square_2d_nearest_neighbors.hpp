@@ -10,12 +10,12 @@
 #include "square_2d_grid_helpers.hpp"
 #include <array>
 
-static constexpr Lattice_Address_Book::SiteType NUM_NEIGHBORS = 4;
+#define _SQUARE_LATT_2D_NUM_NEIGHBORS 4
 
 class Square_2D_Nearest_Neighbors : public Lattice_Address_Book
 {    
 public:
-    using NeighborList = std::array<SiteType, NUM_NEIGHBORS>;
+    using NeighborList = std::array<SiteType, _SQUARE_LATT_2D_NUM_NEIGHBORS>;
     using NeighborIterator = NeighborList::iterator;
 
     Square_2D_Nearest_Neighbors( const SiteType Lx, const SiteType Ly );
@@ -38,9 +38,10 @@ private:
     const SiteType _Lx;
     const SiteType _Ly;
     const SiteType _Nxy = _Lx * _Ly;
-    const SiteType _num_neighbors = NUM_NEIGHBORS;
+    const SiteType _num_neighbors = _SQUARE_LATT_2D_NUM_NEIGHBORS;
     NeighborList * _site_neighbors = nullptr;
 };
 
+#undef _SQUARE_LATT_2D_NUM_NEIGHBORS
 
 #endif /* SQUARE_2D_NEAREST_NEIGHBORS_H */

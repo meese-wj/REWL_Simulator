@@ -8,9 +8,8 @@
 // Include the observables enum class
 #include "ising2d_observables.hpp"
 
-// Include the address book
-// #include "../Address_Books/Square_Periodic_Lattices/square_2d_nearest_neighbors.hpp" 
-#include "../Address_Books/Square_Periodic_Lattices/square_2d_nearest_neighbor_functor.cpp" // need the cpp to avoid linker errors
+// Include the address books
+#include "../Address_Books/address_books.hpp" 
 
 #if CORRELATION_LENGTHS
 // Include the correlation functionality.
@@ -88,7 +87,6 @@ struct Ising2d
     void update_observables(const size_t bin, Ising2d_Obs<data_t> * obs_ptr) const;
 
     // Finally add the constructor and destructor.
-    // Ising2d() : address_book(Ising2d_Parameters::L, Ising2d_Parameters::L)
     Ising2d() : address_book()
     {
         spin_array = new data_t [ Ising2d_Parameters::N ];
