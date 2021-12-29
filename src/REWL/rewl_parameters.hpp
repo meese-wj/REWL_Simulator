@@ -6,13 +6,13 @@
 
 // Create an alias for the observable
 // data type. 
-using ENERGY_TYPE = float;
+using ENERGY_TYPE = double;
 using LOGDOS_TYPE = double;
 using OBS_TYPE = double;
 
 #if MPI_ON
 // TODO: Are these macros really necessary for type aliasing?
-#define MPI_ENERGY_TYPE MPI_FLOAT
+#define MPI_ENERGY_TYPE MPI_DOUBLE
 #define MPI_LOGDOS_TYPE MPI_DOUBLE
 #define MPI_OBS_TYPE MPI_DOUBLE
 #endif
