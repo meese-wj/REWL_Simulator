@@ -8,13 +8,8 @@
 // Include the observables enum class
 #include "ashkin_teller2d_observables.hpp"
 
-// Include the grid setup from the 
-// cmake include directories.
-// TODO: This is deprecated because the grid
-// functions are too specific to 2D lattices.
-#include <grid_setup.hpp>
-
-#include "../Address_Books/Square_Periodic_Lattices/square_2d_nearest_neighbors.hpp"
+// Include the Address Books
+#include "../Address_Books/address_books.hpp"
 
 #if CORRELATION_LENGTHS
 // Include the correlation functionality.
@@ -88,7 +83,7 @@ struct Ashkin_Teller2d
     float * field_array = nullptr;
 #endif
     
-    Square_2D_Nearest_Neighbors address_book;
+    Square_2D_Nearest_Neighbor_Functor<Ashkin_Teller2d_Parameters::L> address_book;
 
     // Add some Hamiltonian dependent functions
     float local_energy(const size_t idx, const data_t * const spins) const;
@@ -98,7 +93,7 @@ struct Ashkin_Teller2d
     void update_observables(const size_t bin, Ashkin_Teller2d_Obs<data_t> * obs_ptr) const;
 
     // Finally add the constructor and destructor.
-    Ashkin_Teller2d() : address_book( Ashkin_Teller2d_Parameters::L, Ashkin_Teller2d_Parameters::L )
+    Ashkin_Teller2d() : address_book()
     {
         spin_array = new data_t [ static_cast<size_t>(spin_type::NUM_SPIN_TYPES) * Ashkin_Teller2d_Parameters::N ];
         // TODO: change this to be randomized?
