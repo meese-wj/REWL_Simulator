@@ -15,10 +15,10 @@ template<typename data_t>
 struct random_number_generator
 {
     const std::uint64_t my_seed;
-    // std::mt19937 generator;
-    // std::default_random_engine generator;
+    std::mt19937_64 generator;
+    // TODO: Characterize the differences between MT and minstd_rand
+    // TODO: Maybe make this better so it's faster with C rand()
     // std::minstd_rand generator;
-    std::knuth_b generator;
     std::uniform_real_distribution<data_t> u_real;
     // TODO: Should I add a uniform int distribution too? 
     
