@@ -17,7 +17,8 @@ struct random_number_generator
     const std::uint64_t my_seed;
     // std::mt19937 generator;
     // std::default_random_engine generator;
-    std::minstd_rand generator;
+    // std::minstd_rand generator;
+    std::mt19937_64 generator;
     std::uniform_real_distribution<data_t> u_real;
     // TODO: Should I add a uniform int distribution too? 
     
