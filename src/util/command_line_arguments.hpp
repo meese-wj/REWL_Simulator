@@ -42,28 +42,28 @@ struct CMDLine_Parser
 
     enum CMDLine_Args
     {
-        program_name=0, data_parent, job_id, MAX_ARGS
+        program_name=0, data_location, job_id, MAX_ARGS
     };
 
     CMDLine_Parser( const int argc, const char * argv [] );
 
 
-    void parse_arguments( );
+    void parse_through_arguments( );
     void parse_data_location();
     void parse_jobid();
 
     const std::string & get_data_location() const;
     const std::string & get_job_id() const;
 
-    bool valid_arguments() const;
+    bool valid_arguments();
     
     virtual ~CMDLine_Parser() {}
 
     struct PairIndex
     {
-        int index1;
-        int index2;
-    }
+        std::string::size_type index1;
+        std::string::size_type index2;
+    };
     
     PairIndex search_for_prefix( const std::string & prefix ) const;
 };

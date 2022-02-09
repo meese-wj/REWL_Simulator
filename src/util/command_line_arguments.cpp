@@ -10,10 +10,10 @@ CMDLine_Parser::CMDLine_Parser( const int argc, const char * argv [] )
         cmd_line_words[idx] = std::string(argv[idx]);
     }
 
-    parse_arguments.resize(MAX_ARGS);
-    parse_arguments[program_name] = std::string(argv[program_name]);
-    parse_arguments[data_location] = data_location_prefix + default_data_location;
-    parse_arguments[job_id] = job_id_prefix + default_jobid;
+    parsed_arguments.resize(MAX_ARGS);
+    parsed_arguments[program_name] = std::string(argv[program_name]);
+    parsed_arguments[data_location] = data_location_prefix + default_data_location;
+    parsed_arguments[job_id] = job_id_prefix + default_jobid;
 
     if (argc > MAX_ARGS)
     {
@@ -22,43 +22,41 @@ CMDLine_Parser::CMDLine_Parser( const int argc, const char * argv [] )
     }
 }
 
-void CMDLine_Parser::parse_arguments()
+void CMDLine_Parser::parse_through_arguments()
 {
     parse_data_location();
     parse_jobid();
     arguments_already_parsed = true;
 }
 
-CMDLine_Parser::PairIndex CMDLine_Parser::search_for_prefix( const std::string & prefix ) const 
+CMDLine_Parser::CMDLine_Parser::PairIndex CMDLine_Parser::search_for_prefix( const std::string & prefix ) const 
 {
-    int found_index = std::npos;
-    int prefix_index = 1;
+    std::string::size_type found_index = std::string::npos;
+    std::string::size_type prefix_index = std::string::npos;
 
-    for (int idx = 1; idx != cmd_line_words.size(); ++idx)
+    for (std::string::size_type idx = 1; idx != cmd_line_words.size(); ++idx)
     {
-        if (found_index == std::npos)
+        if (found_index == std::string::npos)
         {
             found_index = cmd_line_words[idx].find(data_location_prefix);
             prefix_index = idx;
         }
     }
 
-    // If found_index still is npos, then set prefix_index = std::npos as a flag
+    // If found_index still is npos, then set prefix_index = std::string::npos as a flag
     // to use the default arguments
-    if (found_index == std::npos)
-        prefix_index = std::npos;
 
-    return PairIndex( prefix_index, data_loc_index );
+    return CMDLine_Parser::PairIndex{ prefix_index, found_index };
 }
 
 void CMDLine_Parser::parse_data_location()
 {    
-    PairIndex prefix_data_loc = search_for_prefix( data_location_prefix );
+    CMDLine_Parser::PairIndex prefix_data_loc = search_for_prefix( data_location_prefix );
 
-    if (prefix_data_loc.index2 == std::npos)
+    if (prefix_data_loc.index2 == std::string::npos)
     {
         std::cout << "\nData Location Prefix (" << data_location_prefix << ") not supplied in any argument. Defaulting to " << default_data_location <<"\n";
-        std::string substring = parsed_arguments[data_location].substring( data_location_prefix.size() );
+        std::string substring = parsed_arguments[data_location].substr( data_location_prefix.size() );
         parsed_arguments[data_location] = substring;
         return;
     }
@@ -73,34 +71,34 @@ void CMDLine_Parser::parse_jobid()
     if (!search_for_jobid)
         return;
     
-    PairIndex prefix_jobid = search_for_prefix( job_id_prefix );
+    CMDLine_Parser::PairIndex prefix_jobid = search_for_prefix( job_id_prefix );
 
-    if (prefix_jobid.index2 == std::npos)
+    if (prefix_jobid.index2 == std::string::npos)
     {
         std::cerr << "\nError: Job ID Prefix (" << job_id_prefix << ") not supplied. No defaults are allowed.\n";
         invalid_arguments = true;
         return;
     }
 
-    parse_arguments[job_id] = cmd_line_words[prefix_jobid.index1].substr(prefix_jobid.index2);
+    parsed_arguments[job_id] = cmd_line_words[prefix_jobid.index1].substr(prefix_jobid.index2);
     invalid_arguments = false;
     return;
 }
 
 const std::string & CMDLine_Parser::get_data_location() const
 {
-    return parse_arguments[data_location];
+    return parsed_arguments[data_location];
 }
 
 const std::string & CMDLine_Parser::get_job_id() const
 {
-    return parse_arguments[job_id];
+    return parsed_arguments[job_id];
 }
 
-bool CMDLine_Parser::valid_arguments() const 
+bool CMDLine_Parser::valid_arguments() 
 {
     if (!arguments_already_parsed)
-        parse_arguments();
+        parse_through_arguments();
 
     return !(invalid_arguments);
 }
