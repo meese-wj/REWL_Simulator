@@ -140,7 +140,7 @@ int main(int argc, char * argv[])
 #endif
         std::cout << "\n**************************************************************************************\n";
 #if JOB_ARRAYS
-        data_path = create_output_path( cmd_line_args.get_data_location(), sys_strings.model_name, todays_date, sys_strings.size_string, job_id_string );
+        data_path = create_output_path( cmd_line_args.get_data_location(), sys_strings.model_name, todays_date, sys_strings.size_string, cmd_line_args.get_job_id() );
 #else
         data_path = create_output_path( cmd_line_args.get_data_location(), sys_strings.model_name, todays_date, sys_strings.size_string );
 #endif
@@ -488,10 +488,10 @@ int main(int argc, char * argv[])
 #if JOB_ARRAYS
     System_Strings sys_strings = System_Strings( job_id_string );
     std::string job_id_string ( argv[job_id_index] );
-    std::filesystem::path data_path = create_output_path( sys_strings.model_name, sys_strings.size_string, job_id_string ); 
+    std::filesystem::path data_path = create_output_path( cmd_line_args.get_data_location(), sys_strings.model_name, sys_strings.size_string, cmd_line_args.get_job_id() ); 
 #else
     System_Strings sys_strings = System_Strings();
-    std::filesystem::path data_path = create_output_path( sys_strings.model_name, sys_strings.size_string ); 
+    std::filesystem::path data_path = create_output_path( cmd_line_args.get_data_location(), sys_strings.model_name, sys_strings.size_string ); 
 #endif
     std::string data_file_header = create_file_header( sys_strings.file_header, rewl_strings.file_header );
 

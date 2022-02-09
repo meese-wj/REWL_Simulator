@@ -1,6 +1,6 @@
 build*
 tags
-Simulation_Data
+REWL_Simulation_Data
 __pycache__
 *hostfile
 logs
