@@ -1,7 +1,7 @@
 #include "command_line_arguments.hpp"
 #include <iostream>
 
-CMDLine_Parser::CMDLine_Parser( const int argc, const char * argv [] )
+CMDLine_Parser::CMDLine_Parser( const int argc, char * argv [] )
 {
     invalid_arguments = false;
     cmd_line_words.resize(argc);
@@ -95,10 +95,10 @@ const std::string & CMDLine_Parser::get_job_id() const
     return parsed_arguments[job_id];
 }
 
-bool CMDLine_Parser::valid_arguments() 
+bool CMDLine_Parser::arguments_invalid() 
 {
     if (!arguments_already_parsed)
         parse_through_arguments();
 
-    return !(invalid_arguments);
+    return invalid_arguments;
 }

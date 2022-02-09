@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string>
 
+#include <command_line_arguments.hpp>
+
 #if MPI_ON
 #include <mpi_rewl_helpers.hpp>
 #include <concatenate_rewl_tables.hpp>

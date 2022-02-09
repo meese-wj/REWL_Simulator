@@ -23,7 +23,10 @@ int main(int argc, char * argv[])
     MPI_Comm_rank( MPI_COMM_WORLD, &world_rank );
     MPI_Comm_size( MPI_COMM_WORLD, &world_size );
 
-    if ( argc != num_args )
+    CMDLine_Parser cmd_line_args( argc, argv );
+    cmd_line_args.parse_through_arguments();
+
+    if ( cmd_line_args.arguments_invalid() )
     {
         if ( world_rank == REWL_MASTER_PROC )
         {
@@ -137,9 +140,9 @@ int main(int argc, char * argv[])
 #endif
         std::cout << "\n**************************************************************************************\n";
 #if JOB_ARRAYS
-        data_path = create_output_path( sys_strings.model_name, todays_date, sys_strings.size_string, job_id_string );
+        data_path = create_output_path( cmd_line_args.get_data_location(), sys_strings.model_name, todays_date, sys_strings.size_string, job_id_string );
 #else
-        data_path = create_output_path( sys_strings.model_name, todays_date, sys_strings.size_string );
+        data_path = create_output_path( cmd_line_args.get_data_location(), sys_strings.model_name, todays_date, sys_strings.size_string );
 #endif
 
 #if AT_DENSITIES
@@ -418,7 +421,10 @@ int main(int argc, char * argv[])
 {
     int world_rank = 0;
 
-    if ( argc != num_args )
+    CMDLine_Parser cmd_line_args( argc, argv );
+    cmd_line_args.parse_through_arguments();
+
+    if ( cmd_line_args.arguments_invalid() )
     {
 #if JOB_ARRAYS
             printf("\nThis simulation %s takes 1 command line argument as the Job ID.", argv[0]);

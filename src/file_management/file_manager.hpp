@@ -18,9 +18,14 @@ void create_directory( const std::string & path_to_dir );
 
 // Build the output file path and return it
 #if JOB_ARRAYS
-std::filesystem::path create_output_path( const std::string & model_name, const std::string & todays_date, const std::string & size_string, const std::string & job_id_string );
+std::filesystem::path create_output_path( const std::string & data_parent_directory, 
+                                          const std::string & model_name, 
+                                          const std::string & todays_date, const std::string & size_string, 
+                                          const std::string & job_id_string );
 #else
-std::filesystem::path create_output_path( const std::string & model_name, const std::string & todays_date, const std::string & size_string );
+std::filesystem::path create_output_path( const std::string & data_parent_directory, 
+                                          const std::string & model_name, 
+                                          const std::string & todays_date, const std::string & size_string );
 #endif
 
 #endif

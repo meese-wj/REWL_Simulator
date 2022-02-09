@@ -2,11 +2,11 @@
 
 namespace FS = std::filesystem;
 
-/* ************************************************************************************************************ */
-/* Define some constant strings                                                                                 */
-const std::string OUTPUT_DATA_PATH = "Simulation_Data";          // Location in build parent to house all data
-const std::string HISTOGRAM_SUBFOLDER = "Histograms";            // Location within dated parent subfolder 
-/* ************************************************************************************************************ */
+/* **************************************************************************************************************** */
+/* Define some constant strings                                                                                     */
+const std::string OUTPUT_DATA_PATH = "REWL_Simulation_Data";          // Location in build parent to house all data
+const std::string HISTOGRAM_SUBFOLDER = "Histograms";                 // Location within dated parent subfolder 
+/* **************************************************************************************************************** */
 
 // Get the date string from chrono
 std::string get_todays_date()
@@ -36,16 +36,16 @@ void create_directory( const std::string & path_to_dir )
 
 // Build the output file path and return it
 #if JOB_ARRAYS
-FS::path create_output_path( const std::string & model_name, const std::string & todays_date, const std::string & size_string, const std::string & job_id_string )
+FS::path create_output_path( const std::string & data_parent_directory, const std::string & model_name, const std::string & todays_date, const std::string & size_string, const std::string & job_id_string )
 #else
-FS::path create_output_path( const std::string & model_name, const std::string & todays_date, const std::string & size_string )
+FS::path create_output_path( const std::string & data_parent_directory, const std::string & model_name, const std::string & todays_date, const std::string & size_string )
 #endif
 {
-    FS::path output_path = FS::current_path();
+    // FS::path output_path = FS::current_path();
     
     // Put data in outsid of the build directory
     // Path = build parent / OUTPUT_DATA_PATH
-    output_path = output_path.parent_path() / OUTPUT_DATA_PATH;
+    FS::path output_path = FS::path( data_parent_directory ) / OUTPUT_DATA_PATH;
 
     // Determine if the path exists and create it
     // if it does not

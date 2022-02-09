@@ -45,7 +45,7 @@ struct CMDLine_Parser
         program_name=0, data_location, job_id, MAX_ARGS
     };
 
-    CMDLine_Parser( const int argc, const char * argv [] );
+    CMDLine_Parser( const int argc, char * argv [] );
 
 
     void parse_through_arguments( );
@@ -55,7 +55,7 @@ struct CMDLine_Parser
     const std::string & get_data_location() const;
     const std::string & get_job_id() const;
 
-    bool valid_arguments();
+    bool arguments_invalid();
     
     virtual ~CMDLine_Parser() {}
 
