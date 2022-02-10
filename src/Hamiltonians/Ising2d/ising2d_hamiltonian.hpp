@@ -68,7 +68,6 @@ struct Ising2d
 
     data_t * spin_array = nullptr;
 #if RFIM
-    // TODO: change the energies to doubles.
     data_t * field_array = nullptr;
 #endif
     
@@ -164,18 +163,16 @@ template<typename data_t>
 data_t Ising2d<data_t>::local_field(const size_t idx) const
 {
 #if RFIM
-    data_t field = 0.;
-#else
+    data_t field = field_array[ idx ];
+#else  /* RFIM */
     data_t field = Ising2d_Parameters::h;
-#endif
+#endif /* RFIM */
+
     for ( auto nn_itr = address_book.neighbor_begin(idx); nn_itr != address_book.neighbor_end(idx); ++nn_itr )
     {
-        field += Ising2d_Parameters::J * static_cast<data_t>( spin_array[ *nn_itr ] );
+        field += Ising2d_Parameters::J * spin_array[ *nn_itr ];
     }
 
-#if RFIM
-    field += field_array[ idx ];
-#endif 
 
     return field;
 }
@@ -183,7 +180,7 @@ data_t Ising2d<data_t>::local_field(const size_t idx) const
 template<typename data_t>
 data_t Ising2d<data_t>::local_energy(const size_t idx, const data_t spin_value) const
 {
-    data_t local_en = -1. * static_cast<data_t>( spin_value ) * local_field(idx);
+    data_t local_en = -1. * spin_value * local_field(idx);
 #if PHONON_MEDIATED_NEMATIC_INTERACTIONS
     local_en += pmd_interaction -> calculate_energy_per_spin( idx, spin_value, spin_array );
 #endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
@@ -202,9 +199,9 @@ void Ising2d<data_t>::recalculate_state()
        // First term is necessary to account for h field loss
        // when 0.5 multiplies the energy to avoid double counting.
 #if RFIM
-       temp_energy += -0.5 * field_array[idx] * static_cast<data_t>(spin_array[idx]) + 0.5 * local_energy(idx, spin_array[idx]);
+       temp_energy += -0.5 * field_array[idx] * spin_array[idx] + 0.5 * local_energy(idx, spin_array[idx]);
 #else
-       temp_energy += -0.5 * Ising2d_Parameters::h * static_cast<data_t>(spin_array[idx]) + 0.5 * local_energy(idx, spin_array[idx]);
+       temp_energy += -0.5 * Ising2d_Parameters::h * spin_array[idx] + 0.5 * local_energy(idx, spin_array[idx]);
 #endif
     }
 
