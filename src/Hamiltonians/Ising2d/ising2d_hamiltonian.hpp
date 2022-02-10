@@ -172,8 +172,9 @@ float Ising2d<data_t>::local_field(const size_t idx) const
     // {
     //     field += Ising2d_Parameters::J * static_cast<float>( spin_array[ *nn_itr ] );
     // }
+    const size_t xidx = address_book.get_site_x_index(idx), yidx = address_book.get_site_y_index(idx);
     for (std::uint32_t nn = 0; nn != 4; ++nn)
-        field += Ising2d_Parameters::J * static_cast<float>( spin_array[ address_book.neighbor_func(idx, nn) ] );
+        field += Ising2d_Parameters::J * static_cast<float>( spin_array[ address_book.neighbor_func(xidx, yidx, nn) ] );
         
 #if RFIM
     field += field_array[ idx ];
