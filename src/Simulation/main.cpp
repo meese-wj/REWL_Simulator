@@ -85,8 +85,9 @@ int main(int argc, char * argv[])
     ENERGY_TYPE * disorder_array = new ENERGY_TYPE [System_Parameters::N]();
     if ( world_rank == REWL_MASTER_PROC )
     {
-        for ( size_t idx = 0; idx != System_Parameters::N; ++idx )
-            disorder_array[idx] = toy_model -> field_array[idx];
+        // for ( size_t idx = 0; idx != System_Parameters::N; ++idx )
+        //     disorder_array[idx] = toy_model -> field_array[idx];
+        toy_model -> export_contiguous_disorder( disorder_array );
     }
     MPI_Bcast( disorder_array, System_Parameters::N, MPI_ENERGY_TYPE, REWL_MASTER_PROC, MPI_COMM_WORLD );
 #endif
