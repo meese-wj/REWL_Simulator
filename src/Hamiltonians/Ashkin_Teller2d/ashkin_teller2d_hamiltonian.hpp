@@ -41,7 +41,7 @@
 #include <random_number_generators.hpp>
 #endif
 
-constexpr float divisor = 1./static_cast<float>( Ashkin_Teller2d_Parameters::N );
+constexpr double divisor = 1./static_cast<double>( Ashkin_Teller2d_Parameters::N );
 
 enum spin_type
 {
@@ -54,7 +54,7 @@ template<typename data_t>
 struct State
 {
     short which_to_update = spin_type::sigma;      
-    float energy = 0;
+    data_t energy = 0;
     data_t sigma_magnetization = 0;
     data_t tau_magnetization = 0;
     data_t baxter = 0.;
@@ -80,13 +80,13 @@ struct Ashkin_Teller2d
 
     data_t * spin_array = nullptr;
 #if RFAT_BAXTER
-    float * field_array = nullptr;
+    data_t * field_array = nullptr;
 #endif
     
     Square_2D_Nearest_Neighbor_Functor<Ashkin_Teller2d_Parameters::L> address_book;
 
     // Add some Hamiltonian dependent functions
-    float local_energy(const size_t idx, const data_t * const spins) const;
+    data_t local_energy(const size_t idx, const data_t * const spins) const;
     void recalculate_state();
     void change_state(const size_t idx, State<data_t> & temp_state);
     void set_state(const size_t idx, const State<data_t> & _state);
@@ -103,7 +103,7 @@ struct Ashkin_Teller2d
         address_book.initialize();
         
 #if RFAT_BAXTER
-        generate_random_field<float>( Ashkin_Teller2d_Parameters::N, 
+        generate_random_field<data_t>( Ashkin_Teller2d_Parameters::N, 
                                       Ashkin_Teller2d_Parameters::h, 
                                       field_array, disorder_type );
 #endif
@@ -146,7 +146,7 @@ struct Ashkin_Teller2d
     void randomize_dofs() 
     {
         std::uint64_t seed = static_cast<std::uint64_t>( std::chrono::high_resolution_clock::now().time_since_epoch().count() );
-        random_number_generator<float> rng (seed);
+        random_number_generator<data_t> rng (seed);
 
         for ( size_t idx = 0; idx != Ashkin_Teller2d_Parameters::num_DoF; ++idx )
             spin_array[ idx ] = ( rng() < 0.5 ? 1. : -1. );
@@ -156,7 +156,7 @@ struct Ashkin_Teller2d
 #endif
 
 #if RFAT_BAXTER
-    void import_disorder( const float * const disorder )
+    void import_disorder( const data_t * const disorder )
     {
         for ( size_t idx = 0; idx != Ashkin_Teller2d_Parameters::N; ++idx )
             field_array[idx] = disorder[idx];
@@ -167,33 +167,33 @@ struct Ashkin_Teller2d
 };
 
 template<typename data_t>
-float Ashkin_Teller2d<data_t>::local_energy(const size_t idx, const data_t * const spins ) const
+data_t Ashkin_Teller2d<data_t>::local_energy(const size_t idx, const data_t * const spins ) const
 {
     // Calculate positive energies everywhere because
     // it will be negated upon return!
-    float en = 0.;
+    data_t en = 0.;
     data_t sigma_idx = *(spins + spin_type::sigma);
     data_t tau_idx   = *(spins + spin_type::tau);
+#if RFAT_BAXTER
+    en += field_array[idx] * static_cast<data_t>( sigma_idx * tau_idx );
+#endif
+
     for ( auto nn_itr = address_book.neighbor_begin(idx); nn_itr != address_book.neighbor_end(idx); ++nn_itr )
     {
-        en += Ashkin_Teller2d_Parameters::J * static_cast<float>( sigma_idx * (*spin_at_site(*nn_itr, spin_type::sigma)) );
-        en += Ashkin_Teller2d_Parameters::J * static_cast<float>( tau_idx   * (*spin_at_site(*nn_itr, spin_type::tau)  ) );
-        en += Ashkin_Teller2d_Parameters::K * static_cast<float>( sigma_idx * tau_idx
+        en += Ashkin_Teller2d_Parameters::J * sigma_idx * (*spin_at_site(*nn_itr, spin_type::sigma));
+        en += Ashkin_Teller2d_Parameters::J * tau_idx   * (*spin_at_site(*nn_itr, spin_type::tau)  );
+        en += Ashkin_Teller2d_Parameters::K * sigma_idx * tau_idx
                                                                 * (*spin_at_site(*nn_itr, spin_type::sigma))
-                                                                * (*spin_at_site(*nn_itr, spin_type::tau)  )   );
+                                                                * (*spin_at_site(*nn_itr, spin_type::tau)  );
 
     }
-
-#if RFAT_BAXTER
-    en += field_array[idx] * static_cast<float>( sigma_idx * tau_idx );
-#endif
     return -en;
 }
 
 template<typename data_t>
 void Ashkin_Teller2d<data_t>::recalculate_state()
 {
-    float temp_energy      = 0.;
+    data_t temp_energy      = 0.;
     data_t temp_sigma_mag  = 0.;
     data_t temp_tau_mag    = 0.;
     data_t temp_baxter = 0.;
@@ -205,7 +205,7 @@ void Ashkin_Teller2d<data_t>::recalculate_state()
        temp_baxter += (*spin_at_site(idx, spin_type::sigma)) * (*spin_at_site(idx, spin_type::tau));
 
 #if RFAT_BAXTER
-       temp_energy += -0.5 * field_array[idx] * static_cast<float>( (*spin_at_site(idx, spin_type::sigma)) * (*spin_at_site(idx, spin_type::tau)) );
+       temp_energy += -0.5 * field_array[idx] * (*spin_at_site(idx, spin_type::sigma)) * (*spin_at_site(idx, spin_type::tau));
 #endif
        temp_energy += 0.5 * local_energy(idx, spins_address(idx));
     }
