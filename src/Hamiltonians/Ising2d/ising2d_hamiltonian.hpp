@@ -97,7 +97,7 @@ struct Ising2d
 
     // Finally add the constructor and destructor.
     // Ising2d() : address_book()
-    Ising2d() : ising_sites(Ising2d_Parameters::h), address_book()
+    Ising2d() : ising_sites(), address_book()
     {
         // spin_array = new data_t [ Ising2d_Parameters::N ];
         // TODO: change this to be randomized?

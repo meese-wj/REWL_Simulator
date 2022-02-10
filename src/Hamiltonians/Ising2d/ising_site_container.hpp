@@ -65,7 +65,7 @@ template<typename data_t, _ISING_INDEX_TYPE Nsites>
 class Ising_Site_Container<data_t, Nsites, false> : public Ising_Site_Container_Base<data_t, Nsites>
 {
 public:
-    Ising_Site_Container( const data_t const_field_value ) : _const_field_value(const_field_value){}
+    Ising_Site_Container(){}
 
     const data_t get_spin_value( const _ISING_INDEX_TYPE site )  const { return _all_sites[site][Ising_Site<data_t>::variable_enum::spin]; }
     const data_t get_field_value( const _ISING_INDEX_TYPE site ) const { return _all_sites[site][Ising_Site<data_t>::variable_enum::field]; }
@@ -81,7 +81,6 @@ public:
     ~Ising_Site_Container(){}
  
 private:
-    const data_t _const_field_value;
     std::array<Ising_Site<data_t>, Nsites> _all_sites;
 };
 
@@ -90,17 +89,17 @@ template<typename data_t, _ISING_INDEX_TYPE Nsites>
 class Ising_Site_Container<data_t, Nsites, true> : public Ising_Site_Container_Base<data_t, Nsites>   
 {
 public:
-    Ising_Site_Container( const data_t const_field_value ) : _field_value(const_field_value){}
+    Ising_Site_Container(){}
 
     const data_t get_spin_value( const _ISING_INDEX_TYPE site )  const { return _all_sites[site]; }
     const data_t get_field_value( const _ISING_INDEX_TYPE site ) const { return _field_value; }
     void set_spin_value(  const _ISING_INDEX_TYPE site, const data_t spin_val ) {  _all_sites[site] = spin_val; }
-    void set_field_value( const _ISING_INDEX_TYPE site, const data_t field_val ) { /* intentionally empty */ }
+    void set_field_value( const _ISING_INDEX_TYPE site, const data_t field_val ) { _field_value = field_val; }
 
     ~Ising_Site_Container(){}
  
 private:
-    const data_t _field_value;
+    data_t _field_value;
     std::array<data_t, Nsites> _all_sites;
 };
 
