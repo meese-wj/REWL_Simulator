@@ -326,10 +326,7 @@ size_t REWL_simulation::replica_exchange_update( int & exchange_direction, const
                 //printf("\n\nID %d = %d EXCHANGED!!\n\n", my_world_rank, my_ids_per_comm[exchange_direction]);
                 // Perform a MPI_Sendrecv_replace on the state and the degrees of freedom
                 mpi_exchange_state<State_t<OBS_TYPE> >( my_walker -> current_state(), partner_index, comm_id, local_communicators, &status );
-                OBS_TYPE * temp_contiguous_DoFs = my_walker -> DoFs();
-                mpi_exchange_DoFs<OBS_TYPE>( temp_contiguous_DoFs, System_Parameters::num_DoF, partner_index, comm_id, local_communicators, &status );
-                my_walker -> system.import_DoFs( temp_contiguous_DoFs );
-                delete [] temp_contiguous_DoFs;
+                mpi_exchange_DoFs<OBS_TYPE>( my_walker -> DoFs(), System_Parameters::num_DoF, partner_index, comm_id, local_communicators, &status );
             }
         
             // Finally, update the histograms after the exchanges

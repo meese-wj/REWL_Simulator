@@ -16,65 +16,54 @@ template<typename data_t, _ISING_INDEX_TYPE Nsites>
 class Ising_Site_Container_Base
 {
 public:
-    Ising_Site_Container_Base() = default;
+    using SiteIndexType = _ISING_INDEX_TYPE;
+    Ising_Site_Container_Base();
 
-    virtual const data_t get_field_value( const _ISING_INDEX_TYPE site ) const;
-    virtual const data_t get_spin_value( const _ISING_INDEX_TYPE site ) const;
-    virtual void set_spin_value( const _ISING_INDEX_TYPE site, const data_t spin_val );
-    virtual void set_field_value( const _ISING_INDEX_TYPE site, const data_t field_val );
+    virtual const data_t & get_field_value( const SiteIndexType site ) const;
+    virtual const data_t & get_spin_value( const SiteIndexType site ) const;
+    virtual const data_t get_field_value( const SiteIndexType site ) const;
+    virtual const data_t get_spin_value( const SiteIndexType site ) const;
+    virtual void set_spin_value( const SiteIndexType site, const data_t spin_val ) const;
+    virtual void set_field_value( const SiteIndexType site, const data_t field_val ) const;
 
-    virtual ~Ising_Site_Container_Base(){};
-
-    void export_contiguous_spins( data_t *& contiguous_export_array ) const
-    {
-        delete [] contiguous_export_array;
-        contiguous_export_array = new data_t [Nsites];
-        for ( _ISING_INDEX_TYPE site = 0; site != Nsites; ++site )
-            contiguous_export_array[site] = this -> get_spin_value(site);
-    }
-
-    void import_fields( const Ising_Site_Container_Base<data_t, Nsites> & other_container )
-    {
-        for ( _ISING_INDEX_TYPE site = 0; site != Nsites; ++site )
-            this -> set_field_value( site, other_container.get_field_value( site ) );
-    }
-
-    void import_contiguous_spins( const data_t * const contiguous_import_array )
-    {
-        for ( _ISING_INDEX_TYPE site = 0; site != Nsites; ++site )
-            this -> set_spin_value( site, contiguous_import_array[site] );
-    }
-
-    void import_spins( const Ising_Site_Container_Base<data_t, Nsites> & other_container )
-    {
-        for ( _ISING_INDEX_TYPE site = 0; site != Nsites; ++site )
-            this -> set_field_value( site, other_container.get_spin_value( site ) );
-    }
+    virtual ~Ising_Site_Container_Base();
 };
 
 // The general Ising site container
 template<typename data_t, _ISING_INDEX_TYPE Nsites, bool constant_field>
-class Ising_Site_Container : public Ising_Site_Container_Base<data_t, Nsites> 
+class Ising_Site_Container<data_t, Nsites, constant_field> : public Ising_Site_Container_Base<data_t, Nsites> 
 {
 public:
-    
+    void import_fields( const Ising_Site_Container<data_t, Nsites, constant_field> & other_container ) const
+    {
+        for ( SiteIndexType site = 0; site != Nsites; ++site )
+            set_field_value( site, other_container.get_field_value( site ) );
+    }
+
+    void import_spins( const Ising_Site_Container<data_t, Nsites, constant_field> & other_container ) const
+    {
+        for ( SiteIndexType site = 0; site != Nsites; ++site )
+            set_field_value( site, other_container.get_spin_value( site ) );
+    }
 };
 
 // Spatially-varying field container
 template<typename data_t, _ISING_INDEX_TYPE Nsites>
-class Ising_Site_Container<data_t, Nsites, false> : public Ising_Site_Container_Base<data_t, Nsites>
+class Ising_Site_Container<data_t, Nsites, false>
 {
 public:
     Ising_Site_Container(){}
 
-    const data_t get_spin_value( const _ISING_INDEX_TYPE site )  const { return _all_sites[site][Ising_Site<data_t>::variable_enum::spin]; }
-    const data_t get_field_value( const _ISING_INDEX_TYPE site ) const { return _all_sites[site][Ising_Site<data_t>::variable_enum::field]; }
-    void set_spin_value(  const _ISING_INDEX_TYPE site, const data_t spin_val ) {  _all_sites[site].set_variable( Ising_Site<data_t>::variable_enum::spin, spin_val ); }
-    void set_field_value( const _ISING_INDEX_TYPE site, const data_t field_val ) { _all_sites[site].set_variable( Ising_Site<data_t>::variable_enum::field, field_val ); }
+    const data_t & get_spin_value( const SiteIndexType site )  const override { return _all_sites[site][Ising_Site::variable_enum::spin]; }
+    const data_t & get_field_value( const SiteIndexType site ) const override { return _all_sites[site][Ising_Site::variable_enum::field]; }
+    const data_t get_spin_value( const SiteIndexType site )  const override { return _all_sites[site][Ising_Site::variable_enum::spin]; }
+    const data_t get_field_value( const SiteIndexType site ) const override { return _all_sites[site][Ising_Site::variable_enum::field]; }
+    void set_spin_value(  const SiteIndexType site, const data_t spin_val ) const override {  _all_sites[site].set_variable( Ising_Site::variable_enum::spin, spin_val ); }
+    void set_field_value( const SiteIndexType site, const data_t field_val ) const override { _all_sites[site].set_variable( Ising_Site::variable_enum::field, field_val ); }
     
     void import_fields( const data_t * const contiguous_field_array ) const
     {
-        for ( _ISING_INDEX_TYPE site = 0; site != Nsites; ++site )
+        for ( SiteIndexType site = 0; site != Nsites; ++site )
             set_field_value( site, contiguous_field_array[site] );
     }
 
@@ -86,15 +75,17 @@ private:
 
 // Spatially-constant field container
 template<typename data_t, _ISING_INDEX_TYPE Nsites>
-class Ising_Site_Container<data_t, Nsites, true> : public Ising_Site_Container_Base<data_t, Nsites>   
+class Ising_Site_Container<data_t, Nsites, true>
 {
 public:
     Ising_Site_Container(){}
 
-    const data_t get_spin_value( const _ISING_INDEX_TYPE site )  const { return _all_sites[site]; }
-    const data_t get_field_value( const _ISING_INDEX_TYPE site ) const { return _field_value; }
-    void set_spin_value(  const _ISING_INDEX_TYPE site, const data_t spin_val ) {  _all_sites[site] = spin_val; }
-    void set_field_value( const _ISING_INDEX_TYPE site, const data_t field_val ) { _field_value = field_val; }
+    const data_t & get_spin_value( const SiteIndexType site )  const override { return _all_sites[site]; }
+    const data_t & get_field_value( const SiteIndexType site ) const override { return _field_value; }
+    const data_t get_spin_value( const SiteIndexType site )  const override { return _all_sites[site]; }
+    const data_t get_field_value( const SiteIndexType site ) const override { return _field_value; }
+    void set_spin_value(  const SiteIndexType site, const data_t spin_val ) const override {  _all_sites[site] = spin_val; }
+    void set_field_value( const SiteIndexType site, const data_t field_val ) const override { _field_value = field_val; }
 
     ~Ising_Site_Container(){}
  

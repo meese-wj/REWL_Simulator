@@ -75,9 +75,8 @@ int main(int argc, char * argv[])
     OBS_TYPE * dof_field_array = new OBS_TYPE [System_Parameters::num_DoF]();
     if ( world_rank == REWL_MASTER_PROC )
     {
-        // for ( size_t idx = 0; idx != System_Parameters::num_DoF; ++idx )
-        //     dof_field_array[idx] = toy_model -> spin_array[idx];
-        dof_field_array = toy_model -> get_front_DoFs();
+        for ( size_t idx = 0; idx != System_Parameters::num_DoF; ++idx )
+            dof_field_array[idx] = toy_model -> spin_array[idx];
     }
     MPI_Bcast( dof_field_array, System_Parameters::num_DoF, MPI_OBS_TYPE, REWL_MASTER_PROC, MPI_COMM_WORLD );
 
