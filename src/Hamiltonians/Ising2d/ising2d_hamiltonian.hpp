@@ -109,8 +109,8 @@ struct Ising2d
 
 #if RFIM
         data_t * temp_field_array = new data_t [ Ising2d_Parameters::N ];
-        generate_random_field<data_t>( Ising2d_Parameters::N, Ising2d_Parameters::h, 
-                                       temp_field_array, disorder_type );
+        generate_random_field<float>( Ising2d_Parameters::N, Ising2d_Parameters::h, 
+                                      temp_field_array, disorder_type );
         ising_sites.import_fields( temp_field_array );
         delete [] temp_field_array;
 #endif
@@ -169,10 +169,10 @@ struct Ising2d
         print(current_state);
         print_lattice();
     }
-#endif /* SIMULATED_ANNEALING */
+#endif
 
 #if RFIM
-    void import_disorder( const data_t * const disorder )
+    void import_disorder( const float * const disorder )
     {
         ising_sites.import_fields( disorder );
         // for ( size_t idx = 0; idx != Ising2d_Parameters::N; ++idx )
@@ -180,12 +180,7 @@ struct Ising2d
 
         recalculate_state();
     }
-
-    void export_contiguous_disorder( data_t* & export_array )
-    {
-        ising_sites.export_contiguous_fields( export_array );
-    }
-#endif /* RFIM */
+#endif
 };
 
 template<typename data_t>

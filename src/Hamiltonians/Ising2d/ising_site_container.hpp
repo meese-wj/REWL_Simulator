@@ -18,27 +18,19 @@ class Ising_Site_Container_Base
 public:
     Ising_Site_Container_Base() = default;
 
-    virtual data_t get_field_value( const _ISING_INDEX_TYPE site ) const;
-    virtual data_t get_spin_value( const _ISING_INDEX_TYPE site ) const;
+    virtual const data_t get_field_value( const _ISING_INDEX_TYPE site ) const;
+    virtual const data_t get_spin_value( const _ISING_INDEX_TYPE site ) const;
     virtual void set_spin_value( const _ISING_INDEX_TYPE site, const data_t spin_val );
     virtual void set_field_value( const _ISING_INDEX_TYPE site, const data_t field_val );
 
     virtual ~Ising_Site_Container_Base(){};
-    
+
     void export_contiguous_spins( data_t *& contiguous_export_array ) const
     {
         delete [] contiguous_export_array;
         contiguous_export_array = new data_t [Nsites];
         for ( _ISING_INDEX_TYPE site = 0; site != Nsites; ++site )
             contiguous_export_array[site] = this -> get_spin_value(site);
-    }
-    
-    void export_contiguous_fields( data_t *& contiguous_export_array ) const
-    {
-        delete [] contiguous_export_array;
-        contiguous_export_array = new data_t [Nsites];
-        for ( _ISING_INDEX_TYPE site = 0; site != Nsites; ++site )
-            contiguous_export_array[site] = this -> get_field_value(site);
     }
 
     void import_fields( const Ising_Site_Container_Base<data_t, Nsites> & other_container )
@@ -75,12 +67,12 @@ class Ising_Site_Container<data_t, Nsites, false> : public Ising_Site_Container_
 public:
     Ising_Site_Container( const data_t const_field_value ) : _const_field_value(const_field_value){}
 
-    data_t get_spin_value( const _ISING_INDEX_TYPE site )  const { return _all_sites[site].get_variable(Ising_Site<data_t>::variable_enum::spin); }
-    data_t get_field_value( const _ISING_INDEX_TYPE site ) const { return _all_sites[site].get_variable(Ising_Site<data_t>::variable_enum::field); }
+    const data_t get_spin_value( const _ISING_INDEX_TYPE site )  const { return _all_sites[site][Ising_Site<data_t>::variable_enum::spin]; }
+    const data_t get_field_value( const _ISING_INDEX_TYPE site ) const { return _all_sites[site][Ising_Site<data_t>::variable_enum::field]; }
     void set_spin_value(  const _ISING_INDEX_TYPE site, const data_t spin_val ) {  _all_sites[site].set_variable( Ising_Site<data_t>::variable_enum::spin, spin_val ); }
     void set_field_value( const _ISING_INDEX_TYPE site, const data_t field_val ) { _all_sites[site].set_variable( Ising_Site<data_t>::variable_enum::field, field_val ); }
     
-    void import_fields( const data_t * const contiguous_field_array )
+    void import_fields( const data_t * const contiguous_field_array ) const
     {
         for ( _ISING_INDEX_TYPE site = 0; site != Nsites; ++site )
             set_field_value( site, contiguous_field_array[site] );
@@ -100,8 +92,8 @@ class Ising_Site_Container<data_t, Nsites, true> : public Ising_Site_Container_B
 public:
     Ising_Site_Container( const data_t const_field_value ) : _field_value(const_field_value){}
 
-    data_t get_spin_value( const _ISING_INDEX_TYPE site )  const { return _all_sites[site]; }
-    data_t get_field_value( const _ISING_INDEX_TYPE site ) const { return _field_value; }
+    const data_t get_spin_value( const _ISING_INDEX_TYPE site )  const { return _all_sites[site]; }
+    const data_t get_field_value( const _ISING_INDEX_TYPE site ) const { return _field_value; }
     void set_spin_value(  const _ISING_INDEX_TYPE site, const data_t spin_val ) {  _all_sites[site] = spin_val; }
     void set_field_value( const _ISING_INDEX_TYPE site, const data_t field_val ) { /* intentionally empty */ }
 

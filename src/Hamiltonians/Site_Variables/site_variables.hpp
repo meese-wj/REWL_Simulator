@@ -13,7 +13,7 @@ class Site_Variables
 public:
     Site_Variables() = default;
     virtual ~Site_Variables(){}
-    virtual data_t get_variable( unsigned which ) const = 0;
+    virtual data_t get_variable( int which ) const = 0;
 };
 
 #endif /* _SITE_VARIABLES_H */
