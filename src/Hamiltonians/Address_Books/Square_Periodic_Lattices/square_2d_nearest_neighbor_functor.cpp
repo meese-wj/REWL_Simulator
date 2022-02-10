@@ -23,28 +23,19 @@ void Square_2D_Nearest_Neighbor_Functor<Lx, Ly>::assign_neighbors( SiteType site
 {
     SiteType site_x = site_x_index<Lx>( site );
     SiteType site_y = site_y_index<Lx>( site );
-    SiteType neighbor_x = 0, neighbor_y = 0;
 
-    // Order of the neighbors is (x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)
+    // Order of the neighbors is can be found in "square_2d_grid_helpers.hpp"
     // Neighbor 0:
-    neighbor_x = _BRANCHLESS_TERNARY( site_x == 0, Lx - 1, site_x - 1 );
-    neighbor_y = site_y;
-    _neighbors[0] = site_from_indices<Lx>( neighbor_x, neighbor_y );
+    _neighbors[0] = rect_pbc_2d_neighbor_0<Lx>(site_x, site_y);
     
     // Neighbor 1:
-    neighbor_x = _BRANCHLESS_TERNARY( site_x == Lx - 1, 0, site_x + 1 );
-    neighbor_y = site_y;
-    _neighbors[1] = site_from_indices<Lx>( neighbor_x, neighbor_y );
+    _neighbors[1] = rect_pbc_2d_neighbor_1<Lx>(site_x, site_y);
     
     // Neighbor 2:
-    neighbor_x = site_x;
-    neighbor_y = _BRANCHLESS_TERNARY( site_y == 0, Ly - 1, site_y - 1 );
-    _neighbors[2] = site_from_indices<Lx>( neighbor_x, neighbor_y );
+    _neighbors[2] = rect_pbc_2d_neighbor_2<Lx>(site_x, site_y);
     
     // Neighbor 3:
-    neighbor_x = site_x;
-    neighbor_y = _BRANCHLESS_TERNARY( site_y == Ly - 1, 0, site_y + 1 );
-    _neighbors[3] = site_from_indices<Lx>( neighbor_x, neighbor_y );
+    _neighbors[3] = rect_pbc_2d_neighbor_3<Lx>(site_x, site_y);
 
     update_current_site(site);
     return;
