@@ -168,11 +168,13 @@ float Ising2d<data_t>::local_field(const size_t idx) const
 #else
     float field = Ising2d_Parameters::h;
 #endif
-    for ( auto nn_itr = address_book.neighbor_begin(idx); nn_itr != address_book.neighbor_end(idx); ++nn_itr )
-    {
-        field += Ising2d_Parameters::J * static_cast<float>( spin_array[ *nn_itr ] );
-    }
-
+    // for ( auto nn_itr = address_book.neighbor_begin(idx); nn_itr != address_book.neighbor_end(idx); ++nn_itr )
+    // {
+    //     field += Ising2d_Parameters::J * static_cast<float>( spin_array[ *nn_itr ] );
+    // }
+    for (std::uint32_t nn = 0; nn != 4; ++nn)
+        field += Ising2d_Parameters::J * static_cast<float>( spin_array[ address_book.neighbor_func(idx, nn) ] );
+        
 #if RFIM
     field += field_array[ idx ];
 #endif 
