@@ -34,13 +34,11 @@ public:
     void write_address_book() const override; 
     void initialize() override;
 
-    constexpr SiteType get_site_x_index( const SiteType site ) const { return site_x_index<Lx>(site); }
-    constexpr SiteType get_site_y_index( const SiteType site ) const { return site_y_index<Lx>(site); }
     SiteType current_site( ) const; 
     SiteType total_sites( ) const; 
     void update_current_site( const SiteType site ) const; 
     SiteType neighbor( const SiteType site, const SiteType neighbor ) const;
-    SiteType neighbor_func( const SiteType site_x, const SiteType site_y, const SiteType neighbor ) const;
+    SiteType neighbor_func( const SiteType site, const SiteType neighbor ) const;
     NeighborIterator neighbor_begin( const SiteType site ) const;
     NeighborIterator neighbor_end( const SiteType site ) const;
 
@@ -52,10 +50,10 @@ private:
     const SiteType _num_neighbors = _SQUARE_LATT_2D_NUM_NEIGHBORS;
     mutable SiteType _current_site;
     mutable SiteType _neighbors [_SQUARE_LATT_2D_NUM_NEIGHBORS];
-    SiteType (*_neighbor_funcs[ _SQUARE_LATT_2D_NUM_NEIGHBORS ]) ( const SiteType x, const SiteType y ) = { rect_pbc_2d_neighbor_0<Lx, Ly>,
-                                                                                                                 rect_pbc_2d_neighbor_1<Lx, Ly>,
-                                                                                                                 rect_pbc_2d_neighbor_2<Lx, Ly>,
-                                                                                                                 rect_pbc_2d_neighbor_3<Lx, Ly> };
+    static constexpr SiteType (*_neighbor_funcs[ _SQUARE_LATT_2D_NUM_NEIGHBORS ]) ( SiteType x, SiteType y ) = { rect_pbc_2d_neighbor_0<Lx, Ly>,
+                                                                                                               rect_pbc_2d_neighbor_1<Lx, Ly>,
+                                                                                                               rect_pbc_2d_neighbor_2<Lx, Ly>,
+                                                                                                               rect_pbc_2d_neighbor_3<Lx, Ly> };
 };
 
 #undef _SQUARE_LATT_2D_NUM_NEIGHBORS

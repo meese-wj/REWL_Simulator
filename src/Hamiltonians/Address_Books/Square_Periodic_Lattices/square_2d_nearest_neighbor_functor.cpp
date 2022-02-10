@@ -109,9 +109,9 @@ Lattice_Address_Book::SiteType Square_2D_Nearest_Neighbor_Functor<Lx, Ly>::neigh
 }
 
 template<Lattice_Address_Book::SiteType Lx, Lattice_Address_Book::SiteType Ly>
-Lattice_Address_Book::SiteType Square_2D_Nearest_Neighbor_Functor<Lx, Ly>::neighbor_func( const SiteType site_x, const SiteType site_y, const SiteType neighbor ) const 
+Lattice_Address_Book::SiteType Square_2D_Nearest_Neighbor_Functor<Lx, Ly>::neighbor_func( const SiteType site, const SiteType neighbor ) const 
 {
-    return _neighbor_funcs[neighbor]( site_x, site_y );
+    return _neighbor_funcs[neighbor]( site_x_index<Lx>( site ), site_y_index<Lx>( site ) );
 }
 
 template<Lattice_Address_Book::SiteType Lx, Lattice_Address_Book::SiteType Ly>
