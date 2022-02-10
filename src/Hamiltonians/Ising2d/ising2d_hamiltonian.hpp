@@ -47,7 +47,7 @@
 template<typename data_t>
 struct State
 {
-    float energy = 0;
+    data_t energy = 0;
     data_t magnetization = 0;
     data_t DoF = 0.;                 // Store the local degree of freedom
 };
@@ -69,18 +69,18 @@ struct Ising2d
     data_t * spin_array = nullptr;
 #if RFIM
     // TODO: change the energies to doubles.
-    float * field_array = nullptr;
+    data_t * field_array = nullptr;
 #endif
     
     Square_2D_Nearest_Neighbor_Functor<Ising2d_Parameters::L> address_book;
 
 #if PHONON_MEDIATED_NEMATIC_INTERACTIONS
-    PMDN_Interactions<float, data_t> * pmd_interaction;
+    PMDN_Interactions<data_t, data_t> * pmd_interaction;
 #endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
 
     // Add some Hamiltonian dependent functions
-    float local_field(const size_t idx) const;
-    float local_energy(const size_t idx, const data_t spin_value) const;
+    data_t local_field(const size_t idx) const;
+    data_t local_energy(const size_t idx, const data_t spin_value) const;
     void recalculate_state();
     void change_state(const size_t idx, State<data_t> & temp_state) const;
     void set_state(const size_t idx, const State<data_t> & _state);
@@ -97,12 +97,12 @@ struct Ising2d
         address_book.initialize();
 
 #if RFIM
-        generate_random_field<float>( Ising2d_Parameters::N, Ising2d_Parameters::h, 
+        generate_random_field<data_t>( Ising2d_Parameters::N, Ising2d_Parameters::h, 
                                       field_array, disorder_type );
 #endif
 
 #if PHONON_MEDIATED_NEMATIC_INTERACTIONS
-        pmd_interaction = new PMDN_Interactions<float, data_t>( Ising2d_Parameters::PMNI_Coupling, Ising2d_Parameters::L, Ising2d_Parameters::L );
+        pmd_interaction = new PMDN_Interactions<data_t, data_t>( Ising2d_Parameters::PMNI_Coupling, Ising2d_Parameters::L, Ising2d_Parameters::L );
 #endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
         recalculate_state();
     }
@@ -137,7 +137,7 @@ struct Ising2d
     void randomize_dofs()
     {
         std::uint64_t seed = static_cast<std::uint64_t>( std::chrono::high_resolution_clock::now().time_since_epoch().count() );
-        random_number_generator<float> rng (seed);
+        random_number_generator<data_t> rng (seed);
 
         for ( size_t idx = 0; idx != Ising2d_Parameters::num_DoF; ++idx )
             spin_array[ idx ] = ( rng() < 0.5 ? 1. : -1. );
@@ -150,7 +150,7 @@ struct Ising2d
 #endif
 
 #if RFIM
-    void import_disorder( const float * const disorder )
+    void import_disorder( const data_t * const disorder )
     {
         for ( size_t idx = 0; idx != Ising2d_Parameters::N; ++idx )
             field_array[idx] = disorder[idx];
@@ -161,16 +161,16 @@ struct Ising2d
 };
 
 template<typename data_t>
-float Ising2d<data_t>::local_field(const size_t idx) const
+data_t Ising2d<data_t>::local_field(const size_t idx) const
 {
 #if RFIM
-    float field = 0.;
+    data_t field = 0.;
 #else
-    float field = Ising2d_Parameters::h;
+    data_t field = Ising2d_Parameters::h;
 #endif
     for ( auto nn_itr = address_book.neighbor_begin(idx); nn_itr != address_book.neighbor_end(idx); ++nn_itr )
     {
-        field += Ising2d_Parameters::J * static_cast<float>( spin_array[ *nn_itr ] );
+        field += Ising2d_Parameters::J * static_cast<data_t>( spin_array[ *nn_itr ] );
     }
 
 #if RFIM
@@ -181,9 +181,9 @@ float Ising2d<data_t>::local_field(const size_t idx) const
 }
 
 template<typename data_t>
-float Ising2d<data_t>::local_energy(const size_t idx, const data_t spin_value) const
+data_t Ising2d<data_t>::local_energy(const size_t idx, const data_t spin_value) const
 {
-    float local_en = -1. * static_cast<float>( spin_value ) * local_field(idx);
+    data_t local_en = -1. * static_cast<data_t>( spin_value ) * local_field(idx);
 #if PHONON_MEDIATED_NEMATIC_INTERACTIONS
     local_en += pmd_interaction -> calculate_energy_per_spin( idx, spin_value, spin_array );
 #endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
@@ -193,7 +193,7 @@ float Ising2d<data_t>::local_energy(const size_t idx, const data_t spin_value) c
 template<typename data_t>
 void Ising2d<data_t>::recalculate_state()
 {
-    float temp_energy = 0.;
+    data_t temp_energy = 0.;
     data_t temp_magnetization = 0.;
 
     for ( size_t idx = 0; idx != Ising2d_Parameters::N; ++idx )
@@ -202,9 +202,9 @@ void Ising2d<data_t>::recalculate_state()
        // First term is necessary to account for h field loss
        // when 0.5 multiplies the energy to avoid double counting.
 #if RFIM
-       temp_energy += -0.5 * field_array[idx] * static_cast<float>(spin_array[idx]) + 0.5 * local_energy(idx, spin_array[idx]);
+       temp_energy += -0.5 * field_array[idx] * static_cast<data_t>(spin_array[idx]) + 0.5 * local_energy(idx, spin_array[idx]);
 #else
-       temp_energy += -0.5 * Ising2d_Parameters::h * static_cast<float>(spin_array[idx]) + 0.5 * local_energy(idx, spin_array[idx]);
+       temp_energy += -0.5 * Ising2d_Parameters::h * static_cast<data_t>(spin_array[idx]) + 0.5 * local_energy(idx, spin_array[idx]);
 #endif
     }
 
