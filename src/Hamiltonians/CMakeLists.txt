@@ -4,7 +4,6 @@
 # properly for all of the Hamiltonians.
 add_subdirectory(grid)
 add_subdirectory(Address_Books)
-add_subdirectory(Site_Variables)
 add_subdirectory(Correlations)
 add_subdirectory(Disorder)
 add_subdirectory(Simulated_Annealer)
@@ -21,5 +20,4 @@ target_link_libraries(hamiltonians PUBLIC
                       simulated_annealer
                       ising2d
                       ashkin_teller2d
-                      SiteVariables
                       AddressBooks)

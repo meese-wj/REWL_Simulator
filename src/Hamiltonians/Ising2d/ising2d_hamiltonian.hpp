@@ -11,9 +11,6 @@
 // Include the address books
 #include "../Address_Books/address_books.hpp" 
 
-// Include the Ising Sites 
-#include "ising_site_container.hpp"
-
 #if CORRELATION_LENGTHS
 // Include the correlation functionality.
 #include "../Correlations/fourier_correlator.hpp"
