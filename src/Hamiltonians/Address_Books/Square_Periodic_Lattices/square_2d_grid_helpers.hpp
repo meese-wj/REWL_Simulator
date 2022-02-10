@@ -32,25 +32,27 @@ template<std::uint32_t Lx>
 constexpr std::uint32_t site_y_index( std::uint32_t site ) { return SITE_Y_FUNCTION(site, Lx); }
 
 // PBC functions for a 2D square grid when Lx and Ly are known at compile time
-// Zero neighbor (x - 1, y)
+// The order is what I think is the most cache friendly with this site decomposition.
+
+// Zero neighbor (x, y - 1)
 template<std::uint32_t Lx, std::uint32_t Ly = Lx>
 constexpr std::uint32_t rect_pbc_2d_neighbor_0( const std::uint32_t site_x, const std::uint32_t site_y )
+{
+   return site_from_indices<Lx>( site_x, _BRANCHLESS_TERNARY( site_y == 0, Ly - 1, site_y - 1 ) );
+}
+
+// One neighbor (x - 1, y)
+template<std::uint32_t Lx, std::uint32_t Ly = Lx>
+constexpr std::uint32_t rect_pbc_2d_neighbor_1( const std::uint32_t site_x, const std::uint32_t site_y )
 {
    return site_from_indices<Lx>( _BRANCHLESS_TERNARY( site_x == 0, Lx - 1, site_x - 1 ), site_y );
 }
 
-// One neighbor (x + 1, y)
-template<std::uint32_t Lx, std::uint32_t Ly = Lx>
-constexpr std::uint32_t rect_pbc_2d_neighbor_1( const std::uint32_t site_x, const std::uint32_t site_y )
-{
-   return site_from_indices<Lx>( _BRANCHLESS_TERNARY( site_x == Lx - 1, 0, site_x + 1 ), site_y );
-}
-
-// Two neighbor (x, y - 1)
+// Two neighbor (x + 1, y)
 template<std::uint32_t Lx, std::uint32_t Ly = Lx>
 constexpr std::uint32_t rect_pbc_2d_neighbor_2( const std::uint32_t site_x, const std::uint32_t site_y )
 {
-   return site_from_indices<Lx>( site_x, _BRANCHLESS_TERNARY( site_y == 0, Ly - 1, site_y - 1 ) );
+   return site_from_indices<Lx>( _BRANCHLESS_TERNARY( site_x == Lx - 1, 0, site_x + 1 ), site_y );
 }
 
 // Three neighbor (x, y + 1)
