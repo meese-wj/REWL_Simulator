@@ -69,11 +69,17 @@ struct Ising2d
 {
     State<data_t> current_state;
 
-    data_t * spin_array = nullptr;
-#if RFIM
-    // TODO: change the energies to doubles.
-    float * field_array = nullptr;
-#endif
+//     data_t * spin_array = nullptr;
+// #if RFIM
+//     // TODO: change the energies to doubles.
+//     float * field_array = nullptr;
+// #endif
+
+#if RFIM 
+    Ising_Site_Container<data_t, Ising2d_Parameters::N, false> ising_sites;
+#else /* RFIM */
+    Ising_Site_Container<data_t, Ising2d_Parameters::N, true>  ising_sites;
+#endif /* RFIM */
     
     Square_2D_Nearest_Neighbor_Functor<Ising2d_Parameters::L> address_book;
 
@@ -90,18 +96,23 @@ struct Ising2d
     void update_observables(const size_t bin, Ising2d_Obs<data_t> * obs_ptr) const;
 
     // Finally add the constructor and destructor.
-    Ising2d() : address_book()
+    // Ising2d() : address_book()
+    Ising2d() : ising_sites(), address_book()
     {
-        spin_array = new data_t [ Ising2d_Parameters::N ];
+        // spin_array = new data_t [ Ising2d_Parameters::N ];
         // TODO: change this to be randomized?
         for ( size_t idx = 0; idx != Ising2d_Parameters::N; ++idx )
-            spin_array[idx] = 1.;
+            ising_sites.set_spin_value( idx, 1. );
+            // spin_array[idx] = 1.;
 
         address_book.initialize();
 
 #if RFIM
+        data_t * temp_field_array = new data_t [ Ising2d_Parameters::N ];
         generate_random_field<float>( Ising2d_Parameters::N, Ising2d_Parameters::h, 
-                                      field_array, disorder_type );
+                                      temp_field_array, disorder_type );
+        ising_sites.import_fields( temp_field_array );
+        delete [] temp_field_array;
 #endif
 
 #if PHONON_MEDIATED_NEMATIC_INTERACTIONS
@@ -112,10 +123,10 @@ struct Ising2d
 
     ~Ising2d()
     {
-        delete [] spin_array;
-#if RFIM
-        delete [] field_array;
-#endif
+//         delete [] spin_array;
+// #if RFIM
+//         delete [] field_array;
+// #endif
 
 #if PHONON_MEDIATED_NEMATIC_INTERACTIONS
         delete pmd_interaction;
@@ -126,12 +137,19 @@ struct Ising2d
 
     void print_lattice() const;
     
-    data_t * get_front_DoFs() const { return spin_array; }
+    // data_t * get_front_DoFs() const { return spin_array; }
+    data_t * get_front_DoFs() const 
+    { 
+        data_t * temp_dof_copy = nullptr;
+        ising_sites.export_contiguous_spins( temp_dof_copy );
+        return temp_dof_copy;
+    }
 
     void import_DoFs( const data_t * const array )
     {
-        for ( size_t idx = 0; idx != Ising2d_Parameters::num_DoF; ++idx )
-            spin_array[idx] = array[idx];
+        // for ( size_t idx = 0; idx != Ising2d_Parameters::num_DoF; ++idx )
+        //     spin_array[idx] = array[idx];
+        ising_sites.import_contiguous_spins( array );
 
         recalculate_state();
     }
@@ -143,7 +161,8 @@ struct Ising2d
         random_number_generator<float> rng (seed);
 
         for ( size_t idx = 0; idx != Ising2d_Parameters::num_DoF; ++idx )
-            spin_array[ idx ] = ( rng() < 0.5 ? 1. : -1. );
+            ising_sites.set_spin_value( idx, ( rng() < 0.5 ? 1. : -1. ) );
+            // spin_array[ idx ] = ( rng() < 0.5 ? 1. : -1. );
 
         recalculate_state();
 
@@ -155,8 +174,9 @@ struct Ising2d
 #if RFIM
     void import_disorder( const float * const disorder )
     {
-        for ( size_t idx = 0; idx != Ising2d_Parameters::N; ++idx )
-            field_array[idx] = disorder[idx];
+        ising_sites.import_fields( disorder );
+        // for ( size_t idx = 0; idx != Ising2d_Parameters::N; ++idx )
+        //     field_array[idx] = disorder[idx];
 
         recalculate_state();
     }
@@ -166,19 +186,21 @@ struct Ising2d
 template<typename data_t>
 float Ising2d<data_t>::local_field(const size_t idx) const
 {
-#if RFIM
-    float field = 0.;
-#else
-    float field = Ising2d_Parameters::h;
-#endif
+// #if RFIM
+//     float field = 0.;
+// #else
+//     float field = Ising2d_Parameters::h;
+// #endif
+    float field = ising_sites.get_field_value( idx );
     for ( auto nn_itr = address_book.neighbor_begin(idx); nn_itr != address_book.neighbor_end(idx); ++nn_itr )
     {
-        field += Ising2d_Parameters::J * static_cast<float>( spin_array[ *nn_itr ] );
+        // field += Ising2d_Parameters::J * static_cast<float>( spin_array[ *nn_itr ] );
+        field += Ising2d_Parameters::J * static_cast<float>( ising_sites.get_spin_value( *nn_itr ) );
     }
 
-#if RFIM
-    field += field_array[ idx ];
-#endif 
+// #if RFIM
+//     field += field_array[ idx ];
+// #endif 
 
     return field;
 }
@@ -188,6 +210,7 @@ float Ising2d<data_t>::local_energy(const size_t idx, const data_t spin_value) c
 {
     float local_en = -1. * static_cast<float>( spin_value ) * local_field(idx);
 #if PHONON_MEDIATED_NEMATIC_INTERACTIONS
+    // TODO: THIS IS BROKEN WITH THE ISING SITES!!!
     local_en += pmd_interaction -> calculate_energy_per_spin( idx, spin_value, spin_array );
 #endif // PHONON_MEDIATED_NEMATIC_INTERACTIONS
     return local_en;
@@ -201,14 +224,16 @@ void Ising2d<data_t>::recalculate_state()
 
     for ( size_t idx = 0; idx != Ising2d_Parameters::N; ++idx )
     {
-       temp_magnetization += spin_array[idx];
+    //    temp_magnetization += spin_array[idx];
+       temp_magnetization += ising_sites.get_spin_value(idx);
        // First term is necessary to account for h field loss
        // when 0.5 multiplies the energy to avoid double counting.
-#if RFIM
-       temp_energy += -0.5 * field_array[idx] * static_cast<float>(spin_array[idx]) + 0.5 * local_energy(idx, spin_array[idx]);
-#else
-       temp_energy += -0.5 * Ising2d_Parameters::h * static_cast<float>(spin_array[idx]) + 0.5 * local_energy(idx, spin_array[idx]);
-#endif
+// #if RFIM
+//        temp_energy += -0.5 * field_array[idx] * static_cast<float>(spin_array[idx]) + 0.5 * local_energy(idx, spin_array[idx]);
+// #else
+//        temp_energy += -0.5 * Ising2d_Parameters::h * static_cast<float>(spin_array[idx]) + 0.5 * local_energy(idx, spin_array[idx]);
+// #endif
+        temp_energy += -0.5 * ising_sites.get_field_value(idx) * ising_sites.get_spin_value(idx) + 0.5 * local_energy(idx, ising_sites.get_spin_value(idx));
     }
 
     current_state.energy = temp_energy;
@@ -222,9 +247,12 @@ void Ising2d<data_t>::recalculate_state()
 template<typename data_t>
 void Ising2d<data_t>::change_state(const size_t idx, State<data_t> & temp_state) const
 {
-    temp_state.DoF = -spin_array[idx];
-    temp_state.magnetization = current_state.magnetization + temp_state.DoF - spin_array[idx];
-    temp_state.energy = current_state.energy + local_energy(idx, temp_state.DoF) - local_energy(idx, spin_array[idx]);
+    // temp_state.DoF = -spin_array[idx];
+    // temp_state.magnetization = current_state.magnetization + temp_state.DoF - spin_array[idx];
+    temp_state.DoF = -ising_sites.get_spin_value(idx);
+    temp_state.magnetization = current_state.magnetization + temp_state.DoF - ising_sites.get_spin_value(idx);
+    // temp_state.energy = current_state.energy + local_energy(idx, temp_state.DoF) - local_energy(idx, spin_array[idx]);
+    temp_state.energy = current_state.energy + local_energy(idx, temp_state.DoF) - local_energy(idx, ising_sites.get_spin_value(idx));
 }
 
 // Set the current state
@@ -233,7 +261,8 @@ void Ising2d<data_t>::set_state(const size_t idx, const State<data_t> & _state)
 {
     current_state.energy = _state.energy;
     current_state.magnetization = _state.magnetization;
-    spin_array[idx] = _state.DoF;
+    // spin_array[idx] = _state.DoF;
+    ising_sites.set_spin_value( idx, _state.DoF );
 }
 
 // Update the non-energetic observables
@@ -270,7 +299,8 @@ void Ising2d<data_t>::print_lattice() const
         printf("\n%ld\t    ", idx * Ising2d_Parameters::L);
         for ( size_t jdx = 0; jdx != Ising2d_Parameters::L; ++jdx )
         {
-           if ( spin_array[idx * Ising2d_Parameters::L + jdx] == 1. )
+        //    if ( spin_array[idx * Ising2d_Parameters::L + jdx] == 1. )
+           if ( ising_sites.get_spin_value( site_from_indices<Ising2d_Parameters::L>(idx, jdx) ) == 1. )
                printf("+ ");
            else
                printf("- ");

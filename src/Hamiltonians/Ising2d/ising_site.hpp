@@ -4,7 +4,7 @@
 #include "../Site_Variables/site_variables.hpp"
 
 template<typename data_t>
-class Ising_Site : public Site_Variables
+class Ising_Site : public Site_Variables<data_t>
 {
 public:
     enum variable_enum 
@@ -25,6 +25,6 @@ public:
     virtual ~Ising_Site();
 private:
     data_t _variables [ NUM_VARIABLES ] = { 0., 0. };
-}
+};
 
 #endif /* _ISING_SITE_H */
