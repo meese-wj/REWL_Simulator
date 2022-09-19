@@ -5,6 +5,25 @@
 This code base is a _Replica-Exchange Wang Landau_ (REWL) simulator written to generalize the REWL method to various Hamiltonians smoothly. Once written, it will allow the user to only specify the details of a templated Hamiltonian and observables and remove the user from the nitty-gritty details of replica communication via MPI. In principle, this will allow quick development and study of different classical thermodynamic systems without the need for regular development of the
 actual algorithm itself.
 
+This `REWL_Simulator` was first built to study the problem of random strain disorder in the unconventional superconductors known as the iron pnictides [[Phys. Rev. B **106**, 115134 (2022)]](https://link.aps.org/doi/10.1103/PhysRevB.106.115134). If one should use this code for their own research, please cite that original paper. For convenience, here is the BibTeX entry:
+
+```bibtex
+@article{PhysRevB.106.115134,
+  title = {Random strain induced correlations in materials with intertwined nematic and magnetic orders},
+  author = {Meese, W. Joe and Vojta, Thomas and Fernandes, Rafael M.},
+  journal = {Phys. Rev. B},
+  volume = {106},
+  issue = {11},
+  pages = {115134},
+  numpages = {22},
+  year = {2022},
+  month = {Sep},
+  publisher = {American Physical Society},
+  doi = {10.1103/PhysRevB.106.115134},
+  url = {https://link.aps.org/doi/10.1103/PhysRevB.106.115134}
+}
+```
+
 ## Code Basics
 The goal for this code base is for it to be written in `C++` and built with `cmake` across different platforms. Currently it has only been tested on Linux systems. This section will be updated as more of the code is developed.
 
